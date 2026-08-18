@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Set Up Your GapMap Path</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      color: #1A1A2E;
+      background: #F8FAFC;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .setup-card {
+      background: #FFFFFF;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 16px;
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: 0 10px 40px -10px rgba(0,0,0,0.08);
+    }
+
+    .brand { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 4px; text-decoration: none; }
+    .brand-text { font-weight: 700; font-size: 1.35rem; color: #1A1A2E; }
+    .logo-icon { width: 32px; height: 32px; background: #3B5BDB; border-radius: 50%; display: grid; place-items: center; position: relative; }
+    .logo-icon::after { content: ''; width: 10px; height: 10px; background: white; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); margin-top: -2px; }
+
+    .setup-title { text-align: center; font-size: 1.2rem; font-weight: 700; margin-bottom: 4px; }
+    .setup-subtitle { text-align: center; color: #5A5A72; font-size: 0.9rem; margin-bottom: 28px; }
+
+    .setup-label { font-weight: 600; font-size: 0.9rem; color: #1A1A2E; margin-bottom: 8px; display: block; }
+    
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 24px; }
+    @media (max-width: 480px) { .grid-3 { grid-template-columns: repeat(2, 1fr); } }
+    
+    .select-card { padding: 12px; border: 1.5px solid #E5E7EB; border-radius: 10px; text-align: center; cursor: pointer; transition: all 0.2s; background: #FFFFFF; color: #5A5A72; font-size: 0.9rem; font-weight: 500; }
+    .select-card:hover { border-color: #C5C9D4; }
+    .select-card.selected { border-color: #3B5BDB; background: #EEF2FF; color: #3B5BDB; }
+    .select-card input { display: none; }
+
+    .subject-select { width: 100%; padding: 12px 16px; border: 1.5px solid #E5E7EB; border-radius: 10px; font-size: 1rem; font-family: inherit; background: white; outline: none; margin-bottom: 24px; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='%235A5A72'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; }
+    .subject-select:focus { border-color: #3B5BDB; box-shadow: 0 0 0 4px rgba(59, 91, 219, 0.1); }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 20px; border-radius: 10px; font-weight: 600; font-size: 1rem; cursor: pointer; border: none; transition: all 0.2s; text-decoration: none; width: 100%; margin-top: 6px; }
+    .btn-primary { background: #3B5BDB; color: white; }
+    .btn-primary:hover { background: #2F4AC0; }
+    
+    .back-link { text-align: center; margin-top: 16px; font-size: 0.85rem; color: #5A5A72; }
+    .back-link a { color: #3B5BDB; text-decoration: none; }
+  </style>
+</head>
+<body>
+
+  <div class="setup-card">
+    <a href="index.html" class="brand">
+      <div class="logo-icon"></div>
+      <span class="brand-text">GapMap</span>
+    </a>
+    
+    <div class="setup-title">Customise your learning experience</div>
+    <p class="setup-subtitle">Tailor GapMap to your needs. You can change this anytime.</p>
+
+    <!-- 1. Language -->
+    <label class="setup-label">Choose your learning language</label>
+    <div class="grid-3" id="langGrid">
+      <label class="select-card selected" for="lang-en">
+        <input type="radio" name="language" id="lang-en" value="English" checked> English
+      </label>
+      <label class="select-card" for="lang-zu">
+        <input type="radio" name="language" id="lang-zu" value="isiZulu"> isiZulu
+      </label>
+      <label class="select-card" for="lang-nso">
+        <input type="radio" name="language" id="lang-nso" value="Sepedi"> Sepedi
+      </label>
+      <label class="select-card" for="lang-tn">
+        <input type="radio" name="language" id="lang-tn" value="Setswana"> Setswana
+      </label>
+      <label class="select-card" for="lang-xh">
+        <input type="radio" name="language" id="lang-xh" value="isiXhosa"> isiXhosa
+      </label>
+    </div>
+
+    <!-- 2. Explanation Level -->
+    <label class="setup-label">Choose explanation level</label>
+    <div class="grid-3" id="levelGrid">
+      <label class="select-card" for="level-simple">
+        <input type="radio" name="level" id="level-simple" value="Very Simple"> Very Simple
+      </label>
+      <label class="select-card selected" for="level-standard">
+        <input type="radio" name="level" id="level-standard" value="Standard" checked> Standard
+      </label>
+      <label class="select-card" for="level-detailed">
+        <input type="radio" name="level" id="level-detailed" value="Detailed"> Detailed
+      </label>
+    </div>
+
+    <!-- 3. Subject -->
+    <label class="setup-label">Select a subject to start with</label>
+    <select class="subject-select" id="subjectSelect">
+      <option value="Grade 12 Mathematics">Grade 12 Mathematics</option>
+      <option value="Grade 12 Physical Science">Grade 12 Physical Science</option>
+      <option value="Grade 12 English Home Language">Grade 12 English Home Language</option>
+      <option value="Grade 11 Mathematics">Grade 11 Mathematics</option>
+      <option value="Grade 11 Physical Science">Grade 11 Physical Science</option>
+    </select>
+
+    <button class="btn btn-primary" id="startLearningBtn">Start Learning</button>
+    
+    <div class="back-link">
+      <a href="index.html">Back to Home</a>
+    </div>
+  </div>
+
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Clickable card logic for Language and Level
+      function setupClickableCards(containerId) {
+        const cards = document.querySelectorAll(containerId + ' .select-card');
+        cards.forEach(card => {
+          card.addEventListener('click', function() {
+            const parent = this.parentElement;
+            parent.querySelectorAll('.select-card').forEach(c => c.classList.remove('selected'));
+            this.classList.add('selected');
+            this.querySelector('input[type="radio"]').checked = true;
+          });
+        });
+      }
+      setupClickableCards('#langGrid');
+      setupClickableCards('#levelGrid');
+
+      // Start Learning Button
+      document.getElementById('startLearningBtn').addEventListener('click', function() {
+        const language = document.querySelector('input[name="language"]:checked').value;
+        const level = document.querySelector('input[name="level"]:checked').value;
+        const subject = document.getElementById('subjectSelect').value;
+        
+        alert(`Welcome to GapMap!\n\nLanguage: ${language}\nLevel: ${level}\nSubject: ${subject}\n\nLoading your personalised dashboard...`);
+        // window.location.href = 'dashboard.html';
+      });
+    });
+  </script>
+</body>
+</html>

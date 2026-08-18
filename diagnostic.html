@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diagnostic Assessment – GapMap</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      color: #1A1A2E;
+      background: #F8FAFC;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+    .nav {
+      background: white;
+      border-bottom: 1.5px solid #E5E7EB;
+      padding: 14px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: #1A1A2E;
+      text-decoration: none;
+    }
+    .logo-icon {
+      width: 28px;
+      height: 28px;
+      background: #3B5BDB;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+    .logo-icon::after {
+      content: '';
+      width: 9px;
+      height: 9px;
+      background: white;
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      margin-top: -1px;
+    }
+    .nav-info { font-size: 0.9rem; color: #5A5A72; font-weight: 500; }
+    .container { max-width: 720px; margin: 0 auto; padding: 40px 24px 80px; }
+
+    .progress-header { margin-bottom: 32px; }
+    .progress-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .progress-label { font-size: 0.9rem; font-weight: 600; color: #5A5A72; }
+    .progress-count { font-size: 0.9rem; font-weight: 600; color: #3B5BDB; }
+    .progress-track { height: 8px; background: #E5E7EB; border-radius: 4px; overflow: hidden; }
+    .progress-fill { height: 100%; background: #3B5BDB; border-radius: 4px; transition: width 0.35s ease; }
+
+    .question-card {
+      background: white; border: 1.5px solid #E5E7EB; border-radius: 16px;
+      padding: 36px 32px; box-shadow: 0 4px 24px -8px rgba(0,0,0,0.06); margin-bottom: 24px;
+    }
+    .concept-tag {
+      display: inline-block; background: #EEF2FF; color: #3B5BDB;
+      font-size: 0.8rem; font-weight: 600; padding: 4px 12px; border-radius: 20px; margin-bottom: 16px;
+    }
+    .question-text { font-size: 1.2rem; font-weight: 600; line-height: 1.45; margin-bottom: 28px; }
+
+    .options { display: flex; flex-direction: column; gap: 12px; }
+    .option {
+      display: flex; align-items: center; gap: 14px; padding: 16px 18px;
+      border: 1.5px solid #E5E7EB; border-radius: 12px; cursor: pointer; transition: all 0.2s; background: white;
+    }
+    .option:hover { border-color: #C5C9D4; background: #FAFAFA; }
+    .option.selected { border-color: #3B5BDB; background: #EEF2FF; }
+    .option input { display: none; }
+    .option-letter {
+      width: 32px; height: 32px; border-radius: 50%; background: #F3F4F6;
+      display: grid; place-items: center; font-weight: 600; font-size: 0.9rem; color: #5A5A72; flex-shrink: 0;
+    }
+    .option.selected .option-letter { background: #3B5BDB; color: white; }
+    .option-text { font-size: 1rem; font-weight: 500; }
+
+    .actions { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px;
+      border-radius: 10px; font-weight: 600; font-size: 0.95rem; cursor: pointer; border: none; transition: all 0.2s; text-decoration: none;
+    }
+    .btn-primary { background: #3B5BDB; color: white; }
+    .btn-primary:hover { background: #2F4AC0; }
+    .btn-primary:disabled { background: #9CA3AF; cursor: not-allowed; }
+    .btn-ghost { background: transparent; color: #5A5A72; padding: 12px 16px; }
+    .btn-ghost:hover { color: #1A1A2E; }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    .intro-card, .results-card {
+      background: white; border: 1.5px solid #E5E7EB; border-radius: 16px;
+      padding: 48px 40px; text-align: center; box-shadow: 0 4px 24px -8px rgba(0,0,0,0.06);
+    }
+    .intro-card h1, .results-card h1 { font-size: 1.6rem; font-weight: 800; margin-bottom: 12px; letter-spacing: -0.02em; }
+    .intro-card p, .results-card p { color: #5A5A72; font-size: 1.05rem; max-width: 440px; margin: 0 auto 28px; line-height: 1.6; }
+    .intro-meta { display: flex; justify-content: center; gap: 28px; margin-bottom: 32px; font-size: 0.9rem; color: #5A5A72; }
+    .intro-meta strong { display: block; font-size: 1.3rem; color: #1A1A2E; margin-bottom: 2px; }
+
+    .results-score { font-size: 3.2rem; font-weight: 800; color: #3B5BDB; margin-bottom: 8px; }
+    .results-sub { color: #5A5A72; margin-bottom: 20px; }
+
+    .mini-breakdown { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 28px; }
+    .mini-tag { font-size: 0.8rem; font-weight: 600; padding: 5px 12px; border-radius: 20px; }
+    .mini-strong { background: #ECFDF5; color: #10B981; }
+    .mini-improve { background: #FFFBEB; color: #F59E0B; }
+    .mini-weak { background: #FEF2F2; color: #EF4444; }
+
+    @media (max-width: 600px) {
+      .container { padding: 24px 16px 60px; }
+      .question-card { padding: 28px 20px; }
+      .intro-card, .results-card { padding: 36px 24px; }
+      .nav { padding: 12px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="index.html" class="logo">
+      <div class="logo-icon"></div>
+      GapMap
+    </a>
+    <div class="nav-info">Grade 12 Mathematics · Diagnostic</div>
+  </nav>
+
+  <div class="container">
+
+    <!-- INTRO -->
+    <div class="screen active" id="introScreen">
+      <div class="intro-card">
+        <h1>Diagnostic Assessment</h1>
+        <p>12 short questions covering key Grade 12 Maths concepts. This helps GapMap find exactly where you’re stuck.</p>
+        <div class="intro-meta">
+          <div><strong>12</strong>Questions</div>
+          <div><strong>~8 min</strong>Estimated</div>
+          <div><strong>4</strong>Concepts</div>
+        </div>
+        <button class="btn btn-primary" id="startBtn" style="padding: 14px 32px; font-size: 1rem;">
+          Start Diagnostic
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- QUIZ -->
+    <div class="screen" id="quizScreen">
+      <div class="progress-header">
+        <div class="progress-top">
+          <span class="progress-label">Question <span id="currentNum">1</span> of 12</span>
+          <span class="progress-count" id="progressPercent">8%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressBar" style="width: 8%"></div>
+        </div>
+      </div>
+
+      <div class="question-card">
+        <span class="concept-tag" id="conceptTag">Algebra</span>
+        <div class="question-text" id="questionText">Simplify: 3(x + 4) − 2(x − 1)</div>
+        <div class="options" id="optionsContainer"></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-ghost" id="prevBtn" style="visibility: hidden;">← Previous</button>
+        <button class="btn btn-primary" id="nextBtn" disabled>Next →</button>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="screen" id="resultsScreen">
+      <div class="results-card">
+        <div class="results-score" id="finalScore">—</div>
+        <div class="results-sub">Overall diagnostic score</div>
+        <div class="mini-breakdown" id="miniBreakdown"></div>
+        <h1>We found your gaps</h1>
+        <p>A single percentage doesn’t tell you what to study next. Your personalised GapMap is ready.</p>
+        <a href="dashboard.html" class="btn btn-primary" style="padding: 14px 28px;">
+          View Your Gap Map
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // ========== QUESTION BANK ==========
+    const questions = [
+      { id: 1, concept: "Algebra", text: "Simplify: 3(x + 4) − 2(x − 1)", options: ["x + 14", "x + 10", "5x + 14", "x − 14"], correct: 0 },
+      { id: 2, concept: "Algebra", text: "Expand: (2x − 3)(x + 5)", options: ["2x² + 7x − 15", "2x² + 10x − 3x − 15", "2x² − 15", "2x² + 7x + 15"], correct: 0 },
+      { id: 3, concept: "Factorisation", text: "Factorise completely: x² − 9", options: ["(x − 3)(x + 3)", "(x − 9)(x + 1)", "(x − 3)²", "x(x − 9)"], correct: 0 },
+      { id: 4, concept: "Factorisation", text: "Factorise: 2x² + 7x + 3", options: ["(2x + 1)(x + 3)", "(2x + 3)(x + 1)", "(x + 3)(x + 1)", "(2x − 1)(x − 3)"], correct: 0 },
+      { id: 5, concept: "Factorisation", text: "Factorise: x² + 5x + 6", options: ["(x + 2)(x + 3)", "(x + 1)(x + 6)", "(x − 2)(x − 3)", "(x + 6)(x − 1)"], correct: 0 },
+      { id: 6, concept: "Functions", text: "If f(x) = 2x + 3, what is f(4)?", options: ["11", "8", "5", "14"], correct: 0 },
+      { id: 7, concept: "Functions", text: "What is the domain of f(x) = √(x − 2)?", options: ["x ≥ 2", "x > 2", "x ≤ 2", "All real numbers"], correct: 0 },
+      { id: 8, concept: "Functions", text: "If f(x) = x² − 4, find f(−3)", options: ["5", "13", "−13", "−5"], correct: 0 },
+      { id: 9, concept: "Quadratic Equations", text: "Solve: x² − 5x + 6 = 0", options: ["x = 2 or x = 3", "x = −2 or x = −3", "x = 1 or x = 6", "x = 0 or x = 5"], correct: 0 },
+      { id: 10, concept: "Quadratic Equations", text: "The roots of x² − 4 = 0 are:", options: ["x = 2 or x = −2", "x = 4 or x = −4", "x = 0 or x = 4", "x = 2 only"], correct: 0 },
+      { id: 11, concept: "Quadratic Equations", text: "What is the discriminant of 2x² + 3x − 5 = 0?", options: ["49", "41", "9", "−31"], correct: 0 },
+      { id: 12, concept: "Algebra", text: "Solve for x: 5x − 7 = 3x + 9", options: ["x = 8", "x = 1", "x = −8", "x = 16"], correct: 0 }
+    ];
+
+    let current = 0;
+    let answers = new Array(questions.length).fill(null);
+
+    const introScreen   = document.getElementById('introScreen');
+    const quizScreen    = document.getElementById('quizScreen');
+    const resultsScreen = document.getElementById('resultsScreen');
+    const startBtn      = document.getElementById('startBtn');
+    const nextBtn       = document.getElementById('nextBtn');
+    const prevBtn       = document.getElementById('prevBtn');
+
+    startBtn.addEventListener('click', () => {
+      introScreen.classList.remove('active');
+      quizScreen.classList.add('active');
+      renderQuestion();
+    });
+
+    function renderQuestion() {
+      const q = questions[current];
+      document.getElementById('currentNum').textContent = current + 1;
+      const pct = Math.round(((current + 1) / questions.length) * 100);
+      document.getElementById('progressPercent').textContent = pct + '%';
+      document.getElementById('progressBar').style.width = pct + '%';
+      document.getElementById('conceptTag').textContent = q.concept;
+      document.getElementById('questionText').textContent = q.text;
+
+      const container = document.getElementById('optionsContainer');
+      container.innerHTML = '';
+
+      q.options.forEach((opt, i) => {
+        const letter = String.fromCharCode(65 + i);
+        const div = document.createElement('label');
+        div.className = 'option' + (answers[current] === i ? ' selected' : '');
+        div.innerHTML = `
+          <input type="radio" name="q" value="${i}" ${answers[current] === i ? 'checked' : ''}>
+          <span class="option-letter">${letter}</span>
+          <span class="option-text">${opt}</span>
+        `;
+        div.addEventListener('click', () => {
+          answers[current] = i;
+          document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+          div.classList.add('selected');
+          nextBtn.disabled = false;
+        });
+        container.appendChild(div);
+      });
+
+      prevBtn.style.visibility = current === 0 ? 'hidden' : 'visible';
+      nextBtn.textContent = current === questions.length - 1 ? 'Finish →' : 'Next →';
+      nextBtn.disabled = answers[current] === null;
+    }
+
+    nextBtn.addEventListener('click', () => {
+      if (current < questions.length - 1) {
+        current++;
+        renderQuestion();
+      } else {
+        const results = calculateResults();
+        saveResults(results);
+        showResults(results);
+      }
+    });
+
+    prevBtn.addEventListener('click', () => {
+      if (current > 0) {
+        current--;
+        renderQuestion();
+      }
+    });
+
+    // ========== SCORING ENGINE ==========
+    function calculateResults() {
+      const conceptStats = {};
+
+      questions.forEach((q, idx) => {
+        if (!conceptStats[q.concept]) {
+          conceptStats[q.concept] = { correct: 0, total: 0 };
+        }
+        conceptStats[q.concept].total += 1;
+
+        if (answers[idx] !== null && answers[idx] === q.correct) {
+          conceptStats[q.concept].correct += 1;
+        }
+      });
+
+      const concepts = {};
+      let totalCorrect = 0;
+      let totalQuestions = 0;
+
+      Object.keys(conceptStats).forEach(name => {
+        const { correct, total } = conceptStats[name];
+        const score = total > 0 ? Math.round((correct / total) * 100) : 0;
+
+        let status = "weak";
+        if (score >= 80) status = "strong";
+        else if (score >= 50) status = "improve";
+
+        concepts[name] = { score, correct, total, status };
+        totalCorrect += correct;
+        totalQuestions += total;
+      });
+
+      const overall = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+
+      return {
+        overall,
+        concepts,
+        totalCorrect,
+        totalQuestions,
+        takenAt: new Date().toISOString(),
+        answers: [...answers]
+      };
+    }
+
+    // ========== SAVE TO LOCAL STORAGE ==========
+    function saveResults(results) {
+      localStorage.setItem("gapmap_diagnostic", JSON.stringify(results));
+
+      let history = JSON.parse(localStorage.getItem("gapmap_history") || "[]");
+      history.unshift({ overall: results.overall, takenAt: results.takenAt });
+      history = history.slice(0, 5);
+      localStorage.setItem("gapmap_history", JSON.stringify(history));
+    }
+
+    // ========== SHOW RESULTS ==========
+    function showResults(results) {
+      quizScreen.classList.remove('active');
+      resultsScreen.classList.add('active');
+
+      document.getElementById('finalScore').textContent = results.overall + '%';
+
+      const breakdown = document.getElementById('miniBreakdown');
+      breakdown.innerHTML = '';
+      Object.entries(results.concepts).forEach(([name, data]) => {
+        const tag = document.createElement('span');
+        tag.className = 'mini-tag mini-' + data.status;
+        const icon = data.status === 'strong' ? '✓' : data.status === 'improve' ? '!' : '✕';
+        tag.textContent = `${icon} ${name} ${data.score}%`;
+        breakdown.appendChild(tag);
+      });
+    }
+  </script>
+</body>
+</html>

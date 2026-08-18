@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learn Factorisation – GapMap</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      color: #1A1A2E;
+      background: #F8FAFC;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    .nav {
+      background: white;
+      border-bottom: 1.5px solid #E5E7EB;
+      padding: 14px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: #1A1A2E;
+      text-decoration: none;
+    }
+    .logo-icon {
+      width: 28px;
+      height: 28px;
+      background: #3B5BDB;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+    .logo-icon::after {
+      content: '';
+      width: 9px;
+      height: 9px;
+      background: white;
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      margin-top: -1px;
+    }
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .back-link {
+      font-size: 0.9rem;
+      color: #5A5A72;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .back-link:hover { color: #1A1A2E; }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 32px 24px 80px;
+    }
+
+    .learn-header { margin-bottom: 28px; }
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .status-badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: #FEF2F2;
+      color: #EF4444;
+    }
+    .score-pill {
+      font-size: 0.8rem;
+      color: #5A5A72;
+      background: #F3F4F6;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+    .learn-header h1 {
+      font-size: 1.7rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+    .learn-header p {
+      color: #5A5A72;
+      font-size: 1rem;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: #E5E7EB;
+      padding: 4px;
+      border-radius: 12px;
+      margin-bottom: 28px;
+    }
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 10px 16px;
+      border-radius: 9px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: #5A5A72;
+      transition: all 0.2s;
+    }
+    .tab.active {
+      background: white;
+      color: #1A1A2E;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .card {
+      background: white;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 4px 20px -8px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
+    }
+    .card h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+    .card p {
+      color: #5A5A72;
+      margin-bottom: 14px;
+      line-height: 1.65;
+    }
+    .card p:last-child { margin-bottom: 0; }
+
+    .example-box {
+      background: #F8FAFC;
+      border: 1px solid #E5E7EB;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 18px 0;
+      font-family: 'Inter', monospace;
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+    .example-box strong { color: #3B5BDB; }
+
+    .tip {
+      background: #EEF2FF;
+      border-left: 4px solid #3B5BDB;
+      padding: 14px 18px;
+      border-radius: 0 10px 10px 0;
+      font-size: 0.9rem;
+      color: #1A1A2E;
+      margin-top: 16px;
+    }
+
+    .practice-q {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      line-height: 1.45;
+    }
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .option:hover { border-color: #C5C9D4; background: #FAFAFA; }
+    .option.selected { border-color: #3B5BDB; background: #EEF2FF; }
+    .option.correct { border-color: #10B981; background: #ECFDF5; }
+    .option.wrong { border-color: #EF4444; background: #FEF2F2; }
+    .option input { display: none; }
+    .option-letter {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #F3F4F6;
+      display: grid;
+      place-items: center;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: #5A5A72;
+      flex-shrink: 0;
+    }
+    .option.selected .option-letter { background: #3B5BDB; color: white; }
+    .option.correct .option-letter { background: #10B981; color: white; }
+    .option.wrong .option-letter { background: #EF4444; color: white; }
+
+    .feedback {
+      display: none;
+      margin-top: 8px;
+      padding: 18px 20px;
+      border-radius: 12px;
+      animation: slideUp 0.35s ease;
+    }
+    .feedback.active { display: block; }
+    .feedback.correct {
+      background: #ECFDF5;
+      border: 1px solid #6EE7B7;
+    }
+    .feedback.wrong {
+      background: #FEF2F2;
+      border: 1px solid #FECACA;
+    }
+    .feedback h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .feedback.correct h4 { color: #065F46; }
+    .feedback.wrong h4 { color: #991B1B; }
+    .feedback p {
+      font-size: 0.9rem;
+      color: #374151;
+      margin-bottom: 0;
+      line-height: 1.55;
+    }
+    .feedback .why {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(0,0,0,0.08);
+      font-size: 0.88rem;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 22px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+    .btn-primary {
+      background: #3B5BDB;
+      color: white;
+    }
+    .btn-primary:hover { background: #2F4AC0; }
+    .btn-primary:disabled {
+      background: #9CA3AF;
+      cursor: not-allowed;
+    }
+    .btn-outline {
+      background: white;
+      border: 1.5px solid #E5E7EB;
+      color: #1A1A2E;
+    }
+    .btn-outline:hover {
+      border-color: #C5C9D4;
+      background: #FAFAFA;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .progress-footer {
+      margin-top: 32px;
+      background: white;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 14px;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .progress-info h4 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    .progress-info p {
+      font-size: 0.85rem;
+      color: #5A5A72;
+    }
+    .mini-bar {
+      width: 120px;
+      height: 8px;
+      background: #E5E7EB;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .mini-fill {
+      height: 100%;
+      background: #EF4444;
+      border-radius: 4px;
+      width: 38%;
+      transition: width 0.5s ease;
+    }
+
+    @media (max-width: 600px) {
+      .container { padding: 24px 16px 60px; }
+      .card { padding: 24px 18px; }
+      .nav { padding: 12px 16px; }
+      .progress-footer { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="index.html" class="logo">
+      <div class="logo-icon"></div>
+      GapMap
+    </a>
+    <div class="nav-right">
+      <a href="dashboard.html" class="back-link">← Back to Gap Map</a>
+    </div>
+  </nav>
+
+  <div class="container">
+
+    <div class="learn-header">
+      <div class="status-row">
+        <span class="status-badge">✕ Weak</span>
+        <span class="score-pill">Current score: 38%</span>
+      </div>
+      <h1>Factorisation</h1>
+      <p>Priority #1 on your path. Master this and your overall score will jump.</p>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="explain">Explanation</button>
+      <button class="tab" data-tab="practice">Practice</button>
+      <button class="tab" data-tab="retest">Retest</button>
+    </div>
+
+    <!-- EXPLANATION -->
+    <div class="panel active" id="panel-explain">
+      <div class="card">
+        <h2>What is Factorisation?</h2>
+        <p>Factorisation means rewriting an expression as a product of simpler expressions (factors). It’s the reverse of expanding brackets.</p>
+        <p>When you factorise, you break a complicated expression into pieces that multiply together to give the original.</p>
+      </div>
+
+      <div class="card">
+        <h2>Common Method: Difference of Squares</h2>
+        <p>One of the most useful patterns:</p>
+        <div class="example-box">
+          a² − b² = (a − b)(a + b)
+        </div>
+        <p><strong>Example:</strong> Factorise x² − 9</p>
+        <div class="example-box">
+          x² − 9 = x² − 3² = <strong>(x − 3)(x + 3)</strong>
+        </div>
+        <div class="tip">
+          Tip: Always look for a perfect square on both sides of the minus sign.
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Trinomials (ax² + bx + c)</h2>
+        <p>For expressions like x² + 5x + 6, find two numbers that:</p>
+        <ul style="margin: 12px 0 12px 20px; color: #5A5A72;">
+          <li>Multiply to give the last number (c)</li>
+          <li>Add to give the middle number (b)</li>
+        </ul>
+        <div class="example-box">
+          x² + 5x + 6<br>
+          Numbers: 2 and 3 (because 2 × 3 = 6 and 2 + 3 = 5)<br>
+          → <strong>(x + 2)(x + 3)</strong>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="goPractice">Start Practice →</button>
+      </div>
+    </div>
+
+    <!-- PRACTICE -->
+    <div class="panel" id="panel-practice">
+      <div class="card">
+        <div class="practice-q" id="practiceQuestion">
+          Factorise completely: x² − 16
+        </div>
+        <div class="options" id="practiceOptions"></div>
+
+        <div class="feedback" id="feedbackBox"></div>
+
+        <div class="actions">
+          <button class="btn btn-primary" id="checkBtn" disabled>Check Answer</button>
+          <button class="btn btn-outline" id="nextPracticeBtn" style="display:none;">Next Question →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RETEST -->
+    <div class="panel" id="panel-retest">
+      <div class="card" style="text-align: center; padding: 48px 32px;">
+        <h2 style="margin-bottom: 12px;">Ready to retest?</h2>
+        <p style="color:#5A5A72; max-width: 400px; margin: 0 auto 24px;">
+          After practising, take a short 5-question retest on Factorisation. Your new score will update your Gap Map.
+        </p>
+        <a href="diagnostic.html" class="btn btn-primary">Start Retest</a>
+      </div>
+    </div>
+
+    <div class="progress-footer">
+      <div class="progress-info">
+        <h4>Factorisation progress</h4>
+        <p>Currently 38% · Target: 70%+</p>
+      </div>
+      <div class="mini-bar">
+        <div class="mini-fill" id="miniFill"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Tabs
+    const tabs = document.querySelectorAll('.tab');
+    const panels = document.querySelectorAll('.panel');
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        panels.forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+      });
+    });
+
+    document.getElementById('goPractice').addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      panels.forEach(p => p.classList.remove('active'));
+      document.querySelector('[data-tab="practice"]').classList.add('active');
+      document.getElementById('panel-practice').classList.add('active');
+    });
+
+    // Practice questions
+    const practiceQs = [
+      {
+        q: "Factorise completely: x² − 16",
+        options: ["(x − 4)(x + 4)", "(x − 8)(x + 2)", "(x − 4)²", "x(x − 16)"],
+        correct: 0,
+        wrongExplain: "You may have tried to split 16 into factors that add up, but this is a difference of squares (a² − b²).",
+        correctExplain: "x² − 16 = x² − 4² = (x − 4)(x + 4). Difference of squares pattern."
+      },
+      {
+        q: "Factorise: x² + 7x + 12",
+        options: ["(x + 3)(x + 4)", "(x + 2)(x + 6)", "(x + 1)(x + 12)", "(x − 3)(x − 4)"],
+        correct: 0,
+        wrongExplain: "Look for two numbers that multiply to 12 and add to 7. 3 and 4 work perfectly.",
+        correctExplain: "3 × 4 = 12 and 3 + 4 = 7 → (x + 3)(x + 4)."
+      },
+      {
+        q: "Factorise: 2x² + 5x + 2",
+        options: ["(2x + 1)(x + 2)", "(2x + 2)(x + 1)", "(x + 1)(x + 2)", "(2x − 1)(x − 2)"],
+        correct: 0,
+        wrongExplain: "When the leading coefficient is not 1, try combinations systematically. 2x and x, then 1 and 2.",
+        correctExplain: "(2x + 1)(x + 2) = 2x·x + 2x·2 + 1·x + 1·2 = 2x² + 4x + x + 2 = 2x² + 5x + 2."
+      }
+    ];
+
+    let pIndex = 0;
+    let selected = null;
+    let answered = false;
+
+    const optionsEl = document.getElementById('practiceOptions');
+    const feedbackBox = document.getElementById('feedbackBox');
+    const checkBtn = document.getElementById('checkBtn');
+    const nextBtn = document.getElementById('nextPracticeBtn');
+
+    function renderPractice() {
+      const item = practiceQs[pIndex];
+      document.getElementById('practiceQuestion').textContent = item.q;
+      optionsEl.innerHTML = '';
+      selected = null;
+      answered = false;
+      feedbackBox.className = 'feedback';
+      feedbackBox.innerHTML = '';
+      checkBtn.disabled = true;
+      checkBtn.style.display = 'inline-flex';
+      nextBtn.style.display = 'none';
+
+      item.options.forEach((opt, i) => {
+        const letter = String.fromCharCode(65 + i);
+        const label = document.createElement('label');
+        label.className = 'option';
+        label.innerHTML = `
+          <input type="radio" name="prac" value="${i}">
+          <span class="option-letter">${letter}</span>
+          <span>${opt}</span>
+        `;
+        label.addEventListener('click', () => {
+          if (answered) return;
+          document.querySelectorAll('#practiceOptions .option').forEach(o => o.classList.remove('selected'));
+          label.classList.add('selected');
+          selected = i;
+          checkBtn.disabled = false;
+        });
+        optionsEl.appendChild(label);
+      });
+    }
+
+    checkBtn.addEventListener('click', () => {
+      if (selected === null || answered) return;
+      answered = true;
+      const item = practiceQs[pIndex];
+      const options = document.querySelectorAll('#practiceOptions .option');
+
+      options.forEach((opt, i) => {
+        if (i === item.correct) opt.classList.add('correct');
+        else if (i === selected) opt.classList.add('wrong');
+      });
+
+      const isCorrect = selected === item.correct;
+      feedbackBox.className = 'feedback active ' + (isCorrect ? 'correct' : 'wrong');
+      feedbackBox.innerHTML = `
+        <h4>${isCorrect ? '✓ Correct!' : '✕ Not quite'}</h4>
+        <p>${isCorrect ? item.correctExplain : 'Your answer was incorrect.'}</p>
+        ${!isCorrect ? `<div class="why"><strong>Why you might have gone wrong:</strong><br>${item.wrongExplain}</div>` : ''}
+        ${!isCorrect ? `<div class="why" style="margin-top:8px;"><strong>Correct reasoning:</strong><br>${item.correctExplain}</div>` : ''}
+      `;
+
+      checkBtn.style.display = 'none';
+      nextBtn.style.display = 'inline-flex';
+    });
+
+    nextBtn.addEventListener('click', () => {
+      pIndex = (pIndex + 1) % practiceQs.length;
+      renderPractice();
+    });
+
+    renderPractice();
+  </script>
+</body>
+</html>
