@@ -1,0 +1,173 @@
+id: diagnostic-g12-maths-2026q1
+type: diagnostic
+subject: Grade 12 Mathematics
+language: en
+explanation_level: standard
+concepts:
+  - name: Algebra
+    description: Simplifying expressions and solving linear equations
+  - name: Functions
+    description: Function notation, evaluation, and inverses
+  - name: Factorisation
+    description: Factoring quadratics and common-factor expressions
+  - name: Quadratic equations
+    description: Solving quadratic equations by factoring and the quadratic formula
+generated_at: 2026-01-15T09:12:00Z
+generated_by: gpt-4o-mini
+schema_version: 1.0.0
+items:
+  # --- Algebra ---
+  - id: q1
+    concept: Algebra
+    difficulty: easy
+    prompt: "Simplify 3(x + 2) - 5."
+    prompt_type: multiple_choice
+    options: ["3x + 1", "3x - 3", "3x + 6 - 5", "3x - 1"]
+    correct: 0
+    correct_explanation: "Distribute 3 to get 3x + 6, then subtract 5: 3x + 1."
+    wrong_explanations:
+      - answer: 2          # "3x + 6 - 5"
+        explanation: "Distributed correctly but didn't combine like terms."
+      - answer: 1          # "3x - 3"
+        explanation: "Subtracted 5 from the 2 inside the parentheses before distributing."
+
+  - id: q2
+    concept: Algebra
+    difficulty: easy
+    prompt: "Solve 2x + 7 = 15 for x."
+    prompt_type: multiple_choice
+    options: ["x = 4", "x = 8", "x = 11", "x = 22"]
+    correct: 0
+    correct_explanation: "Subtract 7: 2x = 8, then divide by 2: x = 4."
+    wrong_explanations:
+      - answer: 1          # "x = 8"
+        explanation: "Subtracted 7 but forgot to divide by 2."
+
+  - id: q3
+    concept: Algebra
+    difficulty: medium
+    prompt: "Simplify 4(2x - 1) + 3x."
+    prompt_type: multiple_choice
+    options: ["11x - 4", "8x - 1", "11x + 3", "5x - 4"]
+    correct: 0
+    correct_explanation: "Distribute: 8x - 4, then add 3x: 11x - 4."
+    wrong_explanations:
+      - answer: 1          # "8x - 1"
+        explanation: "Distributed 4 but didn't add the 3x term."
+
+  # --- Functions ---
+  - id: q4
+    concept: Functions
+    difficulty: easy
+    prompt: "If f(x) = 2x + 3, find f(4)."
+    prompt_type: multiple_choice
+    options: ["11", "9", "8", "14"]
+    correct: 0
+    correct_explanation: "Substitute x = 4: 2(4) + 3 = 8 + 3 = 11."
+    wrong_explanations:
+      - answer: 1          # "9"
+        explanation: "Added 4 + 3 first, then multiplied by 2."
+
+  - id: q5
+    concept: Functions
+    difficulty: medium
+    prompt: "If f(x) = x^2 - 5, find f(-2)."
+    prompt_type: multiple_choice
+    options: ["-1", "-9", "1", "9"]
+    correct: 0
+    correct_explanation: "(-2)^2 = 4, so 4 - 5 = -1."
+    wrong_explanations:
+      - answer: 1          # "-9"
+        explanation: "Treated -2^2 as -(2^2) = -4. But f(-2) means (-2)^2 = 4."
+      - answer: 2          # "1"
+        explanation: "Squared -2 correctly (4) but added 5 instead of subtracting."
+
+  - id: q6
+    concept: Functions
+    difficulty: medium
+    prompt: "If f(x) = 5x - 2 and f(x) = 13, find x."
+    prompt_type: multiple_choice
+    options: ["x = 3", "x = 5", "x = 2.2", "x = 13"]
+    correct: 0
+    correct_explanation: "Set 5x - 2 = 13, add 2: 5x = 15, divide by 5: x = 3."
+    wrong_explanations:
+      - answer: 1          # "x = 5"
+        explanation: "Added 2 to 13 but didn't divide by 5."
+
+  # --- Factorisation ---
+  - id: q7
+    concept: Factorisation
+    difficulty: easy
+    prompt: "Factor x^2 - 9."
+    prompt_type: multiple_choice
+    options: ["(x - 3)(x + 3)", "(x - 3)^2", "(x - 9)(x + 1)", "(x + 3)^2"]
+    correct: 0
+    correct_explanation: "Difference of squares: x^2 - 9 = x^2 - 3^2 = (x - 3)(x + 3)."
+    wrong_explanations:
+      - answer: 1          # "(x - 3)^2"
+        explanation: "Expands to x^2 - 6x + 9, not x^2 - 9. Needs two different factors."
+
+  - id: q8
+    concept: Factorisation
+    difficulty: medium
+    prompt: "Factor x^2 + 5x + 6."
+    prompt_type: multiple_choice
+    options: ["(x + 2)(x + 3)", "(x + 1)(x + 6)", "(x - 2)(x - 3)", "(x + 5)(x + 6)"]
+    correct: 0
+    correct_explanation: "Two numbers that multiply to 6 and add to 5: 2 and 3."
+    wrong_explanations:
+      - answer: 1          # "(x + 1)(x + 6)"
+        explanation: "1 x 6 = 6 but 1 + 6 = 7, not 5."
+
+  - id: q9
+    concept: Factorisation
+    difficulty: medium
+    prompt: "Factor 2x^2 - 8 completely."
+    prompt_type: multiple_choice
+    options: ["2(x - 2)(x + 2)", "(x - 2)(x + 2)", "2(x^2 - 8)", "2(x - 4)(x + 4)"]
+    correct: 0
+    correct_explanation: "Take out the common factor 2: 2(x^2 - 4), then difference of squares: 2(x - 2)(x + 2)."
+    wrong_explanations:
+      - answer: 1          # "(x - 2)(x + 2)"
+        explanation: "Factored x^2 - 4 correctly but dropped the common factor 2."
+      - answer: 3          # "2(x - 4)(x + 4)"
+        explanation: "Took out 2 but then used 4 instead of 2 for the difference of squares."
+
+  # --- Quadratic equations ---
+  - id: q10
+    concept: Quadratic equations
+    difficulty: easy
+    prompt: "Solve x^2 = 16."
+    prompt_type: multiple_choice
+    options: ["x = 4 or x = -4", "x = 4", "x = 8", "x = +-16"]
+    correct: 0
+    correct_explanation: "Taking the square root gives both roots: x = +-4."
+    wrong_explanations:
+      - answer: 1          # "x = 4"
+        explanation: "Took the square root but forgot the negative root."
+
+  - id: q11
+    concept: Quadratic equations
+    difficulty: medium
+    prompt: "Solve x^2 - 5x + 6 = 0."
+    prompt_type: multiple_choice
+    options: ["x = 2 or x = 3", "x = -2 or x = -3", "x = 1 or x = 6", "x = 5 or x = 6"]
+    correct: 0
+    correct_explanation: "Factor: (x - 2)(x - 3) = 0, so x = 2 or x = 3."
+    wrong_explanations:
+      - answer: 1          # "x = -2 or x = -3"
+        explanation: "Factored as (x-2)(x-3) but set each factor to 0 with the wrong sign."
+
+  - id: q12
+    concept: Quadratic equations
+    difficulty: medium
+    prompt: "Solve x^2 + 4x + 4 = 0."
+    prompt_type: multiple_choice
+    options: ["x = -2 (repeated)", "x = 2 or x = -2", "x = 2 (repeated)", "x = -4"]
+    correct: 0
+    correct_explanation: "x^2 + 4x + 4 = (x + 2)^2, so x = -2 is a double root."
+    wrong_explanations:
+      - answer: 1          # "x = 2 or x = -2"
+        explanation: "Treated it as a difference of squares; it's a perfect square (x+2)^2."
+      - answer: 2          # "x = 2 (repeated)"
+        explanation: "Sign error: (x + 2)^2 gives x = -2, not +2."

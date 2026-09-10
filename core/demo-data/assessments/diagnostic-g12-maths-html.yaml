@@ -1,0 +1,142 @@
+# Schema-equivalent of the items previously hardcoded in diagnostic.html.
+# Same prompts, options, correct answers, and concept names as the team's page
+# (note: "Quadratic Equations" keeps the page's casing) — proving the general
+# renderer can reproduce the same quiz from artifact data.
+# Validated against backend/artifacts/schema/assessment.schema.json.
+id: diagnostic-g12-maths-html
+type: diagnostic
+subject: Grade 12 Mathematics
+language: en
+explanation_level: standard
+generated_at: 2026-08-18T09:00:00Z
+schema_version: 1.0.0
+concepts:
+  - name: Algebra
+    description: Simplifying and expanding expressions, solving linear equations
+  - name: Factorisation
+    description: Factorising quadratics and difference of squares
+  - name: Functions
+    description: Function notation, evaluation, and domain
+  - name: Quadratic Equations
+    description: Solving quadratic equations, roots, and the discriminant
+items:
+  - id: q1
+    concept: Algebra
+    prompt_type: multiple_choice
+    prompt: "Simplify: 3(x + 4) − 2(x − 1)"
+    options:
+      - "x + 14"
+      - "x + 10"
+      - "5x + 14"
+      - "x − 14"
+    correct: 0
+  - id: q2
+    concept: Algebra
+    prompt_type: multiple_choice
+    prompt: "Expand: (2x − 3)(x + 5)"
+    options:
+      - "2x² + 7x − 15"
+      - "2x² + 10x − 3x − 15"
+      - "2x² − 15"
+      - "2x² + 7x + 15"
+    correct: 0
+  - id: q3
+    concept: Factorisation
+    prompt_type: multiple_choice
+    prompt: "Factorise completely: x² − 9"
+    options:
+      - "(x − 3)(x + 3)"
+      - "(x − 9)(x + 1)"
+      - "(x − 3)²"
+      - "x(x − 9)"
+    correct: 0
+  - id: q4
+    concept: Factorisation
+    prompt_type: multiple_choice
+    prompt: "Factorise: 2x² + 7x + 3"
+    options:
+      - "(2x + 1)(x + 3)"
+      - "(2x + 3)(x + 1)"
+      - "(x + 3)(x + 1)"
+      - "(2x − 1)(x − 3)"
+    correct: 0
+  - id: q5
+    concept: Factorisation
+    prompt_type: multiple_choice
+    prompt: "Factorise: x² + 5x + 6"
+    options:
+      - "(x + 2)(x + 3)"
+      - "(x + 1)(x + 6)"
+      - "(x − 2)(x − 3)"
+      - "(x + 6)(x − 1)"
+    correct: 0
+  - id: q6
+    concept: Functions
+    prompt_type: multiple_choice
+    prompt: "If f(x) = 2x + 3, what is f(4)?"
+    options:
+      - "11"
+      - "8"
+      - "5"
+      - "14"
+    correct: 0
+  - id: q7
+    concept: Functions
+    prompt_type: multiple_choice
+    prompt: "What is the domain of f(x) = √(x − 2)?"
+    options:
+      - "x ≥ 2"
+      - "x > 2"
+      - "x ≤ 2"
+      - "All real numbers"
+    correct: 0
+  - id: q8
+    concept: Functions
+    prompt_type: multiple_choice
+    prompt: "If f(x) = x² − 4, find f(−3)"
+    options:
+      - "5"
+      - "13"
+      - "−13"
+      - "−5"
+    correct: 0
+  - id: q9
+    concept: Quadratic Equations
+    prompt_type: multiple_choice
+    prompt: "Solve: x² − 5x + 6 = 0"
+    options:
+      - "x = 2 or x = 3"
+      - "x = −2 or x = −3"
+      - "x = 1 or x = 6"
+      - "x = 0 or x = 5"
+    correct: 0
+  - id: q10
+    concept: Quadratic Equations
+    prompt_type: multiple_choice
+    prompt: "The roots of x² − 4 = 0 are:"
+    options:
+      - "x = 2 or x = −2"
+      - "x = 4 or x = −4"
+      - "x = 0 or x = 4"
+      - "x = 2 only"
+    correct: 0
+  - id: q11
+    concept: Quadratic Equations
+    prompt_type: multiple_choice
+    prompt: "What is the discriminant of 2x² + 3x − 5 = 0?"
+    options:
+      - "49"
+      - "41"
+      - "9"
+      - "−31"
+    correct: 0
+  - id: q12
+    concept: Algebra
+    prompt_type: multiple_choice
+    prompt: "Solve for x: 5x − 7 = 3x + 9"
+    options:
+      - "x = 8"
+      - "x = 1"
+      - "x = −8"
+      - "x = 16"
+    correct: 0

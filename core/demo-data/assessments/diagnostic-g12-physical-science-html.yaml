@@ -1,0 +1,129 @@
+id: diagnostic-g12-physical-science-html
+type: diagnostic
+subject: Grade 12 Physical Science
+language: en
+explanation_level: standard
+generated_at: 2026-08-28T22:20:00Z
+schema_version: 1.0.0
+concepts:
+  - name: Mechanics
+    description: Newton's laws, momentum, work and energy
+  - name: Electricity
+    description: Circuits, Ohm's law, current and resistance
+  - name: Waves
+    description: Wave properties, frequency, wavelength and speed
+  - name: Chemical Change
+    description: Stoichiometry, rates of reaction and equilibrium
+  - name: Matter & Materials
+    description: Atomic structure, bonding and organic molecules
+items:
+  - id: q1
+    concept: Mechanics
+    prompt_type: multiple_choice
+    prompt: "Newton's First Law is also known as the law of:"
+    options: ["Inertia", "Acceleration", "Action-reaction", "Gravity"]
+    correct: 0
+  - id: q2
+    concept: Mechanics
+    prompt_type: multiple_choice
+    prompt: "Momentum is calculated as:"
+    options: ["p = mv", "p = m/v", "p = m + v", "p = m − v"]
+    correct: 0
+  - id: q3
+    concept: Electricity
+    prompt_type: multiple_choice
+    prompt: "Ohm's Law states that V ="
+    options: ["IR", "I/R", "I + R", "I − R"]
+    correct: 0
+  - id: q4
+    concept: Electricity
+    prompt_type: multiple_choice
+    prompt: "In a series circuit, the current is:"
+    options: ["The same through all components", "Different through each component", "Zero", "Maximum at the battery"]
+    correct: 0
+  - id: q5
+    concept: Waves
+    prompt_type: multiple_choice
+    prompt: "The relationship between wave speed (v), frequency (f) and wavelength (λ) is:"
+    options: ["v = fλ", "v = f/λ", "v = f + λ", "v = f − λ"]
+    correct: 0
+  - id: q6
+    concept: Chemical Change
+    prompt_type: multiple_choice
+    prompt: "A catalyst:"
+    options: ["Speeds up a reaction without being used up", "Slows down a reaction", "Is always a product", "Increases the activation energy"]
+    correct: 0
+  - id: q7
+    concept: Matter & Materials
+    prompt_type: multiple_choice
+    prompt: "The number of protons in an atom is called the:"
+    options: ["Atomic number", "Mass number", "Neutron number", "Valence"]
+    correct: 0
+  - id: q8
+    concept: Mechanics
+    prompt_type: multiple_choice
+    prompt: "Work done is calculated as:"
+    options: ["W = F × Δx (in the direction of the force)", "W = F / Δx", "W = F + Δx", "W = m × a"]
+    correct: 0
+  - id: q9
+    concept: Electricity
+    prompt_type: multiple_choice
+    prompt: "Unit of resistance is:"
+    options: ["Ohm (Ω)", "Ampere (A)", "Volt (V)", "Watt (W)"]
+    correct: 0
+  - id: q10
+    concept: Waves
+    prompt_type: multiple_choice
+    prompt: "Frequency is measured in:"
+    options: ["Hertz (Hz)", "Metres (m)", "Seconds (s)", "Metres per second"]
+    correct: 0
+  - id: q11
+    concept: Electricity
+    prompt_type: numeric
+    prompt: "If V = 12 V and R = 4 Ω, what is the current I in amperes? (I = V/R)"
+    correct: 3
+  - id: q12
+    concept: Mechanics
+    prompt_type: numeric
+    prompt: "A mass of 2 kg moves at 3 m/s. What is its momentum in kg·m/s?"
+    correct: 6
+  - id: q13
+    concept: Waves
+    prompt_type: numeric
+    prompt: "A wave has frequency 50 Hz and wavelength 2 m. What is its speed in m/s?"
+    correct: 100
+  - id: q14
+    concept: Mechanics
+    prompt_type: numeric
+    prompt: "A force of 10 N moves an object 5 m in the direction of the force. Work done in joules?"
+    correct: 50
+  - id: q15
+    concept: Electricity
+    prompt_type: numeric
+    prompt: "Two 3 Ω resistors in series. Total resistance in ohms?"
+    correct: 6
+  - id: q16
+    concept: Matter & Materials
+    prompt_type: short_answer
+    prompt: "What is the chemical symbol for sodium?"
+    correct: "Na"
+  - id: q17
+    concept: Chemical Change
+    prompt_type: short_answer
+    prompt: "What is the formula of water?"
+    correct: "H2O"
+  - id: q18
+    concept: Matter & Materials
+    prompt_type: short_answer
+    prompt: "How many electrons does a neutral carbon atom have? (atomic number 6)"
+    correct: "6"
+  - id: q19
+    concept: Electricity
+    prompt_type: short_answer
+    prompt: "Write Ohm's law formula for resistance R in terms of V and I"
+    correct: "R = V/I"
+  - id: q20
+    concept: Waves
+    prompt_type: short_answer
+    prompt: "Write the wave equation relating v, f and λ"
+    correct: "v = fλ"

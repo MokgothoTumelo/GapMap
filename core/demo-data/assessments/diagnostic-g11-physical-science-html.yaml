@@ -1,0 +1,129 @@
+id: diagnostic-g11-physical-science-html
+type: diagnostic
+subject: Grade 11 Physical Science
+language: en
+explanation_level: standard
+generated_at: 2026-08-28T22:20:00Z
+schema_version: 1.0.0
+concepts:
+  - name: Mechanics
+    description: Vectors, equations of motion and Newton's laws
+  - name: Electricity
+    description: Electrostatics and simple circuits
+  - name: Waves
+    description: Transverse and longitudinal waves, sound
+  - name: Chemical Change
+    description: Quantitative chemistry and reactions
+  - name: Matter & Materials
+    description: Atomic structure and the periodic table
+items:
+  - id: q1
+    concept: Mechanics
+    prompt_type: multiple_choice
+    prompt: "Acceleration is the rate of change of:"
+    options: ["Velocity", "Distance", "Mass", "Force"]
+    correct: 0
+  - id: q2
+    concept: Mechanics
+    prompt_type: multiple_choice
+    prompt: "The SI unit of force is:"
+    options: ["Newton (N)", "Joule (J)", "Watt (W)", "Pascal (Pa)"]
+    correct: 0
+  - id: q3
+    concept: Electricity
+    prompt_type: multiple_choice
+    prompt: "Like charges:"
+    options: ["Repel", "Attract", "Have no effect", "Cancel each other"]
+    correct: 0
+  - id: q4
+    concept: Electricity
+    prompt_type: multiple_choice
+    prompt: "Current is the flow of:"
+    options: ["Charge", "Mass", "Energy only", "Voltage"]
+    correct: 0
+  - id: q5
+    concept: Waves
+    prompt_type: multiple_choice
+    prompt: "Sound is an example of a:"
+    options: ["Longitudinal wave", "Transverse wave", "Electromagnetic wave", "Static wave"]
+    correct: 0
+  - id: q6
+    concept: Matter & Materials
+    prompt_type: multiple_choice
+    prompt: "Electrons are found:"
+    options: ["In energy levels around the nucleus", "Inside the nucleus only", "Only in the nucleus with protons", "Outside the atom"]
+    correct: 0
+  - id: q7
+    concept: Chemical Change
+    prompt_type: multiple_choice
+    prompt: "In a chemical reaction, atoms are:"
+    options: ["Rearranged", "Destroyed", "Created", "Converted to energy only"]
+    correct: 0
+  - id: q8
+    concept: Mechanics
+    prompt_type: multiple_choice
+    prompt: "Velocity is a:"
+    options: ["Vector quantity", "Scalar quantity", "Unitless quantity", "Force"]
+    correct: 0
+  - id: q9
+    concept: Waves
+    prompt_type: multiple_choice
+    prompt: "The highest point of a transverse wave is called the:"
+    options: ["Crest", "Trough", "Amplitude", "Node"]
+    correct: 0
+  - id: q10
+    concept: Matter & Materials
+    prompt_type: multiple_choice
+    prompt: "The nucleus of an atom contains:"
+    options: ["Protons and neutrons", "Only electrons", "Only protons", "Protons and electrons"]
+    correct: 0
+  - id: q11
+    concept: Mechanics
+    prompt_type: numeric
+    prompt: "A car accelerates from 0 to 20 m/s in 5 s. Average acceleration in m/s²?"
+    correct: 4
+  - id: q12
+    concept: Electricity
+    prompt_type: numeric
+    prompt: "V = 10 V, R = 5 Ω. Current I in amperes?"
+    correct: 2
+  - id: q13
+    concept: Waves
+    prompt_type: numeric
+    prompt: "Frequency = 25 Hz, wavelength = 4 m. Wave speed in m/s?"
+    correct: 100
+  - id: q14
+    concept: Mechanics
+    prompt_type: numeric
+    prompt: "Mass = 5 kg, acceleration = 2 m/s². Force in newtons? (F = ma)"
+    correct: 10
+  - id: q15
+    concept: Matter & Materials
+    prompt_type: numeric
+    prompt: "Atomic number of oxygen is 8. How many protons does it have?"
+    correct: 8
+  - id: q16
+    concept: Matter & Materials
+    prompt_type: short_answer
+    prompt: "Chemical symbol for oxygen?"
+    correct: "O"
+  - id: q17
+    concept: Chemical Change
+    prompt_type: short_answer
+    prompt: "Formula of carbon dioxide?"
+    correct: "CO2"
+  - id: q18
+    concept: Electricity
+    prompt_type: short_answer
+    prompt: "Unit symbol for current?"
+    correct: "A"
+  - id: q19
+    concept: Mechanics
+    prompt_type: short_answer
+    prompt: "Write the formula for force in terms of mass and acceleration"
+    correct: "F = ma"
+  - id: q20
+    concept: Waves
+    prompt_type: short_answer
+    prompt: "Write the wave equation (v in terms of f and λ)"
+    correct: "v = fλ"
