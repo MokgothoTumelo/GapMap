@@ -1,0 +1,451 @@
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="frontend/js/auth-guard.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How GapMap Works</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* --- Global Reset & Base --- */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      color: #1A1A2E;
+      background: #F8FAFC;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+    a { text-decoration: none; color: inherit; }
+    button { cursor: pointer; font-family: inherit; }
+
+    /* --- Utility Classes --- */
+    .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px 80px; }
+
+    /* --- Navigation --- */
+    .nav {
+      background: white;
+      border-bottom: 1.5px solid #E5E7EB;
+      padding: 14px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: #1A1A2E;
+      cursor: pointer;
+    }
+    .logo-icon {
+      width: 28px;
+      height: 28px;
+      background: #3B5BDB;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+    .logo-icon::after {
+      content: '';
+      width: 9px;
+      height: 9px;
+      background: white;
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      margin-top: -1px;
+    }
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      align-items: center;
+    }
+    .nav-links a {
+      color: #5A5A72;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: #1A1A2E; }
+    .nav-actions { display: flex; gap: 12px; align-items: center; }
+
+    /* --- Buttons --- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      border: 1.5px solid transparent;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: #3B5BDB; color: white; }
+    .btn-primary:hover { background: #2F4AC0; }
+    .btn-outline { background: white; border-color: #E5E7EB; color: #1A1A2E; }
+    .btn-outline:hover { background: #FAFAFA; border-color: #C5C9D4; }
+    .btn-lg { padding: 14px 24px; font-size: 1rem; }
+
+    /* --- Page Header --- */
+    .page-header {
+      text-align: center;
+      margin-bottom: 48px;
+      max-width: 720px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .page-header h1 {
+      font-size: 2.4rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+    .page-header h1 .accent { color: #3B5BDB; }
+    .page-header p {
+      font-size: 1.1rem;
+      color: #5A5A72;
+      line-height: 1.6;
+    }
+
+    /* --- Core Problem Section --- */
+    .problem-statement {
+      background: white;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 16px;
+      padding: 40px 36px;
+      margin-bottom: 48px;
+      box-shadow: 0 4px 20px -8px rgba(0,0,0,0.06);
+      text-align: center;
+    }
+    .problem-statement h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #EF4444; /* Red for the problem */
+      margin-bottom: 12px;
+    }
+    .problem-statement p {
+      color: #5A5A72;
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+    .solution-highlight {
+      margin-top: 20px;
+      background: #EEF2FF;
+      padding: 16px 20px;
+      border-radius: 10px;
+      color: #3B5BDB;
+      font-weight: 600;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* --- User Journey Flow (Visual) --- */
+    .journey-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 24px;
+      margin-bottom: 60px;
+    }
+    .journey-step {
+      background: white;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 16px;
+      padding: 28px 24px;
+      text-align: center;
+      position: relative;
+    }
+    .journey-step .step-number {
+      display: inline-block;
+      width: 36px;
+      height: 36px;
+      background: #3B5BDB;
+      color: white;
+      border-radius: 50%;
+      line-height: 36px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    .journey-step h3 { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
+    .journey-step p { font-size: 0.9rem; color: #5A5A72; line-height: 1.5; }
+    
+    /* Visual arrow between steps (on desktop) */
+    @media (min-width: 900px) {
+      .journey-step:not(:last-child)::after {
+        content: '→';
+        position: absolute;
+        right: -16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #C5C9D4;
+        font-size: 1.5rem;
+        font-weight: 700;
+      }
+    }
+
+    /* --- The "Standout Features" Section --- */
+    .features-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      margin-top: 40px;
+      margin-bottom: 60px;
+    }
+    .feature-block {
+      background: white;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 4px 20px -8px rgba(0,0,0,0.06);
+    }
+    .feature-block h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #3B5BDB;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .feature-block p { color: #5A5A72; line-height: 1.6; margin-bottom: 12px; }
+    .feature-block .example-box {
+      background: #F8FAFC;
+      border: 1px solid #E5E7EB;
+      border-radius: 10px;
+      padding: 16px;
+      font-size: 0.9rem;
+      color: #1A1A2E;
+      margin-top: 12px;
+    }
+    .example-box .correct { color: #10B981; font-weight: 600; }
+    .example-box .wrong { color: #EF4444; font-weight: 600; }
+    
+    @media (max-width: 700px) {
+      .features-section { grid-template-columns: 1fr; }
+    }
+
+    /* --- Why Sign Up Section --- */
+    .signup-importance {
+      background: white;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 16px;
+      padding: 48px 40px;
+      text-align: center;
+      box-shadow: 0 4px 20px -8px rgba(0,0,0,0.06);
+      margin-bottom: 48px;
+    }
+    .signup-importance h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    .signup-importance p {
+      color: #5A5A72;
+      max-width: 600px;
+      margin: 0 auto 24px;
+      line-height: 1.6;
+    }
+    .value-prop-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      text-align: left;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .value-item {
+      padding: 16px;
+      background: #F8FAFC;
+      border-radius: 12px;
+    }
+    .value-item h4 { font-weight: 600; margin-bottom: 4px; }
+    .value-item p { font-size: 0.85rem; color: #5A5A72; margin: 0; }
+    
+    @media (max-width: 600px) {
+      .value-prop-grid { grid-template-columns: 1fr; }
+      .signup-importance { padding: 32px 20px; }
+    }
+
+    /* --- CTA --- */
+    .cta-row {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* --- Footer / Back link --- */
+    .footer-note { text-align: center; margin-top: 40px; color: #9CA3AF; font-size: 0.9rem; }
+    .footer-note a { color: #3B5BDB; font-weight: 500; }
+
+    /* --- Responsive Tweaks --- */
+    @media (max-width: 900px) {
+      .nav-links { display: none; }
+      .page-header h1 { font-size: 2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <a href="index.html" class="logo">
+      <div class="logo-icon"></div>
+      GapMap
+    </a>
+    <ul class="nav-links">
+      <a href="howitworks.html" data-nav-marketing>How it works</a>
+      <a href="features.html" data-nav-marketing>Features</a>
+      <a href="concept.html">Subjects</a>
+      <a href="diagnostic.html">Diagnostic</a>
+    </ul>
+    <div class="nav-actions">
+      <a href="login.html" class="btn btn-outline" data-nav="login">Login</a>
+      <a href="signup.html" class="btn btn-primary" data-nav="signup">Get Started</a>
+      <a href="dashboard.html" class="btn btn-outline" data-nav="dashboard" style="display:none;">Dashboard</a>
+      <a href="concept.html" class="btn btn-outline" data-nav="learn" style="display:none;">Learn</a>
+      <a href="#" class="btn btn-primary" data-nav="logout" style="display:none;">Log out</a>
+    </div>
+  </nav>
+
+  <div class="container">
+
+    <!-- --- HEADER --- -->
+    <div class="page-header">
+      <h1>Know <span class="accent">exactly</span> what you don't understand.</h1>
+    </div>
+
+    <!-- --- THE CORE PROBLEM --- -->
+    <div class="problem-statement">
+      <h2>The problem with traditional learning</h2>
+      <p>Most learners receive a single percentage score after a test (e.g., 61%). That number doesn't tell you <strong>which specific concepts</strong> you are struggling with. You end up studying the wrong things, wasting precious time.</p>
+      <div class="solution-highlight">
+        GapMap solves this by diagnosing your knowledge gaps and creating a personalised path that targets the exact concepts you need to improve.
+      </div>
+    </div>
+
+    <!-- --- THE USER JOURNEY --- -->
+    <h2 style="text-align: center; font-size: 1.6rem; font-weight: 700; margin-bottom: 24px;">Your journey to mastery</h2>
+    <div class="journey-grid">
+      <div class="journey-step">
+        <div class="step-number">1</div>
+        <h3>Take a Diagnostic</h3>
+        <p>A short, smart quiz (10-20 questions) that pinpoints your strengths and weaknesses.</p>
+      </div>
+      <div class="journey-step">
+        <div class="step-number">2</div>
+        <h3>See Your Gap Map</h3>
+        <p>Your dashboard visualises your understanding. See which concepts are "Strong", need "Improvement", or are "Weak".</p>
+      </div>
+      <div class="journey-step">
+        <div class="step-number">3</div>
+        <h3>Follow Your Path</h3>
+        <p>GapMap orders your weak concepts by priority. Start with the most important one first.</p>
+      </div>
+      <div class="journey-step">
+        <div class="step-number">4</div>
+        <h3>Learn & Practice</h3>
+        <p>Receive simple explanations, worked examples, and targeted practice questions with immediate, detailed feedback.</p>
+      </div>
+      <div class="journey-step">
+        <div class="step-number">5</div>
+        <h3>Retest & Progress</h3>
+        <p>Retest to prove your improvement. Watch your score climb from 38% to 76% and move on to the next concept.</p>
+      </div>
+    </div>
+
+    <!-- --- STANDOUT FEATURES --- -->
+    <h2 style="text-align: center; font-size: 1.6rem; font-weight: 700; margin-bottom: 24px;">What makes GapMap different?</h2>
+    <div class="features-section">
+      
+      <!-- Feature 1 -->
+      <div class="feature-block">
+        <h3> Why did I get this wrong?</h3>
+        <p>Instead of a simple "Incorrect", GapMap explains your mistake so you can learn from it.</p>
+        <div class="example-box">
+          <p><strong>Your answer:</strong> <span class="wrong">12</span></p>
+          <p><strong>Correct answer:</strong> <span class="correct">18</span></p>
+          <p style="margin-top: 8px; color: #374151; font-style: italic;">"You correctly multiplied the first values, but you forgot to distribute the negative sign to the second term."</p>
+        </div>
+      </div>
+
+      <!-- Feature 2 -->
+      <div class="feature-block">
+        <h3> Localised Learning</h3>
+        <p>Learning should feel natural. Choose your preferred language and explanation level.</p>
+        <div class="example-box" style="display: flex; gap: 12px; flex-wrap: wrap;">
+          <span style="background: #EEF2FF; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; color: #3B5BDB;">English</span>
+          <span style="background: #EEF2FF; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; color: #3B5BDB;">isiZulu</span>
+          <span style="background: #EEF2FF; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; color: #3B5BDB;">Sepedi</span>
+          <span style="background: #EEF2FF; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; color: #3B5BDB;">Setswana</span>
+          <span style="background: #EEF2FF; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; color: #3B5BDB;">isiXhosa</span>
+        </div>
+        <p style="margin-top: 8px; font-size: 0.9rem;">You can also choose between "Very Simple", "Standard", and "Detailed" explanations.</p>
+      </div>
+
+    </div>
+
+    <!-- --- WHY SIGN UP --- -->
+    <div class="signup-importance">
+      <h2>Why create a GapMap account?</h2>
+      <p>A single diagnostic test gives you a snapshot, but your learning journey is ongoing. Creating an account unlocks the full power of GapMap.</p>
+      
+      <div class="value-prop-grid">
+        <div class="value-item">
+          <h4> Persistent Progress</h4>
+          <p>Your Gap Map, scores, and learning history are saved. Track your improvement over time as you conquer each concept.</p>
+        </div>
+        <div class="value-item">
+          <h4> Dynamic Personalisation</h4>
+          <p>As you learn and retest, GapMap updates your map and recalculates your path. The system evolves with you.</p>
+        </div>
+        <div class="value-item">
+          <h4>Unlock Full Features</h4>
+          <p>Access the complete dashboard, detailed analytics, and future features like teacher dashboards and AI-generated questions.</p>
+        </div>
+      </div>
+
+      <p style="margin-top: 24px; font-weight: 500; color: #1A1A2E;">Stop guessing what to study. Start closing your knowledge gaps.</p>
+
+      <div class="cta-row" style="margin-top: 24px;">
+        <a href="signup.html" class="btn btn-primary btn-lg">Create Your Free Account</a>
+        <a href="login.html" class="btn btn-outline btn-lg">I already have an account</a>
+      </div>
+    </div>
+
+    <!-- --- CONCLUSION --- -->
+    <div style="text-align: center; max-width: 600px; margin: 0 auto;">
+      <h2 style="font-size: 1.4rem; font-weight: 700; color: #1A1A2E; margin-bottom: 8px;">Ready to see your gaps?</h2>
+      <p style="color: #5A5A72; margin-bottom: 20px;">It takes less than 10 minutes to start. You'll know exactly where to focus your energy.</p>
+      <a href="diagnostic.html" class="btn btn-primary btn-lg" style="margin-bottom: 8px;">
+        Start the Diagnostic Now
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    </div>
+
+    <div class="footer-note">
+      Powered by <a href="index.html">CodeMinds</a> · GapMap Hackathon Submission
+    </div>
+
+  </div>
+
+  <script>
+    // Not the Home page, so keep the default (marketing links hidden once
+    // logged in — see frontend/js/auth-guard.js).
+    GapMapAuth.updateNav();
+  </script>
+
+</body>
+</html>

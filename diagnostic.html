@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="frontend/js/auth-guard.js"></script>
+  <script>GapMapAuth.lockPage();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diagnostic – GapMap</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="frontend/agentPanel/agent-panel.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Inter',system-ui,-apple-system,sans-serif;color:#1A1A2E;background:#F8FAFC;line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
+    .nav{background:#fff;border-bottom:1.5px solid #E5E7EB;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+    .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.25rem;color:#1A1A2E;text-decoration:none}
+    .logo-icon{width:28px;height:28px;background:#3B5BDB;border-radius:50%;display:grid;place-items:center;position:relative}
+    .logo-icon::after{content:'';width:9px;height:9px;background:#fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);margin-top:-1px}
+    .nav-context{font-size:.9rem;color:#5A5A72;font-weight:500;text-align:center;flex:1}
+    .nav-context strong{color:#1A1A2E;font-weight:600}
+    .nav-right{display:flex;align-items:center;gap:16px}
+    .avatar{width:36px;height:36px;background:#3B5BDB;color:#fff;border-radius:50%;display:grid;place-items:center;font-weight:600;font-size:.9rem}
+    .container{max-width:680px;margin:0 auto;padding:40px 24px 80px}
+    .screen{display:none}.screen.active{display:block}
+    .intro-card{background:#fff;border:1.5px solid #E5E7EB;border-radius:16px;padding:44px 40px;box-shadow:0 4px 24px -8px rgba(0,0,0,.06);text-align:center}
+    .intro-eyebrow{display:inline-block;background:#EEF2FF;color:#3B5BDB;font-size:.8rem;font-weight:600;padding:5px 14px;border-radius:20px;margin-bottom:18px}
+    .intro-card h1{font-size:1.55rem;font-weight:800;letter-spacing:-.025em;margin-bottom:12px;line-height:1.3}
+    .intro-card .purpose{color:#5A5A72;font-size:1.05rem;max-width:460px;margin:0 auto 28px;line-height:1.65}
+    .intro-meta{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:32px}
+    .meta-pill{background:#F8FAFC;border:1.5px solid #E5E7EB;border-radius:12px;padding:12px 18px;min-width:110px}
+    .meta-pill strong{display:block;font-size:1.25rem;font-weight:700;color:#1A1A2E;margin-bottom:2px}
+    .meta-pill span{font-size:.8rem;color:#5A5A72;font-weight:500}
+    .intro-note{font-size:.88rem;color:#5A5A72;margin-bottom:28px;max-width:420px;margin-left:auto;margin-right:auto;line-height:1.5}
+    .load-error{display:none;color:#EF4444;font-size:.9rem;margin-bottom:16px;background:#FEF2F2;padding:10px 14px;border-radius:8px}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 28px;border-radius:10px;font-weight:600;font-size:1rem;cursor:pointer;border:none;transition:all .2s;text-decoration:none}
+    .btn-primary{background:#3B5BDB;color:#fff}.btn-primary:hover{background:#2F4AC0}.btn-primary:disabled{background:#9CA3AF;cursor:not-allowed}
+    .btn-ghost{background:transparent;color:#5A5A72;padding:12px 16px}.btn-ghost:hover{color:#1A1A2E}
+    .progress-header{margin-bottom:28px}
+    .progress-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+    .progress-label{font-size:.9rem;font-weight:600;color:#5A5A72}
+    .progress-count{font-size:.9rem;font-weight:600;color:#3B5BDB}
+    .progress-track{height:8px;background:#E5E7EB;border-radius:4px;overflow:hidden}
+    .progress-fill{height:100%;background:#3B5BDB;border-radius:4px;transition:width .35s ease;width:0%}
+    .question-card{background:#fff;border:1.5px solid #E5E7EB;border-radius:16px;padding:32px 28px;box-shadow:0 4px 24px -8px rgba(0,0,0,.06);margin-bottom:24px}
+    .concept-tag{display:inline-block;background:#EEF2FF;color:#3B5BDB;font-size:.78rem;font-weight:600;padding:4px 12px;border-radius:20px;margin-bottom:14px}
+    .question-type-tag{display:inline-block;font-size:.72rem;font-weight:600;padding:3px 10px;border-radius:6px;margin-left:8px;vertical-align:middle}
+    .type-mc{background:#F3F4F6;color:#5A5A72}.type-numeric{background:#ECFDF5;color:#059669}.type-algebra{background:#FEF3C7;color:#D97706}
+    .question-text{font-size:1.15rem;font-weight:600;line-height:1.45;margin-bottom:24px}
+    .options{display:flex;flex-direction:column;gap:10px}
+    .option{display:flex;align-items:center;gap:14px;padding:15px 16px;border:1.5px solid #E5E7EB;border-radius:12px;cursor:pointer;transition:all .2s;background:#fff}
+    .option:hover{border-color:#C5C9D4;background:#FAFAFA}.option.selected{border-color:#3B5BDB;background:#EEF2FF}
+    .option input{display:none}
+    .option-letter{width:32px;height:32px;border-radius:50%;background:#F3F4F6;display:grid;place-items:center;font-weight:600;font-size:.9rem;color:#5A5A72;flex-shrink:0}
+    .option.selected .option-letter{background:#3B5BDB;color:#fff}
+    .option-text{font-size:1rem;font-weight:500}
+    .written-answer{margin-top:4px}
+    .written-answer label{display:block;font-size:.85rem;font-weight:600;color:#5A5A72;margin-bottom:8px}
+    .written-answer input{width:100%;padding:14px 16px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:1.05rem;font-family:'Inter',system-ui,sans-serif;outline:none;transition:border-color .2s,box-shadow .2s}
+    .written-answer input:focus{border-color:#3B5BDB;box-shadow:0 0 0 4px rgba(59,91,219,.12)}
+    .written-hint{font-size:.8rem;color:#9CA3AF;margin-top:6px}
+    .actions{display:flex;justify-content:space-between;align-items:center;gap:16px}
+    .results-card{background:#fff;border:1.5px solid #E5E7EB;border-radius:16px;padding:44px 40px;text-align:center;box-shadow:0 4px 24px -8px rgba(0,0,0,.06)}
+    .results-eyebrow{display:inline-block;background:#ECFDF5;color:#059669;font-size:.8rem;font-weight:600;padding:5px 14px;border-radius:20px;margin-bottom:16px}
+    .results-card h1{font-size:1.5rem;font-weight:800;margin-bottom:10px;letter-spacing:-.02em}
+    .results-card .results-lead{color:#5A5A72;font-size:1.05rem;max-width:420px;margin:0 auto 28px;line-height:1.6}
+    .results-score-row{display:flex;justify-content:center;align-items:baseline;gap:6px;margin-bottom:8px}
+    .results-score{font-size:2.8rem;font-weight:800;color:#3B5BDB}
+    .results-score-label{font-size:1rem;color:#5A5A72;font-weight:500}
+    .mini-breakdown{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:24px 0 28px}
+    .mini-tag{font-size:.8rem;font-weight:600;padding:5px 12px;border-radius:20px}
+    .mini-strong{background:#ECFDF5;color:#059669}.mini-improve{background:#FFFBEB;color:#D97706}.mini-weak{background:#FEF2F2;color:#DC2626}
+    .results-next{background:#F8FAFC;border:1.5px solid #E5E7EB;border-radius:12px;padding:16px 20px;margin-bottom:28px;text-align:left;font-size:.95rem;color:#5A5A72;line-height:1.55}
+    .results-next strong{color:#1A1A2E;font-weight:600}
+    @media(max-width:600px){.container{padding:24px 16px 60px}.intro-card,.results-card,.question-card{padding:28px 20px}.nav{padding:12px 16px}.nav-context{font-size:.8rem}.intro-card h1{font-size:1.35rem}.meta-pill{min-width:90px;padding:10px 12px}}
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a href="index.html" class="logo"><div class="logo-icon"></div>GapMap</a>
+    <div class="nav-context" id="navContext"></div>
+    <div class="nav-right"><div class="avatar" id="avatar">U</div></div>
+  </nav>
+  <div class="container">
+    <div class="screen active" id="introScreen">
+      <div class="intro-card">
+        <div class="intro-eyebrow">Before you start learning</div>
+        <h1>Let’s see what you already understand</h1>
+        <p class="purpose" id="introPurpose">This diagnostic helps GapMap find your strengths and gaps so we can build a personalised learning path for you.</p>
+        <div class="load-error" id="loadError"></div>
+        <div class="intro-meta">
+          <div class="meta-pill"><strong id="introQuestions">20</strong><span>Questions</span></div>
+          <div class="meta-pill"><strong>12–15 min</strong><span>Estimated time</span></div>
+          <div class="meta-pill"><strong id="introSubject">Maths</strong><span id="introGradeLabel">Subject</span></div>
+        </div>
+        <p class="intro-note">You’ll see a mix of multiple-choice and short written answers (numbers and simple equations). Answer honestly — this is not a test, it’s how GapMap learns how to help you.</p>
+        <button class="btn btn-primary" id="startBtn" disabled>Start Diagnostic <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+    </div>
+    <div class="screen" id="quizScreen">
+      <div class="progress-header">
+        <div class="progress-top">
+          <span class="progress-label">Question <span id="currentNum">1</span> of <span id="progressTotal">20</span></span>
+          <span class="progress-count" id="progressPercent">5%</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="progressBar"></div></div>
+      </div>
+      <div class="question-card">
+        <div><span class="concept-tag" id="conceptTag">Algebra</span><span class="question-type-tag type-mc" id="typeTag">Multiple choice</span></div>
+        <div class="question-text" id="questionText">Loading question…</div>
+        <div class="options" id="optionsContainer"></div>
+        <div class="written-answer" id="writtenContainer" style="display:none">
+          <label for="writtenInput">Your answer</label>
+          <input type="text" id="writtenInput" placeholder="Type your answer here" autocomplete="off" spellcheck="false">
+          <div class="written-hint" id="writtenHint">e.g. 14 or 2x + 14</div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-ghost" id="prevBtn" style="visibility:hidden">← Previous</button>
+        <button class="btn btn-primary" id="nextBtn" disabled>Next →</button>
+      </div>
+    </div>
+    <div class="screen" id="resultsScreen">
+      <div class="results-card">
+        <div class="results-eyebrow">Diagnostic complete</div>
+        <h1>We’ve mapped your starting point</h1>
+        <p class="results-lead">GapMap now has a clearer picture of what you already understand and where you need the most support.</p>
+        <div class="results-score-row"><div class="results-score" id="finalScore">—</div><div class="results-score-label">overall</div></div>
+        <div class="mini-breakdown" id="miniBreakdown"></div>
+        <div class="results-next"><strong>What happens next:</strong> Your GapMap will prioritise the concepts that need the most work so you can focus on the right things first.</div>
+        <a href="dashboard.html" class="btn btn-primary">View my GapMap <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      </div>
+    </div>
+  </div>
+  <script src="frontend/vendor/js-yaml.min.js"></script>
+  <script type="module">
+    import { GapMapAssessment } from './frontend/js/assessment-renderer.js';
+    import { createMockLearnerStore, getCurrentLearnerId } from './frontend/js/learner-store.js';
+
+    if (GapMapAuth.requireAuth()) initDiagnosticPage();
+
+    function initDiagnosticPage() {
+      let user = null;
+      try {
+        user = (typeof GapMapAuth.getUser === 'function')
+          ? GapMapAuth.getUser()
+          : JSON.parse(localStorage.getItem('gapmap_user') || 'null');
+      } catch (e) {}
+
+      const learnerStore = createMockLearnerStore({ storage: localStorage });
+      const learnerId = getCurrentLearnerId({
+        auth: globalThis.auth,
+        getCurrentUser: globalThis.getCurrentUser,
+        storage: localStorage
+      });
+
+      const userGrade = user && user.grade ? String(user.grade) : null;
+      const userSubject = user && user.subject ? String(user.subject) : null;
+      const displaySubject = userSubject
+        ? userSubject.replace(/^Grade\\s*\\d+\\s*/i, '').trim() || userSubject
+        : 'Mathematics';
+      const displayGrade = userGrade ? 'Grade ' + userGrade : '';
+
+      if (user) {
+        const first = (user.firstName || user.name || 'U').toString().trim();
+        const last = (user.lastName || '').toString().trim();
+        let initials = first.charAt(0).toUpperCase();
+        if (last) initials += last.charAt(0).toUpperCase();
+        document.getElementById('avatar').textContent = initials || 'U';
+        const parts = [displayGrade, displaySubject].filter(Boolean);
+        document.getElementById('navContext').innerHTML = parts.length
+          ? parts.map(p => '<strong>' + p + '</strong>').join(' · ')
+          : 'Diagnostic';
+        document.getElementById('introSubject').textContent = displaySubject || 'Maths';
+        document.getElementById('introGradeLabel').textContent = displayGrade || 'Subject';
+      }
+
+      // Prefer grade/subject-specific file, then fall back
+      function resolveAssessmentUrls() {
+        const list = [];
+        let subjKey = (displaySubject || 'mathematics').toLowerCase()
+          .replace(/physical\s*science/i, 'physical-science')
+          .replace(/maths$/i, 'mathematics')
+          .replace(/\s+/g, '-');
+        if (userGrade) {
+          list.push('core/demo-data/assessments/diagnostic-g' + userGrade + '-' + subjKey + '-html.yaml');
+          list.push('core/demo-data/assessments/diagnostic-g' + userGrade + '-' + subjKey + '.yaml');
+          if (subjKey.indexOf('math') !== -1) {
+            list.push('core/demo-data/assessments/diagnostic-g' + userGrade + '-maths-html.yaml');
+            list.push('core/demo-data/assessments/diagnostic-g' + userGrade + '-mathematics-html.yaml');
+          }
+          if (subjKey.indexOf('physical') !== -1) {
+            list.push('core/demo-data/assessments/diagnostic-g' + userGrade + '-physical-science-html.yaml');
+          }
+        }
+        list.push('core/demo-data/assessments/diagnostic-g12-maths-html.yaml');
+        list.push('core/demo-data/assessments/diagnostic-g12-mathematics-html.yaml');
+        list.push('core/demo-data/assessments/diagnostic-g12-maths.yaml');
+        return list;
+      }
+
+      let assessment = null, questions = [], current = 0, answers = [], startedAt = null;
+      const startBtn = document.getElementById('startBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const prevBtn = document.getElementById('prevBtn');
+      const writtenInput = document.getElementById('writtenInput');
+      const introScreen = document.getElementById('introScreen');
+      const quizScreen = document.getElementById('quizScreen');
+      const resultsScreen = document.getElementById('resultsScreen');
+
+      function shuffle(arr) {
+        const a = arr.slice();
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      }
+
+      function normaliseAnswer(str) {
+        if (str == null) return '';
+        return String(str).toLowerCase()
+          .replace(/\\s+/g, '')
+          .replace(/×/g, '*')
+          .replace(/−/g, '-')
+          .replace(/²/g, '^2')
+          .replace(/³/g, '^3');
+      }
+
+      function isWrittenCorrect(q, userAnswer) {
+        if (userAnswer == null || userAnswer === '') return false;
+        const norm = normaliseAnswer(userAnswer);
+        // Support single correct or list of accepted answers
+        const accepted = Array.isArray(q.correctAnswers)
+          ? q.correctAnswers
+          : [q.correct];
+        return accepted.some(ca => normaliseAnswer(ca) === norm);
+      }
+
+      function itemType(item) {
+        const pt = (item.prompt_type || item.type || 'multiple_choice').toLowerCase();
+        if (pt === 'numeric') return 'numeric';
+        if (pt === 'short_answer' || pt === 'algebra') return 'algebra';
+        return 'mc';
+      }
+
+      async function loadFirstAvailable(urls) {
+        let lastError = null;
+        for (const url of urls) {
+          try {
+            const data = await GapMapAssessment.load(url);
+            return { data, url };
+          } catch (err) {
+            lastError = err;
+          }
+        }
+        throw lastError || new Error('No assessment file could be loaded');
+      }
+
+      async function initDiagnostic() {
+        try {
+          const { data } = await loadFirstAvailable(resolveAssessmentUrls());
+          assessment = data;
+          await learnerStore.putAssessment(learnerId, assessment);
+          assessment = await learnerStore.getAssessment(learnerId, assessment.id);
+
+          // Use all items from the YAML (now includes MC + numeric + short_answer)
+          questions = shuffle((assessment.items || []).map(item => ({
+            ...item,
+            type: itemType(item),
+            // For short_answer, allow a few common variants if only one correct is given
+            correctAnswers: item.correctAnswers || (
+              item.prompt_type === 'short_answer' || item.prompt_type === 'numeric'
+                ? [String(item.correct)]
+                : undefined
+            )
+          })));
+
+          answers = new Array(questions.length).fill(null);
+
+          document.getElementById('introQuestions').textContent = questions.length;
+          document.getElementById('progressTotal').textContent = questions.length;
+
+          const subjectForCopy = displaySubject || assessment.subject || 'Mathematics';
+          document.getElementById('introPurpose').textContent =
+            'This diagnostic helps GapMap find your strengths and gaps in ' + subjectForCopy +
+            ' so we can build a personalised learning path for you.';
+
+          startBtn.disabled = false;
+        } catch (err) {
+          const el = document.getElementById('loadError');
+          el.style.display = 'block';
+          el.textContent = 'Couldn’t load the assessment: ' + err.message;
+        }
+      }
+      initDiagnostic();
+
+      startBtn.addEventListener('click', () => {
+        startedAt = new Date().toISOString();
+        introScreen.classList.remove('active');
+        quizScreen.classList.add('active');
+        renderQuestion();
+      });
+
+      function renderQuestion() {
+        if (!questions.length) return;
+        const q = questions[current];
+        document.getElementById('currentNum').textContent = current + 1;
+        const pct = Math.round(((current + 1) / questions.length) * 100);
+        document.getElementById('progressPercent').textContent = pct + '%';
+        document.getElementById('progressBar').style.width = pct + '%';
+        document.getElementById('conceptTag').textContent = q.concept || 'Concept';
+        document.getElementById('questionText').textContent = q.prompt;
+
+        const optionsContainer = document.getElementById('optionsContainer');
+        const writtenContainer = document.getElementById('writtenContainer');
+        const typeTag = document.getElementById('typeTag');
+        const isWritten = q.type === 'numeric' || q.type === 'algebra';
+
+        if (isWritten) {
+          optionsContainer.style.display = 'none';
+          writtenContainer.style.display = 'block';
+          typeTag.textContent = q.type === 'algebra' ? 'Equation' : 'Numeric';
+          typeTag.className = 'question-type-tag ' + (q.type === 'algebra' ? 'type-algebra' : 'type-numeric');
+          writtenInput.value = answers[current] != null ? String(answers[current]) : '';
+          writtenInput.placeholder = q.type === 'algebra' ? 'e.g. 2x + 14' : 'e.g. 14';
+          document.getElementById('writtenHint').textContent =
+            q.type === 'algebra' ? 'Enter a simplified expression (spaces are optional)' : 'Enter a number only';
+          nextBtn.disabled = !String(writtenInput.value || '').trim();
+        } else {
+          writtenContainer.style.display = 'none';
+          optionsContainer.style.display = 'flex';
+          typeTag.textContent = 'Multiple choice';
+          typeTag.className = 'question-type-tag type-mc';
+          optionsContainer.innerHTML = '';
+          (q.options || []).forEach((opt, i) => {
+            const letter = String.fromCharCode(65 + i);
+            const div = document.createElement('label');
+            div.className = 'option' + (answers[current] === i ? ' selected' : '');
+            div.innerHTML = '<input type="radio" name="q" value="' + i + '" ' +
+              (answers[current] === i ? 'checked' : '') +
+              '><span class="option-letter">' + letter +
+              '</span><span class="option-text">' + opt + '</span>';
+            div.addEventListener('click', () => {
+              answers[current] = i;
+              document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+              div.classList.add('selected');
+              nextBtn.disabled = false;
+            });
+            optionsContainer.appendChild(div);
+          });
+          nextBtn.disabled = answers[current] === null;
+        }
+        prevBtn.style.visibility = current === 0 ? 'hidden' : 'visible';
+        nextBtn.textContent = current === questions.length - 1 ? 'Finish →' : 'Next →';
+      }
+
+      writtenInput.addEventListener('input', () => {
+        const val = writtenInput.value.trim();
+        answers[current] = val || null;
+        nextBtn.disabled = !val;
+      });
+
+      nextBtn.addEventListener('click', async () => {
+        if (document.getElementById('writtenContainer').style.display !== 'none') {
+          answers[current] = writtenInput.value.trim() || null;
+        }
+        if (current < questions.length - 1) {
+          current++;
+          renderQuestion();
+        } else {
+          nextBtn.disabled = true;
+          const results = calculateResults();
+          try { await saveResults(results); } catch (e) { console.error(e); }
+          showResults(results);
+          nextBtn.disabled = false;
+        }
+      });
+
+      prevBtn.addEventListener('click', () => {
+        if (current > 0) { current--; renderQuestion(); }
+      });
+
+      function calculateResults() {
+        const conceptMap = {};
+        questions.forEach((q, idx) => {
+          const concept = q.concept || 'General';
+          if (!conceptMap[concept]) conceptMap[concept] = { correct: 0, total: 0 };
+          conceptMap[concept].total += 1;
+          let isCorrect = false;
+          if (q.type === 'numeric' || q.type === 'algebra') {
+            isCorrect = isWrittenCorrect(q, answers[idx]);
+          } else {
+            isCorrect = answers[idx] === q.correct;
+          }
+          if (isCorrect) conceptMap[concept].correct += 1;
+        });
+        const scores = Object.entries(conceptMap).map(([concept, data]) => {
+          const pct = data.total ? Math.round((data.correct / data.total) * 100) : 0;
+          let status = 'weak';
+          if (pct >= 75) status = 'strong';
+          else if (pct >= 40) status = 'improve';
+          return { concept, correct: data.correct, total: data.total, pct, status };
+        });
+        const totalCorrect = scores.reduce((s, x) => s + x.correct, 0);
+        const totalQuestions = questions.length;
+        const overall = totalQuestions ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+        return {
+          overall,
+          concepts: Object.fromEntries(scores.map(s => [s.concept, {
+            score: s.pct, correct: s.correct, total: s.total, status: s.status
+          }])),
+          totalCorrect, totalQuestions, scores,
+          takenAt: new Date().toISOString(),
+          answers: [...answers],
+          grade: userGrade,
+          subject: userSubject
+        };
+      }
+
+      async function saveResults(results) {
+        localStorage.setItem('gapmap_diagnostic', JSON.stringify(results));
+        let history = JSON.parse(localStorage.getItem('gapmap_history') || '[]');
+        history.unshift({ overall: results.overall, takenAt: results.takenAt, grade: userGrade, subject: userSubject });
+        history = history.slice(0, 5);
+        localStorage.setItem('gapmap_history', JSON.stringify(history));
+        const attempt = {
+          id: 'attempt-diagnostic-' + Date.now(),
+          assessment_id: assessment ? assessment.id : 'diagnostic-mixed',
+          learner_id: learnerId,
+          grade: userGrade,
+          subject: userSubject,
+          started_at: startedAt || results.takenAt,
+          completed_at: results.takenAt,
+          responses: questions.map((item, index) => {
+            let correct = false;
+            if (item.type === 'numeric' || item.type === 'algebra') {
+              correct = isWrittenCorrect(item, answers[index]);
+            } else {
+              correct = answers[index] === item.correct;
+            }
+            return { item_id: item.id, answer: answers[index], correct };
+          }),
+          scores: results.scores,
+          overall_pct: results.overall
+        };
+        await learnerStore.saveAttempt(learnerId, attempt);
+      }
+
+      function showResults(results) {
+        quizScreen.classList.remove('active');
+        resultsScreen.classList.add('active');
+        document.getElementById('finalScore').textContent = results.overall + '%';
+        const breakdown = document.getElementById('miniBreakdown');
+        breakdown.innerHTML = '';
+        Object.entries(results.concepts).forEach(([name, data]) => {
+          const tag = document.createElement('span');
+          tag.className = 'mini-tag mini-' + data.status;
+          const icon = data.status === 'strong' ? '✓' : data.status === 'improve' ? '!' : '✕';
+          tag.textContent = icon + ' ' + name + ' ' + data.score + '%';
+          breakdown.appendChild(tag);
+        });
+      }
+    }
+  </script>
+  <script src="frontend/agentPanel/agent-panel.js"></script>
+</body>
+</html>

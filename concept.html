@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="frontend/js/auth-guard.js"></script>
+  <script>GapMapAuth.lockPage();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learn – GapMap</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="frontend/agentPanel/agent-panel.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Inter',system-ui,-apple-system,sans-serif;color:#1A1A2E;background:#F8FAFC;line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
+    .nav{background:#fff;border-bottom:1.5px solid #E5E7EB;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+    .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.25rem;color:#1A1A2E;text-decoration:none}
+    .logo-icon{width:28px;height:28px;background:#3B5BDB;border-radius:50%;display:grid;place-items:center;position:relative}
+    .logo-icon::after{content:'';width:9px;height:9px;background:#fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);margin-top:-1px}
+    .nav-context{font-size:.9rem;color:#5A5A72;font-weight:500;text-align:center;flex:1}
+    .nav-context strong{color:#1A1A2E;font-weight:600}
+    .nav-right{display:flex;align-items:center;gap:14px}
+    .back-link{font-size:.9rem;color:#5A5A72;text-decoration:none;font-weight:500}
+    .back-link:hover{color:#1A1A2E}
+    .avatar{width:36px;height:36px;background:#3B5BDB;color:#fff;border-radius:50%;display:grid;place-items:center;font-weight:600;font-size:.9rem}
+    .container{max-width:680px;margin:0 auto;padding:32px 24px 80px}
+    .screen{display:none}.screen.active{display:block}
+
+    /* Header block */
+    .concept-header{margin-bottom:24px}
+    .concept-eyebrow{display:inline-block;background:#EEF2FF;color:#3B5BDB;font-size:.78rem;font-weight:600;padding:4px 12px;border-radius:20px;margin-bottom:10px}
+    .concept-header h1{font-size:1.55rem;font-weight:800;letter-spacing:-.02em;margin-bottom:6px}
+    .concept-header p{color:#5A5A72;font-size:.98rem}
+
+    /* Cards */
+    .card{background:#fff;border:1.5px solid #E5E7EB;border-radius:16px;padding:28px;box-shadow:0 4px 20px -8px rgba(0,0,0,.05);margin-bottom:20px}
+    .card h2{font-size:1.1rem;font-weight:700;margin-bottom:12px}
+    .card p{color:#5A5A72;margin-bottom:12px;line-height:1.65}
+    .card p:last-child{margin-bottom:0}
+
+    .example-box{background:#F8FAFC;border:1.5px solid #E5E7EB;border-radius:12px;padding:18px 20px;margin:16px 0;line-height:1.7;font-size:.95rem}
+    .example-box .ex-label{font-size:.75rem;font-weight:700;color:#3B5BDB;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
+    .example-box .step{margin:6px 0}
+    .example-box strong{color:#1A1A2E}
+    .tip{background:#EEF2FF;border-left:4px solid #3B5BDB;padding:14px 16px;border-radius:0 10px 10px 0;font-size:.9rem;color:#1A1A2E;margin-top:14px}
+
+    /* Buttons */
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 22px;border-radius:10px;font-weight:600;font-size:.95rem;cursor:pointer;border:none;transition:all .2s;text-decoration:none}
+    .btn-primary{background:#3B5BDB;color:#fff}.btn-primary:hover{background:#2F4AC0}
+    .btn-primary:disabled{background:#9CA3AF;cursor:not-allowed}
+    .btn-secondary{background:#fff;color:#1A1A2E;border:1.5px solid #E5E7EB}.btn-secondary:hover{border-color:#C5C9D4;background:#FAFAFA}
+    .btn-ghost{background:transparent;color:#5A5A72;padding:12px 14px}.btn-ghost:hover{color:#1A1A2E}
+    .btn-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px}
+
+    /* Practice */
+    .progress-header{margin-bottom:22px}
+    .progress-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .progress-label{font-size:.9rem;font-weight:600;color:#5A5A72}
+    .progress-count{font-size:.9rem;font-weight:600;color:#3B5BDB}
+    .progress-track{height:8px;background:#E5E7EB;border-radius:4px;overflow:hidden}
+    .progress-fill{height:100%;background:#3B5BDB;border-radius:4px;transition:width .3s ease;width:0%}
+    .question-text{font-size:1.15rem;font-weight:600;line-height:1.45;margin-bottom:20px}
+    .options{display:flex;flex-direction:column;gap:10px}
+    .option{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1.5px solid #E5E7EB;border-radius:12px;cursor:pointer;transition:all .2s;background:#fff}
+    .option:hover{border-color:#C5C9D4;background:#FAFAFA}
+    .option.selected{border-color:#3B5BDB;background:#EEF2FF}
+    .option input{display:none}
+    .option-letter{width:30px;height:30px;border-radius:50%;background:#F3F4F6;display:grid;place-items:center;font-weight:600;font-size:.85rem;color:#5A5A72;flex-shrink:0}
+    .option.selected .option-letter{background:#3B5BDB;color:#fff}
+    .written-answer input{width:100%;padding:14px 16px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:1.05rem;font-family:inherit;outline:none}
+    .written-answer input:focus{border-color:#3B5BDB;box-shadow:0 0 0 4px rgba(59,91,219,.12)}
+    .written-hint{font-size:.8rem;color:#9CA3AF;margin-top:6px}
+    .actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:8px}
+
+    /* Results */
+    .results-card{background:#fff;border:1.5px solid #E5E7EB;border-radius:16px;padding:40px 32px;text-align:center;box-shadow:0 4px 20px -8px rgba(0,0,0,.05)}
+    .results-score{font-size:2.6rem;font-weight:800;color:#3B5BDB;margin:8px 0}
+    .results-lead{color:#5A5A72;max-width:400px;margin:0 auto 24px;line-height:1.6}
+    .results-next{background:#F8FAFC;border:1.5px solid #E5E7EB;border-radius:12px;padding:14px 18px;margin-bottom:24px;text-align:left;font-size:.95rem;color:#5A5A72;line-height:1.55}
+    .results-next strong{color:#1A1A2E}
+
+    .empty-state{text-align:center;padding:48px 24px;color:#5A5A72}
+    .empty-state h2{color:#1A1A2E;margin-bottom:8px}
+
+    @media(max-width:600px){
+      .nav{padding:12px 16px}.container{padding:24px 16px 60px}
+      .card,.results-card{padding:22px 18px}
+      .concept-header h1{font-size:1.35rem}
+      .btn-row{flex-direction:column}.btn-row .btn{width:100%}
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a href="index.html" class="logo"><div class="logo-icon"></div>GapMap</a>
+    <div class="nav-context" id="navContext"></div>
+    <div class="nav-right">
+      <a href="dashboard.html" class="back-link">GapMap</a>
+      <div class="avatar" id="avatar">U</div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- LEARN SCREEN -->
+    <div class="screen active" id="learnScreen">
+      <div class="concept-header">
+        <div class="concept-eyebrow" id="conceptEyebrow">From your GapMap</div>
+        <h1 id="conceptTitle">Loading…</h1>
+        <p id="conceptSubtitle">Short explanation and examples before you practise.</p>
+      </div>
+
+      <div class="card" id="explainCard">
+        <h2>What you need to know</h2>
+        <div id="explanationBody"></div>
+      </div>
+
+      <div class="card" id="exampleCard">
+        <h2>Worked example</h2>
+        <div id="exampleBody"></div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" id="anotherExampleBtn">Show another example</button>
+          <button class="btn btn-primary" id="startPracticeBtn">Start practice →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRACTICE SCREEN -->
+    <div class="screen" id="practiceScreen">
+      <div class="progress-header">
+        <div class="progress-top">
+          <span class="progress-label">Question <span id="currentNum">1</span> of <span id="progressTotal">6</span></span>
+          <span class="progress-count" id="progressPercent">0%</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="progressBar"></div></div>
+      </div>
+      <div class="card">
+        <div class="question-text" id="questionText">…</div>
+        <div class="options" id="optionsContainer"></div>
+        <div class="written-answer" id="writtenContainer" style="display:none">
+          <input type="text" id="writtenInput" placeholder="Type your answer" autocomplete="off" spellcheck="false">
+          <div class="written-hint" id="writtenHint">Enter your answer</div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-ghost" id="prevBtn" style="visibility:hidden">← Previous</button>
+        <button class="btn btn-primary" id="nextBtn" disabled>Next →</button>
+      </div>
+    </div>
+
+    <!-- RESULTS SCREEN -->
+    <div class="screen" id="resultsScreen">
+      <div class="results-card">
+        <div class="concept-eyebrow">Practice complete</div>
+        <h1 id="resultsTitle" style="font-size:1.4rem;font-weight:800;margin:10px 0">Nice work</h1>
+        <div class="results-score" id="finalScore">—</div>
+        <p class="results-lead" id="resultsLead">Here’s how you did on this concept.</p>
+        <div class="results-next" id="resultsNext">
+          <strong>What’s next:</strong> Return to your GapMap to see how this concept has updated, or practise again.
+        </div>
+        <div class="btn-row" style="justify-content:center">
+          <a href="dashboard.html" class="btn btn-primary">Back to GapMap</a>
+          <button class="btn btn-secondary" id="practiceAgainBtn">Practise again</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- EMPTY / ERROR -->
+    <div class="screen" id="emptyScreen">
+      <div class="empty-state">
+        <h2>Concept not found</h2>
+        <p id="emptyMessage">We couldn’t load this topic. Go back to your GapMap and choose a concept.</p>
+        <a href="dashboard.html" class="btn btn-primary" style="margin-top:20px">Back to GapMap</a>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    // ---------- Concept content bank ----------
+    // Expand this object (or later load from YAML/JSON) for more topics.
+    // Keys are URL-friendly concept ids.
+    const CONCEPTS = {
+      factorisation: {
+        name: 'Factorisation',
+        subject: 'Mathematics',
+        explanation: `
+          <p>Factorisation means rewriting an expression as a product of simpler expressions (factors).</p>
+          <p>Common patterns:</p>
+          <p>• Common factor: <strong>2x + 6 = 2(x + 3)</strong><br>
+          • Difference of squares: <strong>x² − 9 = (x − 3)(x + 3)</strong><br>
+          • Trinomial: <strong>x² + 5x + 6 = (x + 2)(x + 3)</strong></p>
+        `,
+        tip: 'Always look for a common factor first, then check for difference of squares or a trinomial pattern.',
+        examples: [
+          { label: 'Example 1', html: '<div class="step"><strong>Factorise:</strong> x² − 16</div><div class="step">This is a difference of squares: a² − b² = (a − b)(a + b)</div><div class="step"><strong>Answer:</strong> (x − 4)(x + 4)</div>' },
+          { label: 'Example 2', html: '<div class="step"><strong>Factorise:</strong> x² + 7x + 12</div><div class="step">Find two numbers that multiply to 12 and add to 7 → 3 and 4</div><div class="step"><strong>Answer:</strong> (x + 3)(x + 4)</div>' },
+          { label: 'Example 3', html: '<div class="step"><strong>Factorise:</strong> 2x² + 10x</div><div class="step">Common factor is 2x</div><div class="step"><strong>Answer:</strong> 2x(x + 5)</div>' },
+          { label: 'Example 4', html: '<div class="step"><strong>Factorise:</strong> x² − 5x + 6</div><div class="step">Numbers that multiply to 6 and add to −5 → −2 and −3</div><div class="step"><strong>Answer:</strong> (x − 2)(x − 3)</div>' }
+        ],
+        questions: [
+          { type: 'mc', prompt: 'Factorise: x² − 9', options: ['(x − 3)(x + 3)', '(x − 9)(x + 1)', '(x − 3)²', 'x(x − 9)'], correct: 0 },
+          { type: 'mc', prompt: 'Factorise: x² + 5x + 6', options: ['(x + 2)(x + 3)', '(x + 1)(x + 6)', '(x − 2)(x − 3)', '(x + 6)(x − 1)'], correct: 0 },
+          { type: 'mc', prompt: 'Factorise: 3x + 12', options: ['3(x + 4)', '3(x + 12)', 'x(3 + 12)', '3x(1 + 4)'], correct: 0 },
+          { type: 'algebra', prompt: 'Factorise completely: x² − 25', correctAnswers: ['(x-5)(x+5)', '(x+5)(x-5)', '(x - 5)(x + 5)', '(x + 5)(x - 5)'] },
+          { type: 'algebra', prompt: 'Factorise: x² + 6x + 8', correctAnswers: ['(x+2)(x+4)', '(x+4)(x+2)', '(x + 2)(x + 4)', '(x + 4)(x + 2)'] },
+          { type: 'mc', prompt: 'Factorise: 2x² + 7x + 3', options: ['(2x + 1)(x + 3)', '(2x + 3)(x + 1)', '(x + 3)(x + 1)', '(2x − 1)(x − 3)'], correct: 0 }
+        ]
+      },
+      algebra: {
+        name: 'Algebra',
+        subject: 'Mathematics',
+        explanation: `
+          <p>Algebra uses symbols (like x) to represent numbers and to write general rules.</p>
+          <p>Key skills: simplify expressions, expand brackets, and solve linear equations.</p>
+        `,
+        tip: 'When solving equations, do the same operation to both sides to keep them balanced.',
+        examples: [
+          { label: 'Example 1', html: '<div class="step"><strong>Simplify:</strong> 3(x + 4) − 2(x − 1)</div><div class="step">= 3x + 12 − 2x + 2</div><div class="step"><strong>Answer:</strong> x + 14</div>' },
+          { label: 'Example 2', html: '<div class="step"><strong>Solve:</strong> 2x + 5 = 13</div><div class="step">2x = 8 → x = 4</div><div class="step"><strong>Answer:</strong> x = 4</div>' },
+          { label: 'Example 3', html: '<div class="step"><strong>Expand:</strong> (x + 3)(x − 2)</div><div class="step">= x² − 2x + 3x − 6</div><div class="step"><strong>Answer:</strong> x² + x − 6</div>' }
+        ],
+        questions: [
+          { type: 'mc', prompt: 'Simplify: 3(x + 4) − 2(x − 1)', options: ['x + 14', 'x + 10', '5x + 14', 'x − 14'], correct: 0 },
+          { type: 'mc', prompt: 'Solve: 5x − 7 = 3x + 9', options: ['x = 8', 'x = 1', 'x = −8', 'x = 16'], correct: 0 },
+          { type: 'numeric', prompt: 'Solve for x: 2x + 9 = 17. What is x?', correctAnswers: ['4'] },
+          { type: 'algebra', prompt: 'Simplify: 4(x − 2) + 3x', correctAnswers: ['7x-8', '7x - 8'] },
+          { type: 'mc', prompt: 'Expand: (2x − 3)(x + 5)', options: ['2x² + 7x − 15', '2x² − 15', '2x² + 7x + 15', '2x² + 10x − 3'], correct: 0 },
+          { type: 'numeric', prompt: 'Evaluate: 3² + 4² − 5', correctAnswers: ['20'] }
+        ]
+      },
+      'quadratic-equations': {
+        name: 'Quadratic Equations',
+        subject: 'Mathematics',
+        explanation: `
+          <p>A quadratic equation has the form <strong>ax² + bx + c = 0</strong> (a ≠ 0).</p>
+          <p>You can solve by factorising, using the quadratic formula, or completing the square. The discriminant <strong>Δ = b² − 4ac</strong> tells you about the nature of the roots.</p>
+        `,
+        tip: 'If Δ > 0 there are two real roots; Δ = 0 one real root; Δ < 0 no real roots.',
+        examples: [
+          { label: 'Example 1', html: '<div class="step"><strong>Solve:</strong> x² − 5x + 6 = 0</div><div class="step">Factorise: (x − 2)(x − 3) = 0</div><div class="step"><strong>Answer:</strong> x = 2 or x = 3</div>' },
+          { label: 'Example 2', html: '<div class="step"><strong>Discriminant of</strong> x² − 6x + 5 = 0</div><div class="step">Δ = (−6)² − 4(1)(5) = 36 − 20 = 16</div><div class="step"><strong>Answer:</strong> 16 (two real roots)</div>' },
+          { label: 'Example 3', html: '<div class="step"><strong>Equation with roots 2 and 3</strong></div><div class="step">Sum = 5, product = 6</div><div class="step"><strong>Answer:</strong> x² − 5x + 6 = 0</div>' }
+        ],
+        questions: [
+          { type: 'mc', prompt: 'Solve: x² − 5x + 6 = 0', options: ['x = 2 or x = 3', 'x = −2 or x = −3', 'x = 1 or x = 6', 'x = −1 or x = −6'], correct: 0 },
+          { type: 'numeric', prompt: 'What is the discriminant of x² − 6x + 5 = 0?', correctAnswers: ['16'] },
+          { type: 'mc', prompt: 'What is the discriminant of 2x² + 3x − 5 = 0?', options: ['49', '41', '−31', '9'], correct: 0 },
+          { type: 'algebra', prompt: 'Write the quadratic with roots 2 and 3 in the form x² − (sum)x + product = 0', correctAnswers: ['x^2-5x+6', 'x²-5x+6', 'x^2 - 5x + 6', 'x² - 5x + 6'] },
+          { type: 'mc', prompt: 'The roots of x² − 4 = 0 are:', options: ['x = 2 or x = −2', 'x = 4 or x = −4', 'x = 2 only', 'x = 0 or x = 4'], correct: 0 },
+          { type: 'numeric', prompt: 'If f(x) = x² − 9, what is f(5)?', correctAnswers: ['16'] }
+        ]
+      },
+      'ohms-law': {
+        name: "Ohm's Law",
+        subject: 'Physical Science',
+        explanation: `
+          <p><strong>Ohm’s Law</strong> relates voltage (V), current (I) and resistance (R):</p>
+          <p style="text-align:center;font-size:1.2rem;font-weight:700;color:#1A1A2E">V = I × R</p>
+          <p>So: <strong>I = V / R</strong> and <strong>R = V / I</strong>.</p>
+          <p>Voltage is measured in volts (V), current in amperes (A), resistance in ohms (Ω).</p>
+        `,
+        tip: 'In a series circuit the current is the same everywhere; voltages add up.',
+        examples: [
+          { label: 'Example 1', html: '<div class="step"><strong>Given:</strong> V = 12 V, R = 4 Ω</div><div class="step">I = V / R = 12 / 4 = 3</div><div class="step"><strong>Current:</strong> 3 A</div>' },
+          { label: 'Example 2', html: '<div class="step"><strong>Given:</strong> I = 2 A, R = 5 Ω</div><div class="step">V = I × R = 2 × 5 = 10</div><div class="step"><strong>Voltage:</strong> 10 V</div>' },
+          { label: 'Example 3', html: '<div class="step"><strong>Given:</strong> V = 9 V, I = 3 A</div><div class="step">R = V / I = 9 / 3 = 3</div><div class="step"><strong>Resistance:</strong> 3 Ω</div>' }
+        ],
+        questions: [
+          { type: 'mc', prompt: "Ohm's Law states that V =", options: ['IR', 'I/R', 'I + R', 'I − R'], correct: 0 },
+          { type: 'numeric', prompt: 'If V = 12 V and R = 4 Ω, what is the current I in amperes?', correctAnswers: ['3'] },
+          { type: 'numeric', prompt: 'V = 10 V, R = 5 Ω. Current I in amperes?', correctAnswers: ['2'] },
+          { type: 'mc', prompt: 'Unit of resistance is:', options: ['Ohm (Ω)', 'Ampere (A)', 'Volt (V)', 'Watt (W)'], correct: 0 },
+          { type: 'algebra', prompt: 'Write the formula for resistance R in terms of V and I', correctAnswers: ['R=V/I', 'R = V/I', 'R=V÷I'] },
+          { type: 'numeric', prompt: 'Two 3 Ω resistors in series. Total resistance in ohms?', correctAnswers: ['6'] }
+        ]
+      },
+      functions: {
+        name: 'Functions',
+        subject: 'Mathematics',
+        explanation: `
+          <p>A function assigns each input x exactly one output f(x).</p>
+          <p>You should be able to evaluate functions, find intercepts, and think about domain (allowed inputs).</p>
+        `,
+        tip: 'For a square root function, the expression inside the root must be ≥ 0.',
+        examples: [
+          { label: 'Example 1', html: '<div class="step"><strong>f(x) = 2x + 3</strong>. Find f(4)</div><div class="step">f(4) = 2(4) + 3 = 11</div><div class="step"><strong>Answer:</strong> 11</div>' },
+          { label: 'Example 2', html: '<div class="step"><strong>Domain of</strong> f(x) = √(x − 2)</div><div class="step">Need x − 2 ≥ 0 → x ≥ 2</div><div class="step"><strong>Domain:</strong> x ≥ 2</div>' },
+          { label: 'Example 3', html: '<div class="step"><strong>f(x) = x² − 4</strong>. Find f(−3)</div><div class="step">f(−3) = 9 − 4 = 5</div><div class="step"><strong>Answer:</strong> 5</div>' }
+        ],
+        questions: [
+          { type: 'mc', prompt: 'If f(x) = 2x + 3, what is f(4)?', options: ['11', '8', '5', '14'], correct: 0 },
+          { type: 'mc', prompt: 'Domain of f(x) = √(x − 2)?', options: ['x ≥ 2', 'x > 2', 'x ≤ 2', 'All real numbers'], correct: 0 },
+          { type: 'numeric', prompt: 'If f(x) = 3x − 5, what is f(4)?', correctAnswers: ['7'] },
+          { type: 'numeric', prompt: 'If f(x) = x² − 9, what is f(5)?', correctAnswers: ['16'] },
+          { type: 'mc', prompt: 'If f(x) = x² − 4, find f(−3)', options: ['5', '13', '−13', '4'], correct: 0 },
+          { type: 'numeric', prompt: 'What is the y-intercept of y = 2x + 7?', correctAnswers: ['7'] }
+        ]
+      }
+    };
+
+    // Aliases so different GapMap labels still resolve
+    const ALIASES = {
+      'factorise': 'factorisation',
+      'factorization': 'factorisation',
+      'quadratic': 'quadratic-equations',
+      'quadratics': 'quadratic-equations',
+      'ohm': 'ohms-law',
+      'ohms-law': 'ohms-law',
+      "ohm's-law": 'ohms-law',
+      'function': 'functions'
+    };
+
+    if (GapMapAuth.requireAuth()) initConceptPage();
+
+    function initConceptPage() {
+      let user = null;
+      try {
+        user = (typeof GapMapAuth.getUser === 'function')
+          ? GapMapAuth.getUser()
+          : JSON.parse(localStorage.getItem('gapmap_user') || 'null');
+      } catch (e) {}
+
+      if (user) {
+        const first = (user.firstName || user.name || 'U').toString().trim();
+        const last = (user.lastName || '').toString().trim();
+        let initials = first.charAt(0).toUpperCase();
+        if (last) initials += last.charAt(0).toUpperCase();
+        document.getElementById('avatar').textContent = initials || 'U';
+      }
+
+      const params = new URLSearchParams(window.location.search);
+      let conceptId = (params.get('concept') || '').toLowerCase().trim();
+      if (ALIASES[conceptId]) conceptId = ALIASES[conceptId];
+
+      const concept = CONCEPTS[conceptId];
+
+      const learnScreen = document.getElementById('learnScreen');
+      const practiceScreen = document.getElementById('practiceScreen');
+      const resultsScreen = document.getElementById('resultsScreen');
+      const emptyScreen = document.getElementById('emptyScreen');
+
+      if (!concept) {
+        learnScreen.classList.remove('active');
+        emptyScreen.classList.add('active');
+        if (conceptId) {
+          document.getElementById('emptyMessage').textContent =
+            'We don’t have learning content for “' + conceptId + '” yet. Choose another concept from your GapMap.';
+        }
+        return;
+      }
+
+      // Header
+      document.title = concept.name + ' – GapMap';
+      document.getElementById('conceptTitle').textContent = concept.name;
+      document.getElementById('conceptSubtitle').textContent =
+        'Learn the idea, study examples, then practise — all in one place.';
+      document.getElementById('navContext').innerHTML =
+        '<strong>' + concept.subject + '</strong> · ' + concept.name;
+      document.getElementById('explanationBody').innerHTML =
+        concept.explanation + (concept.tip ? '<div class="tip"><strong>Tip:</strong> ' + concept.tip + '</div>' : '');
+
+      // Examples
+      let exampleIndex = 0;
+      function showExample() {
+        const ex = concept.examples[exampleIndex % concept.examples.length];
+        document.getElementById('exampleBody').innerHTML =
+          '<div class="example-box"><div class="ex-label">' + ex.label + '</div>' + ex.html + '</div>';
+      }
+      showExample();
+
+      document.getElementById('anotherExampleBtn').addEventListener('click', () => {
+        exampleIndex++;
+        showExample();
+      });
+
+      // Practice state
+      let questions = [];
+      let current = 0;
+      let answers = [];
+
+      document.getElementById('startPracticeBtn').addEventListener('click', () => {
+        questions = shuffle(concept.questions.slice());
+        answers = new Array(questions.length).fill(null);
+        current = 0;
+        document.getElementById('progressTotal').textContent = questions.length;
+        learnScreen.classList.remove('active');
+        practiceScreen.classList.add('active');
+        renderQuestion();
+      });
+
+      document.getElementById('practiceAgainBtn').addEventListener('click', () => {
+        resultsScreen.classList.remove('active');
+        learnScreen.classList.add('active');
+        exampleIndex = 0;
+        showExample();
+      });
+
+      const nextBtn = document.getElementById('nextBtn');
+      const prevBtn = document.getElementById('prevBtn');
+      const writtenInput = document.getElementById('writtenInput');
+
+      function shuffle(arr) {
+        const a = arr.slice();
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      }
+      function normalise(str) {
+        if (str == null) return '';
+        return String(str).toLowerCase().replace(/\\s+/g, '').replace(/×/g, '*').replace(/−/g, '-').replace(/²/g, '^2');
+      }
+      function isWrittenCorrect(q, val) {
+        if (!val) return false;
+        const norm = normalise(val);
+        return (q.correctAnswers || []).some(ca => normalise(ca) === norm);
+      }
+
+      function renderQuestion() {
+        const q = questions[current];
+        document.getElementById('currentNum').textContent = current + 1;
+        const pct = Math.round(((current + 1) / questions.length) * 100);
+        document.getElementById('progressPercent').textContent = pct + '%';
+        document.getElementById('progressBar').style.width = pct + '%';
+        document.getElementById('questionText').textContent = q.prompt;
+
+        const optionsContainer = document.getElementById('optionsContainer');
+        const writtenContainer = document.getElementById('writtenContainer');
+        const isWritten = q.type === 'numeric' || q.type === 'algebra';
+
+        if (isWritten) {
+          optionsContainer.style.display = 'none';
+          writtenContainer.style.display = 'block';
+          writtenInput.value = answers[current] != null ? String(answers[current]) : '';
+          writtenInput.placeholder = q.type === 'algebra' ? 'e.g. (x-3)(x+3)' : 'e.g. 4';
+          document.getElementById('writtenHint').textContent =
+            q.type === 'algebra' ? 'Simplified expression (spaces optional)' : 'Number only';
+          nextBtn.disabled = !String(writtenInput.value || '').trim();
+        } else {
+          writtenContainer.style.display = 'none';
+          optionsContainer.style.display = 'flex';
+          optionsContainer.innerHTML = '';
+          (q.options || []).forEach((opt, i) => {
+            const letter = String.fromCharCode(65 + i);
+            const div = document.createElement('label');
+            div.className = 'option' + (answers[current] === i ? ' selected' : '');
+            div.innerHTML = '<input type="radio" name="q" value="' + i + '"><span class="option-letter">' +
+              letter + '</span><span class="option-text">' + opt + '</span>';
+            div.addEventListener('click', () => {
+              answers[current] = i;
+              document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+              div.classList.add('selected');
+              nextBtn.disabled = false;
+            });
+            optionsContainer.appendChild(div);
+          });
+          nextBtn.disabled = answers[current] === null;
+        }
+        prevBtn.style.visibility = current === 0 ? 'hidden' : 'visible';
+        nextBtn.textContent = current === questions.length - 1 ? 'Finish →' : 'Next →';
+      }
+
+      writtenInput.addEventListener('input', () => {
+        const val = writtenInput.value.trim();
+        answers[current] = val || null;
+        nextBtn.disabled = !val;
+      });
+
+      nextBtn.addEventListener('click', () => {
+        if (document.getElementById('writtenContainer').style.display !== 'none') {
+          answers[current] = writtenInput.value.trim() || null;
+        }
+        if (current < questions.length - 1) {
+          current++;
+          renderQuestion();
+        } else {
+          showResults();
+        }
+      });
+      prevBtn.addEventListener('click', () => {
+        if (current > 0) { current--; renderQuestion(); }
+      });
+
+      function showResults() {
+        let correct = 0;
+        questions.forEach((q, i) => {
+          if (q.type === 'numeric' || q.type === 'algebra') {
+            if (isWrittenCorrect(q, answers[i])) correct++;
+          } else if (answers[i] === q.correct) correct++;
+        });
+        const pct = questions.length ? Math.round((correct / questions.length) * 100) : 0;
+
+        // Persist light practice result for this concept
+        try {
+          const key = 'gapmap_practice_' + conceptId;
+          localStorage.setItem(key, JSON.stringify({
+            concept: conceptId,
+            name: concept.name,
+            score: pct,
+            correct,
+            total: questions.length,
+            takenAt: new Date().toISOString()
+          }));
+        } catch (e) {}
+
+        practiceScreen.classList.remove('active');
+        resultsScreen.classList.add('active');
+        document.getElementById('finalScore').textContent = pct + '%';
+        document.getElementById('resultsTitle').textContent =
+          pct >= 75 ? 'Strong work on ' + concept.name : pct >= 40 ? 'You’re improving' : 'Keep practising';
+        document.getElementById('resultsLead').textContent =
+          'You got ' + correct + ' out of ' + questions.length + ' correct on ' + concept.name + '.';
+        document.getElementById('resultsNext').innerHTML = pct >= 75
+          ? '<strong>What’s next:</strong> This concept is looking solid. Return to your GapMap to tackle another gap, or retest later.'
+          : '<strong>What’s next:</strong> Review the examples again, then practise once more — or return to your GapMap.';
+      }
+    }
+  </script>
+  <script src="frontend/agentPanel/agent-panel.js"></script>
+</body>
+</html>

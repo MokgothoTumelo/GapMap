@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Guest Lock: must be the first thing loaded so it can hide the page
+       before any protected content paints. See frontend/js/auth-guard.js -->
+  <script src="frontend/js/auth-guard.js"></script>
+  <script>GapMapAuth.lockPage();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Set Up Your GapMap Path</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="frontend/agentPanel/agent-panel.css">
+  
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      color: #1A1A2E;
+      background: #F8FAFC;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+    .nav {
+      background: white;
+      border-bottom: 1.5px solid #E5E7EB;
+      padding: 14px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: #1A1A2E;
+      text-decoration: none;
+    }
+    .logo-icon {
+      width: 28px; height: 28px; background: #3B5BDB; border-radius: 50%;
+      display: grid; place-items: center; position: relative;
+    }
+    .logo-icon::after {
+      content: ''; width: 9px; height: 9px; background: white;
+      border-radius: 50% 50% 50% 0; transform: rotate(-45deg); margin-top: -1px;
+    }
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .back-link { font-size: 0.9rem; color: #5A5A72; text-decoration: none; font-weight: 500; }
+    .back-link:hover { color: #1A1A2E; }
+    .avatar {
+      width: 36px; height: 36px; background: #3B5BDB; color: white;
+      border-radius: 50%; display: grid; place-items: center; font-weight: 600; font-size: 0.9rem;
+    }
+    .container { max-width: 560px; margin: 0 auto; padding: 40px 24px 80px; }
+    .setup-card {
+      background: #FFFFFF;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 16px;
+      padding: 40px 36px;
+      box-shadow: 0 10px 40px -10px rgba(0,0,0,0.08);
+    }
+    .setup-title {
+      text-align: center; font-size: 1.35rem; font-weight: 700;
+      margin-bottom: 6px; letter-spacing: -0.02em;
+    }
+    .setup-subtitle {
+      text-align: center; color: #5A5A72; font-size: 0.95rem; margin-bottom: 32px;
+    }
+    .setup-label {
+      font-weight: 600; font-size: 0.9rem; color: #1A1A2E; margin-bottom: 10px; display: block;
+    }
+    .grid-3 {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 28px;
+    }
+    @media (max-width: 480px) { .grid-3 { grid-template-columns: repeat(2, 1fr); } }
+    .select-card {
+      padding: 12px; border: 1.5px solid #E5E7EB; border-radius: 10px; text-align: center;
+      cursor: pointer; transition: all 0.2s; background: #FFFFFF; color: #5A5A72;
+      font-size: 0.9rem; font-weight: 500;
+    }
+    .select-card:hover { border-color: #C5C9D4; }
+    .select-card.selected {
+      border-color: #3B5BDB; background: #EEF2FF; color: #3B5BDB;
+    }
+    /* Accessible hiding — keeps radio inputs available to keyboard/screen-reader users. */
+    .select-card { position: relative; }
+    .select-card input[type="radio"] {
+      position: absolute;
+      width: 1px; height: 1px;
+      padding: 0; margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+      border: 0;
+    }
+    .select-card.focus-visible {
+      outline: 2px solid #3B5BDB;
+      outline-offset: 2px;
+    }
+    .field-error {
+      display: none;
+      color: #B91C1C;
+      font-size: 0.85rem;
+      margin: -18px 0 20px;
+    }
+    .field-error.show { display: block; }
+    .select-card.invalid { border-color: #FCA5A5; }
+    .subject-select {
+      width: 100%; padding: 12px 16px; border: 1.5px solid #E5E7EB; border-radius: 10px;
+      font-size: 1rem; font-family: inherit; background: white; outline: none; margin-bottom: 28px;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='%235A5A72'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 16px center;
+    }
+    .subject-select:focus {
+      border-color: #3B5BDB; box-shadow: 0 0 0 4px rgba(59, 91, 219, 0.1);
+    }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 13px 20px; border-radius: 10px; font-weight: 600; font-size: 1rem;
+      cursor: pointer; border: none; transition: all 0.2s; text-decoration: none; width: 100%;
+    }
+    .btn-primary { background: #3B5BDB; color: white; }
+    .btn-primary:hover { background: #2F4AC0; }
+    .footer-link { text-align: center; margin-top: 20px; font-size: 0.9rem; color: #5A5A72; }
+    .footer-link a { color: #3B5BDB; text-decoration: none; font-weight: 500; }
+    .footer-link a:hover { text-decoration: underline; }
+    .welcome { text-align: center; color: #3B5BDB; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem; }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="index.html" class="logo">
+      <div class="logo-icon"></div>
+      GapMap
+    </a>
+    <div class="nav-right">
+      <a href="index.html" id="logoutLink" class="back-link">Log out</a>
+      <div class="avatar" id="avatar">U</div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="setup-card">
+      <div class="welcome" id="welcomeLine">Welcome</div>
+      <div class="setup-title">Customise your learning experience</div>
+      <p class="setup-subtitle">Choose Language, Explanation Level and Subject. You can change these later.</p>
+
+      <label class="setup-label">Choose your learning language</label>
+      <div class="grid-3" id="langGrid">
+        <label class="select-card selected" for="lang-en">
+          <input type="radio" name="language" id="lang-en" value="English" checked> English
+        </label>
+        <label class="select-card" for="lang-zu">
+          <input type="radio" name="language" id="lang-zu" value="isiZulu"> isiZulu
+        </label>
+        <label class="select-card" for="lang-nso">
+          <input type="radio" name="language" id="lang-nso" value="Sepedi"> Sepedi
+        </label>
+        <label class="select-card" for="lang-tn">
+          <input type="radio" name="language" id="lang-tn" value="Setswana"> Setswana
+        </label>
+        <label class="select-card" for="lang-xh">
+          <input type="radio" name="language" id="lang-xh" value="isiXhosa"> isiXhosa
+        </label>
+      </div>
+
+      <label class="setup-label">Choose explanation level</label>
+      <div class="grid-3" id="levelGrid">
+        <label class="select-card" for="level-simple">
+          <input type="radio" name="level" id="level-simple" value="Very Simple"> Very Simple
+        </label>
+        <label class="select-card selected" for="level-standard">
+          <input type="radio" name="level" id="level-standard" value="Standard" checked> Standard
+        </label>
+        <label class="select-card" for="level-detailed">
+          <input type="radio" name="level" id="level-detailed" value="Detailed"> Detailed
+        </label>
+      </div>
+
+      <label class="setup-label" id="gradeLabel">Select your grade <span aria-hidden="true">*</span></label>
+      <div class="grid-3" id="gradeGrid" role="radiogroup" aria-labelledby="gradeLabel" aria-required="true">
+        <label class="select-card" for="grade-10">
+          <input type="radio" name="grade" id="grade-10" value="10"> Grade 10
+        </label>
+        <label class="select-card" for="grade-11">
+          <input type="radio" name="grade" id="grade-11" value="11"> Grade 11
+        </label>
+        <label class="select-card" for="grade-12">
+          <input type="radio" name="grade" id="grade-12" value="12"> Grade 12
+        </label>
+      </div>
+      <p class="field-error" id="gradeError" role="alert">Please select your grade to continue.</p>
+
+      <label class="setup-label">Select a subject to start with</label>
+      <select class="subject-select" id="subjectSelect">
+        <option value="Grade 12 Mathematics">Grade 12 Mathematics</option>
+        <option value="Grade 12 Physical Science">Grade 12 Physical Science</option>
+        <option value="Grade 12 English Home Language">Grade 12 English Home Language</option>
+        <option value="Grade 11 Mathematics">Grade 11 Mathematics</option>
+        <option value="Grade 11 Physical Science">Grade 11 Physical Science</option>
+      </select>
+
+      <p class="field-error" id="saveError" role="alert"></p>
+      <button class="btn btn-primary" id="startLearningBtn">Start Diagnostic →</button>
+      
+      <div class="footer-link">
+        <a href="index.html">← Back to Home</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Guest Lock: must be logged in, but setup itself is exactly where an
+    // incomplete-setup user is supposed to land — so we don't require
+    // setup to already be complete here (unlike other protected pages).
+    const user = GapMapAuth.requireAuth({
+      requireSetupComplete: false,
+      redirectIfSetupComplete: 'dashboard.html'
+    });
+    if (!user) {
+      // Redirect to Login already under way — stop here.
+    }
+
+    if (user) {
+      const name = user.firstName || 'Learner';
+      document.getElementById('welcomeLine').textContent = `Welcome, ${name}`;
+      document.getElementById('avatar').textContent = (user.firstName || 'U').charAt(0).toUpperCase();
+
+      if (user.language) {
+        const radio = document.querySelector(`input[name="language"][value="${user.language}"]`);
+        if (radio) {
+          document.querySelectorAll('#langGrid .select-card').forEach(c => c.classList.remove('selected'));
+          radio.closest('.select-card').classList.add('selected');
+          radio.checked = true;
+        }
+      }
+      if (user.explanationLevel) {
+        const radio = document.querySelector(`input[name="level"][value="${user.explanationLevel}"]`);
+        if (radio) {
+          document.querySelectorAll('#levelGrid .select-card').forEach(c => c.classList.remove('selected'));
+          radio.closest('.select-card').classList.add('selected');
+          radio.checked = true;
+        }
+      }
+      if (user.subject) {
+        document.getElementById('subjectSelect').value = user.subject;
+      }
+
+      if (user.grade) {
+        const radio = document.querySelector(`input[name="grade"][value="${user.grade}"]`);
+        if (radio) {
+          document.querySelectorAll('#gradeGrid .select-card').forEach(c => c.classList.remove('selected'));
+          radio.closest('.select-card').classList.add('selected');
+          radio.checked = true;
+        }
+      }
+    }
+
+    function getGradeValue() {
+      const checked = document.querySelector('input[name="grade"]:checked');
+      return checked ? checked.value : null;
+    }
+
+    function validateSetup() {
+      let valid = true;
+      const gradeGrid = document.getElementById('gradeGrid');
+      const gradeError = document.getElementById('gradeError');
+
+      if (!getGradeValue()) {
+        valid = false;
+        gradeError.classList.add('show');
+        gradeGrid.querySelectorAll('.select-card').forEach(c => c.classList.add('invalid'));
+      } else {
+        gradeError.classList.remove('show');
+        gradeGrid.querySelectorAll('.select-card').forEach(c => c.classList.remove('invalid'));
+      }
+
+      return valid;
+    }
+
+    function setupClickableCards(containerId) {
+      const cards = document.querySelectorAll(containerId + ' .select-card');
+      cards.forEach(card => {
+        card.addEventListener('click', function() {
+          const parent = this.parentElement;
+          parent.querySelectorAll('.select-card').forEach(c => c.classList.remove('selected'));
+          this.classList.add('selected');
+          this.querySelector('input[type="radio"]').checked = true;
+        });
+      });
+    }
+    setupClickableCards('#langGrid');
+    setupClickableCards('#levelGrid');
+    setupClickableCards('#gradeGrid');
+
+    document.querySelectorAll('.select-card input').forEach(input => {
+      input.addEventListener('focus', () => input.closest('.select-card').classList.add('focus-visible'));
+      input.addEventListener('blur', () => input.closest('.select-card').classList.remove('focus-visible'));
+    });
+
+    document.getElementById('logoutLink').addEventListener('click', function(e) {
+      e.preventDefault();
+      GapMapAuth.logout('index.html');
+    });
+
+    document.getElementById('startLearningBtn').addEventListener('click', function() {
+      if (!validateSetup()) {
+        document.getElementById('gradeGrid').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      const btn = this;
+      btn.disabled = true;
+      btn.textContent = 'Saving…';
+
+      const updated = {
+        ...user,
+        language: document.querySelector('input[name="language"]:checked').value,
+        explanationLevel: document.querySelector('input[name="level"]:checked').value,
+        subject: document.getElementById('subjectSelect').value,
+        grade: getGradeValue(),
+        setupComplete: true,
+        setupAt: new Date().toISOString()
+      };
+
+      try {
+        localStorage.setItem('gapmap_user', JSON.stringify(updated));
+        window.location.href = 'diagnostic.html';
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = 'Start Diagnostic →';
+        const saveError = document.getElementById('saveError');
+        saveError.textContent = "We couldn't save your setup. Please try again.";
+        saveError.classList.add('show');
+      }
+    });
+  </script>
+  <script src="frontend/agentPanel/agent-panel.js"></script>
+</body>
+</html>

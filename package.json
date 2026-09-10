@@ -1,0 +1,16 @@
+{
+  "type": "module",
+  "scripts": {
+    "start": "node serve.mjs",
+    "test": "playwright test",
+    "smoke:agent": "node scripts/agent-smoke.mjs"
+  },
+  "dependencies": {
+    "ajv": "^8.20.0",
+    "firebase": "12.17.1",
+    "js-yaml": "^4.3.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1"
+  }
+}
