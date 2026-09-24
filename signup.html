@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign up for GapMap</title>
+  <script src="frontend/js/auth-guard.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box} body{font-family:Inter,system-ui,sans-serif;color:#1A1A2E;background:#F8FAFC;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+    .card{background:#fff;border:1.5px solid #E5E7EB;border-radius:16px;padding:42px 36px;width:100%;max-width:450px;box-shadow:0 10px 40px -10px rgba(0,0,0,.08)}
+    .hidden{display:none}.brand{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px;text-decoration:none}.brand-text{font-weight:800;font-size:1.35rem;color:#1A1A2E}.logo-icon{width:32px;height:32px;background:#3B5BDB;border-radius:50%;display:grid;place-items:center;position:relative}.logo-icon:after{content:'';width:10px;height:10px;background:#fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);margin-top:-2px}.microcopy{text-align:center;color:#5A5A72;font-size:.9rem;margin-bottom:26px}.group{margin-bottom:17px}.group label{display:block;font-size:.88rem;font-weight:600;margin-bottom:6px}.group input{width:100%;padding:12px 14px;border:1.5px solid #E5E7EB;border-radius:10px;font:inherit;outline:none}.group input:focus{border-color:#3B5BDB;box-shadow:0 0 0 4px rgba(59,91,219,.1)}.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}.btn{width:100%;padding:12px 18px;border:0;border-radius:10px;font:600 1rem Inter,system-ui,sans-serif;cursor:pointer}.btn-primary{background:#3B5BDB;color:#fff}.btn-primary:disabled{background:#9CA3AF;cursor:not-allowed}.btn-outline{background:#fff;color:#1A1A2E;border:1.5px solid #E5E7EB}.btn-outline:disabled{opacity:.6;cursor:not-allowed}.footer{text-align:center;margin-top:18px;font-size:.9rem;color:#5A5A72}.footer a{color:#3B5BDB;font-weight:600;text-decoration:none}.error{display:none;background:#FEF2F2;color:#991B1B;border:1px solid #FECACA;border-radius:10px;padding:11px 14px;font-size:.88rem;margin-bottom:16px}.error.show{display:block}.success{display:none;background:#ECFDF5;color:#065F46;border:1px solid #A7F3D0;border-radius:10px;padding:12px 14px;font-size:.88rem;margin-top:16px}.success.show{display:block}.otp-title{text-align:center;font-weight:800;font-size:1.1rem;margin-bottom:5px}.otp-subtitle{text-align:center;color:#5A5A72;font-size:.9rem;margin-bottom:18px;line-height:1.55}.otp-inputs{display:flex;gap:9px;justify-content:center;margin-bottom:18px}.otp-inputs input{width:46px;height:54px;text-align:center;font-size:1.4rem;font-weight:700;border:1.5px solid #E5E7EB;border-radius:10px;outline:none}.otp-inputs input:focus{border-color:#3B5BDB;box-shadow:0 0 0 4px rgba(59,91,219,.1)}.otp-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.note{text-align:center;color:#9CA3AF;font-size:.78rem;margin-top:12px}
+    @media(max-width:500px){.card{padding:32px 20px}.row{grid-template-columns:1fr;gap:0}.otp-inputs{gap:6px}.otp-inputs input{width:40px;height:48px}}
+  </style>
+</head>
+<body>
+  <div class="card" id="signupCard">
+    <a href="index.html" class="brand"><div class="logo-icon"></div><span class="brand-text">GapMap</span></a>
+    <p class="microcopy">Start your personalised learning journey today.</p>
+    <div id="errorMsg" class="error"></div>
+    <form id="signupForm">
+      <div class="row">
+        <div class="group"><label for="firstname">First name</label><input id="firstname" autocomplete="given-name" placeholder="Enter your first name" required></div>
+        <div class="group"><label for="lastname">Last name</label><input id="lastname" autocomplete="family-name" placeholder="Enter your last name" required></div>
+      </div>
+      <div class="group"><label for="email">Email address</label><input type="email" id="email" autocomplete="email" placeholder="Enter your email address" required></div>
+      <div class="group"><label for="password">Password</label><input type="password" id="password" autocomplete="new-password" placeholder="Create a password (6+ characters)" minlength="6" required></div>
+      <button class="btn btn-primary" id="submitBtn" type="submit">Create Account</button>
+    </form>
+    <p class="footer">Already have an account? <a href="login.html">Log in</a></p>
+  </div>
+
+  <div class="card hidden" id="otpCard">
+    <div class="brand"><div class="logo-icon"></div><span class="brand-text">GapMap</span></div>
+    <div class="otp-title">Verify your email</div>
+    <div class="otp-subtitle">A 6-digit code was sent to <strong id="displayEmail"></strong>.<br>Enter the code from your email to finish creating your account.</div>
+    <div id="otpError" class="error"></div>
+    <div class="otp-inputs" id="otpInputs">
+      <input maxlength="1" inputmode="numeric" autocomplete="one-time-code"><input maxlength="1" inputmode="numeric"><input maxlength="1" inputmode="numeric"><input maxlength="1" inputmode="numeric"><input maxlength="1" inputmode="numeric"><input maxlength="1" inputmode="numeric">
+    </div>
+    <div class="otp-actions"><button class="btn btn-outline" id="resendBtn" type="button">Resend code</button><button class="btn btn-primary" id="verifyBtn" type="button">Verify</button></div>
+    <p class="note">The code expires after 10 minutes. The code is only available in your email.</p>
+    <div id="successMsg" class="success">Account verified. Taking you to Setup…</div>
+  </div>
+
+  <script type="module">
+    import { signUpWithPassword, updateDisplayName } from './frontend/js/firebase-auth.js';
+    import { getFirebaseServices } from './frontend/js/firebase-app.js';
+    import { ensureLearnerProfile, markEmailOtpVerified } from './frontend/js/firebase-data-store.js';
+    import { sendOtpEmail, verifyOtp, getResendRemainingMs, clearOtpState } from './frontend/js/emailjs-otp.js';
+
+    const signupCard = document.getElementById('signupCard');
+    const otpCard = document.getElementById('otpCard');
+    const errorMsg = document.getElementById('errorMsg');
+    const otpError = document.getElementById('otpError');
+    const submitBtn = document.getElementById('submitBtn');
+    const verifyBtn = document.getElementById('verifyBtn');
+    const resendBtn = document.getElementById('resendBtn');
+    const otpInputs = [...document.querySelectorAll('#otpInputs input')];
+    let pending = null;
+
+    function show(el, message) { el.textContent = message; el.classList.add('show'); }
+    function hide(el) { el.classList.remove('show'); el.textContent = ''; }
+    function resetOtpInputs() { otpInputs.forEach((input) => { input.value = ''; }); otpInputs[0]?.focus(); }
+    function code() { return otpInputs.map((input) => input.value).join(''); }
+    function sessionProfile(firebaseUser, profile) {
+      return {
+        uid: firebaseUser.uid,
+        email: firebaseUser.email || profile.email,
+        firstName: profile.firstName || '',
+        lastName: profile.lastName || '',
+        name: [profile.firstName, profile.lastName].filter(Boolean).join(' '),
+        grade: profile.grade || null,
+        subject: profile.subject || null,
+        subjects: profile.subjects || [],
+        language: profile.language || 'English',
+        explanationLevel: profile.explanationLevel || 'Standard',
+        setupComplete: Boolean(profile.setupComplete),
+        emailOtpVerified: true,
+      };
+    }
+
+    otpInputs.forEach((input, index) => {
+      input.addEventListener('input', () => {
+        input.value = input.value.replace(/\D/g, '').slice(0, 1);
+        if (input.value && index < otpInputs.length - 1) otpInputs[index + 1].focus();
+      });
+      input.addEventListener('keydown', (event) => {
+        if (event.key === 'Backspace' && !input.value && index > 0) otpInputs[index - 1].focus();
+      });
+    });
+
+    async function sendCurrentOtp({resend = false} = {}) {
+      if (!pending?.firebaseUser) throw new Error('Your signup session has expired. Please start again.');
+      if (resend && getResendRemainingMs() > 0) throw new Error('Please wait before requesting another code.');
+      resendBtn.disabled = true;
+      resendBtn.textContent = 'Sending…';
+      await sendOtpEmail({ email: pending.email, name: `${pending.firstName} ${pending.lastName}`, purpose: 'signup verification' });
+      resetOtpInputs();
+      resendBtn.textContent = 'Resend code';
+      resendBtn.disabled = false;
+    }
+
+    document.getElementById('signupForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      hide(errorMsg);
+      const firstName = document.getElementById('firstname').value.trim();
+      const lastName = document.getElementById('lastname').value.trim();
+      const email = document.getElementById('email').value.trim().toLowerCase();
+      const password = document.getElementById('password').value;
+      if (!firstName || !lastName || !email || !password) return show(errorMsg, 'Please complete all fields.');
+      if (password.length < 6) return show(errorMsg, 'Password must be at least 6 characters.');
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Creating account…';
+      try {
+        const firebaseUser = await signUpWithPassword(email, password);
+        await updateDisplayName(`${firstName} ${lastName}`.trim());
+        let profile = {
+          uid: firebaseUser.uid, email: firebaseUser.email || email, firstName, lastName,
+          name: `${firstName} ${lastName}`.trim(), language: 'English', explanationLevel: 'Standard',
+          setupComplete: false, subjects: [], emailOtpVerified: false, createdAt: new Date().toISOString(),
+        };
+        try {
+          profile = await ensureLearnerProfile(firebaseUser, profile);
+        } catch (firestoreError) {
+          console.warn('[Firebase] Initial Learner Profile save skipped; Setup will retry.', firestoreError);
+        }
+        pending = { firebaseUser, email, firstName, lastName, profile };
+        await sendCurrentOtp();
+        document.getElementById('displayEmail').textContent = email;
+        signupCard.classList.add('hidden');
+        otpCard.classList.remove('hidden');
+      } catch (error) {
+        show(errorMsg, error.message || 'We could not create the account. Please try again.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Create Account';
+      }
+    });
+
+    verifyBtn.addEventListener('click', async () => {
+      hide(otpError);
+      if (!pending) return show(otpError, 'Your signup session has expired. Please start again.');
+      verifyBtn.disabled = true;
+      try {
+        const result = await verifyOtp({ email: pending.email, purpose: 'signup verification', code: code() });
+        if (!result.ok) throw new Error(result.message);
+        try {
+          await markEmailOtpVerified(pending.firebaseUser.uid);
+        } catch (firestoreError) {
+          console.warn('[Firebase] OTP verification metadata sync skipped.', firestoreError);
+        }
+        const profile = { ...pending.profile, emailOtpVerified: true };
+        GapMapAuth.safeSessionSet('gapmap_user', JSON.stringify(sessionProfile(pending.firebaseUser, profile)));
+        clearOtpState();
+        document.getElementById('successMsg').classList.add('show');
+        setTimeout(() => { window.location.href = 'setup.html'; }, 500);
+      } catch (error) {
+        show(otpError, error.message || 'The code could not be verified.');
+        verifyBtn.disabled = false;
+      }
+    });
+
+    resendBtn.addEventListener('click', async () => {
+      hide(otpError);
+      try { await sendCurrentOtp({resend: true}); } catch (error) { show(otpError, error.message); resendBtn.textContent = 'Resend code'; resendBtn.disabled = false; }
+    });
+
+    try {
+      const { auth } = await getFirebaseServices();
+      if (auth.currentUser && GapMapAuth.getUser()) {
+        const stored = GapMapAuth.getUser();
+        window.location.replace(stored.setupComplete ? 'dashboard.html' : 'setup.html');
+      }
+    } catch (_error) { /* Firebase will report configuration/network errors on submit. */ }
+  </script>
+</body>
+</html>

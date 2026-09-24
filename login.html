@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Log in · GapMap</title>
+  <script src="frontend/js/auth-guard.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,system-ui,sans-serif;background:#F8FAFC;color:#1A1A2E;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}.card{width:100%;max-width:430px;background:#fff;border:1.5px solid #E5E7EB;border-radius:16px;padding:42px 36px;box-shadow:0 10px 40px -10px rgba(0,0,0,.08)}.brand{display:flex;justify-content:center;align-items:center;gap:10px;text-decoration:none;margin-bottom:8px}.brand-text{font-size:1.35rem;font-weight:800;color:#1A1A2E}.logo-icon{width:32px;height:32px;border-radius:50%;background:#3B5BDB;display:grid;place-items:center}.logo-icon:after{content:'';width:10px;height:10px;background:#fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg)}.micro{text-align:center;color:#5A5A72;font-size:.9rem;margin-bottom:24px}.group{margin-bottom:17px}.group label{display:block;font-size:.88rem;font-weight:600;margin-bottom:6px}.group input{width:100%;padding:12px 14px;border:1.5px solid #E5E7EB;border-radius:10px;font:inherit;outline:none}.group input:focus{border-color:#3B5BDB;box-shadow:0 0 0 4px rgba(59,91,219,.1)}.btn{width:100%;padding:12px 18px;border:0;border-radius:10px;font:600 1rem Inter,system-ui,sans-serif;cursor:pointer}.primary{background:#3B5BDB;color:#fff}.primary:disabled{background:#9CA3AF;cursor:not-allowed}.error{display:none;background:#FEF2F2;color:#991B1B;border:1px solid #FECACA;border-radius:10px;padding:11px 14px;font-size:.88rem;margin-bottom:16px}.error.show{display:block}.footer{text-align:center;margin-top:18px;font-size:.9rem;color:#5A5A72}.footer a{color:#3B5BDB;font-weight:600;text-decoration:none}.otp-title{text-align:center;font-weight:800;font-size:1.1rem;margin-bottom:5px}.otp-sub{text-align:center;color:#5A5A72;font-size:.9rem;line-height:1.55;margin-bottom:18px}.otp-inputs{display:flex;justify-content:center;gap:9px;margin-bottom:18px}.otp-inputs input{width:46px;height:54px;border:1.5px solid #E5E7EB;border-radius:10px;text-align:center;font-size:1.35rem;font-weight:700;outline:none}.otp-inputs input:focus{border-color:#3B5BDB;box-shadow:0 0 0 4px rgba(59,91,219,.1)}.otp-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.outline{background:#fff;border:1.5px solid #E5E7EB}.note{text-align:center;color:#9CA3AF;font-size:.78rem;margin-top:12px}.hidden{display:none}
+  </style>
+</head>
+<body>
+  <div class="card" id="loginCard">
+    <a href="index.html" class="brand"><div class="logo-icon"></div><span class="brand-text">GapMap</span></a>
+    <p class="micro">Sign in to continue your learning path.</p>
+    <div id="errorMsg" class="error"></div>
+    <form id="loginForm">
+      <div class="group"><label for="email">Email address</label><input type="email" id="email" autocomplete="email" placeholder="Enter your email address" required></div>
+      <div class="group"><label for="password">Password</label><input type="password" id="password" autocomplete="current-password" placeholder="Enter your password" required></div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:.86rem;color:#5A5A72;margin:0 0 16px"><input type="checkbox" id="goDiagnostic" checked> Go straight to my Diagnostic after sign-in</label>
+      <button class="btn primary" id="loginBtn" type="submit">Log In</button>
+    </form>
+    <p class="footer"><a href="forgotpassword.html">Forgot password?</a><br><span>Don't have an account? </span><a href="signup.html">Sign up</a></p>
+  </div>
+
+  <div class="card hidden" id="otpCard">
+    <a href="index.html" class="brand"><div class="logo-icon"></div><span class="brand-text">GapMap</span></a>
+    <div class="otp-title">Confirm sign-in</div>
+    <div class="otp-sub">A 6-digit code was sent to <strong id="displayEmail"></strong>.<br>Enter the code from your email to continue.</div>
+    <div id="otpError" class="error"></div>
+    <div class="otp-inputs" id="otpInputs"><input maxlength="1" inputmode="numeric" autocomplete="one-time-code"><input maxlength="1" inputmode="numeric"><input maxlength="1" inputmode="numeric"><input maxlength="1" inputmode="numeric"><input maxlength="1" inputmode="numeric"><input maxlength="1" inputmode="numeric"></div>
+    <div class="otp-actions"><button class="btn outline" id="resendBtn" type="button">Resend code</button><button class="btn primary" id="verifyBtn" type="button">Verify</button></div>
+    <p class="note">Your OTP is only delivered to your email and expires after 10 minutes.</p>
+  </div>
+
+  <script type="module">
+    import { signInWithPassword } from './frontend/js/firebase-auth.js';
+    import { getLearnerProfile, ensureLearnerProfile, markLogin, getLatestDiagnosticSummary } from './frontend/js/firebase-data-store.js';
+    import { sendOtpEmail, verifyOtp, getResendRemainingMs } from './frontend/js/emailjs-otp.js';
+
+    const loginCard = document.getElementById('loginCard');
+    const otpCard = document.getElementById('otpCard');
+    const errorMsg = document.getElementById('errorMsg');
+    const otpError = document.getElementById('otpError');
+    const loginBtn = document.getElementById('loginBtn');
+    const verifyBtn = document.getElementById('verifyBtn');
+    const resendBtn = document.getElementById('resendBtn');
+    const otpInputs = [...document.querySelectorAll('#otpInputs input')];
+    let pending = null;
+    let goDiagnostic = false;
+
+    const show = (el, text) => { el.textContent = text; el.classList.add('show'); };
+    const hide = (el) => { el.textContent = ''; el.classList.remove('show'); };
+    const code = () => otpInputs.map((input) => input.value).join('');
+    otpInputs.forEach((input, index) => {
+      input.addEventListener('input', () => { input.value = input.value.replace(/\D/g,'').slice(0,1); if (input.value && index < otpInputs.length - 1) otpInputs[index+1].focus(); });
+      input.addEventListener('keydown', (e) => { if (e.key === 'Backspace' && !input.value && index > 0) otpInputs[index-1].focus(); });
+    });
+
+    function sessionProfile(firebaseUser, profile) {
+      return {
+        uid: firebaseUser.uid, email: firebaseUser.email || profile.email,
+        firstName: profile.firstName || '', lastName: profile.lastName || '', name: [profile.firstName, profile.lastName].filter(Boolean).join(' '),
+        grade: profile.grade || null, subject: profile.subject || null, subjects: profile.subjects || [], language: profile.language || 'English',
+        explanationLevel: profile.explanationLevel || 'Standard', setupComplete: Boolean(profile.setupComplete), emailOtpVerified: profile.emailOtpVerified !== false,
+      };
+    }
+
+    async function sendCurrentOtp() {
+      if (!pending) throw new Error('Your sign-in session has expired. Please start again.');
+      if (getResendRemainingMs() > 0) throw new Error('Please wait before requesting another code.');
+      resendBtn.disabled = true; resendBtn.textContent = 'Sending…';
+      await sendOtpEmail({ email: pending.email, name: pending.profile.firstName || 'GapMap Learner', purpose: 'sign-in verification' });
+      otpInputs.forEach((input) => { input.value=''; }); otpInputs[0]?.focus();
+      resendBtn.textContent = 'Resend code'; resendBtn.disabled = false;
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async (event) => {
+      event.preventDefault(); hide(errorMsg);
+      const email = document.getElementById('email').value.trim().toLowerCase();
+      const password = document.getElementById('password').value;
+      if (!email || !password) return show(errorMsg, 'Please enter your email and password.');
+      loginBtn.disabled = true; loginBtn.textContent = 'Signing in…';
+      try {
+        const firebaseUser = await signInWithPassword(email, password);
+        let profile = {
+          uid: firebaseUser.uid, email: firebaseUser.email || email,
+          firstName: firebaseUser.displayName ? firebaseUser.displayName.split(/\s+/)[0] : '',
+          lastName: firebaseUser.displayName ? firebaseUser.displayName.split(/\s+/).slice(1).join(' ') : '',
+          language: 'English', explanationLevel: 'Standard', setupComplete: false, subjects: [],
+        };
+        try {
+          const storedProfile = await getLearnerProfile(firebaseUser.uid);
+          if (storedProfile) profile = { ...profile, ...storedProfile };
+          else profile = await ensureLearnerProfile(firebaseUser, profile);
+        } catch (firestoreError) {
+          console.warn('[Firebase] Learner Profile read skipped; continuing with Authentication identity.', firestoreError);
+        }
+        pending = { firebaseUser, email, profile };
+        await sendCurrentOtp();
+        document.getElementById('displayEmail').textContent = email;
+        loginCard.classList.add('hidden'); otpCard.classList.remove('hidden');
+      } catch (error) {
+        show(errorMsg, error.message || 'We could not sign you in.');
+        loginBtn.disabled = false; loginBtn.textContent = 'Log In';
+      }
+    });
+
+    verifyBtn.addEventListener('click', async () => {
+      hide(otpError); verifyBtn.disabled = true;
+      try {
+        if (!pending) throw new Error('Your sign-in session has expired. Please start again.');
+        const result = await verifyOtp({ email: pending.email, purpose:'sign-in verification', code: code() });
+        if (!result.ok) throw new Error(result.message);
+        markLogin(pending.firebaseUser.uid).catch((error) => console.warn('[Firebase] Login metadata sync skipped.', error));
+        const profile = { ...pending.profile, emailOtpVerified:true };
+        GapMapAuth.safeSessionSet('gapmap_user', JSON.stringify(sessionProfile(pending.firebaseUser, profile)));
+        // Hydrate the latest Diagnostic summary so a Learner can sign in on a
+        // different browser and still see the stored Gap Map immediately.
+        if (profile.subject) {
+          try {
+            const summary = await getLatestDiagnosticSummary(pending.firebaseUser.uid, profile.subject);
+            if (summary?.scores?.length && typeof GapMapAuth?.saveDiagnosticResults === 'function') {
+              GapMapAuth.saveDiagnosticResults(profile.subject, {
+                overall: summary.latestScore, concepts: summary.concepts || {}, scores: summary.scores,
+                totalCorrect: summary.totalCorrect || 0, totalQuestions: summary.totalQuestions || 0,
+                mistakes: summary.mistakes || [], takenAt: summary.latestTakenAt, grade: summary.grade, subject: summary.subject,
+              });
+            }
+          } catch (error) {
+            console.warn('[Firebase] Diagnostic hydration skipped.', error);
+          }
+        }
+        window.location.href = profile.setupComplete
+          ? (goDiagnostic ? 'diagnostic.html' : 'dashboard.html')
+          : 'setup.html';
+      } catch (error) {
+        show(otpError, error.message || 'The code could not be verified.'); verifyBtn.disabled = false;
+      }
+    });
+
+    resendBtn.addEventListener('click', async () => {
+      hide(otpError);
+      try { await sendCurrentOtp(); } catch (error) { show(otpError, error.message); resendBtn.textContent='Resend code'; resendBtn.disabled=false; }
+    });
+
+    try {
+      const params = new URLSearchParams(window.location.search);
+      goDiagnostic = params.get('next') === 'diagnostic';
+      const message = GapMapAuth.consumeRedirectMessage && GapMapAuth.consumeRedirectMessage();
+      if (message) show(errorMsg, message);
+    } catch (_error) {}
+  </script>
+</body>
+</html>

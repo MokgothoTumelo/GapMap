@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Guest Lock: must be first so it can hide the page before paint -->
+  <script src="frontend/js/auth-guard.js"></script>
+  <script>GapMapAuth.lockPage();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your profile – GapMap</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="frontend/agentPanel/agent-panel.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Inter',system-ui,-apple-system,sans-serif;color:#1A1A2E;background:#F8FAFC;line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
+    .nav{background:#fff;border-bottom:1.5px solid #E5E7EB;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+    .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.25rem;color:#1A1A2E;text-decoration:none}
+    .logo-icon{width:28px;height:28px;background:#3B5BDB;border-radius:50%;display:grid;place-items:center;position:relative}
+    .logo-icon::after{content:'';width:9px;height:9px;background:#fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);margin-top:-1px}
+    .nav-right{display:flex;align-items:center;gap:14px}
+    .back-link{font-size:.9rem;color:#5A5A72;text-decoration:none;font-weight:500}
+    .back-link:hover{color:#1A1A2E}
+    .avatar{width:36px;height:36px;background:#3B5BDB;color:#fff;border-radius:50%;display:grid;place-items:center;font-weight:600;font-size:.9rem}
+    .container{max-width:680px;margin:0 auto;padding:32px 24px 80px}
+
+    .page-eyebrow{display:inline-block;background:#EEF2FF;color:#3B5BDB;font-size:.78rem;font-weight:600;padding:4px 12px;border-radius:20px;margin-bottom:10px}
+    .page-header h1{font-size:1.55rem;font-weight:800;letter-spacing:-.02em;margin-bottom:6px}
+    .page-header p{color:#5A5A72;font-size:.98rem;margin-bottom:24px}
+
+    .card{background:#fff;border:1.5px solid #E5E7EB;border-radius:16px;padding:28px;box-shadow:0 4px 20px -8px rgba(0,0,0,.05);margin-bottom:20px}
+    .card h2{font-size:1.1rem;font-weight:700;margin-bottom:6px}
+    .card .card-note{color:#5A5A72;font-size:.88rem;margin-bottom:18px}
+
+    .field{margin-bottom:16px}
+    .field label{display:block;font-size:.85rem;font-weight:600;margin-bottom:6px}
+    .field input{width:100%;padding:12px 14px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:.95rem;font-family:inherit;outline:none;background:#fff}
+    .field input:focus{border-color:#3B5BDB;box-shadow:0 0 0 4px rgba(59,91,219,.1)}
+    .field input[readonly]{background:#F8FAFC;color:#5A5A72;cursor:default}
+    .field .field-note{font-size:.78rem;color:#9CA3AF;margin-top:5px}
+    .form-row{display:flex;gap:12px}
+    .form-row .field{flex:1}
+
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 20px;border-radius:10px;font-weight:600;font-size:.92rem;cursor:pointer;border:none;transition:all .2s;text-decoration:none;font-family:inherit}
+    .btn-primary{background:#3B5BDB;color:#fff}
+    .btn-primary:hover{background:#3350C4}
+    .btn-primary:disabled{opacity:.6;cursor:default}
+    .btn-secondary{background:#EEF2FF;color:#3B5BDB}
+    .btn-secondary:hover{background:#E0E7FF}
+
+    .msg{display:none;border-radius:10px;padding:10px 14px;font-size:.88rem;margin-top:12px}
+    .msg.show{display:block}
+    .msg-ok{background:#ECFDF5;color:#059669;border:1px solid #A7F3D0}
+    .msg-err{background:#FEF2F2;color:#991B1B;border:1px solid #FECACA}
+
+    .pref-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1.5px solid #F1F5F9}
+    .pref-row:last-of-type{border-bottom:none}
+    .pref-row .pref-label{font-weight:600;font-size:.95rem}
+    .pref-row .pref-note{font-size:.78rem;color:#9CA3AF;margin-top:3px}
+    .prefs-saved{color:#059669;font-size:.82rem;font-weight:600;margin-left:10px;visibility:hidden}
+    .prefs-saved.show{visibility:visible}
+
+    .grade-value{font-weight:700;font-size:.95rem;color:#1A1A2E}
+    .grade-note{font-size:.8rem;color:#9CA3AF;margin-top:3px}
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a href="index.html" class="logo"><div class="logo-icon"></div>GapMap</a>
+    <div class="nav-right">
+      <a href="dashboard.html" class="back-link">Dashboard</a>
+      <div class="avatar" id="avatar">U</div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="page-header">
+      <div class="page-eyebrow">Your Learner Profile</div>
+      <h1>Account &amp; preferences</h1>
+      <p>Everything GapMap knows about you, in one place — inspect it and change it.</p>
+    </div>
+
+    <!-- ACCOUNT -->
+    <div class="card">
+      <h2>Account</h2>
+      <p class="card-note">Your identity on GapMap. Your email identifies the account and cannot change here yet.</p>
+      <form id="nameForm">
+        <div class="form-row">
+          <div class="field">
+            <label for="firstName">First name</label>
+            <input type="text" id="firstName" autocomplete="given-name" placeholder="Enter your first name" required>
+          </div>
+          <div class="field">
+            <label for="lastName">Last name</label>
+            <input type="text" id="lastName" autocomplete="family-name" placeholder="Enter your last name">
+          </div>
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" readonly>
+          <div class="field-note">Changing your email would re-key your account — not supported in the demo.</div>
+        </div>
+        <button type="submit" class="btn btn-primary" id="saveNameBtn">Save account</button>
+        <div id="nameMsg" class="msg"></div>
+      </form>
+    </div>
+
+    <!-- PASSWORD -->
+    <div class="card">
+      <h2>Password</h2>
+      <p class="card-note">Passwords are managed by Firebase Authentication and are never stored in GapMap's database.</p>
+      <form id="passwordForm">
+        <div class="form-row">
+          <div class="field">
+            <label for="currentPassword">Current password</label>
+            <input type="password" id="currentPassword" autocomplete="current-password" placeholder="Enter your current password" required>
+          </div>
+          <div class="field">
+            <label for="newPassword">New password</label>
+            <input type="password" id="newPassword" placeholder="Create a new password (6+ characters)" autocomplete="new-password" required minlength="6">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-secondary">Update password</button>
+        <div id="passwordMsg" class="msg"></div>
+      </form>
+    </div>
+
+    <!-- PREFERENCES -->
+    <div class="card">
+      <h2>Preferences</h2>
+      <p class="card-note">How GapMap guides you. Subject and Language also live in the nav for quick switches.</p>
+      <div class="pref-row">
+        <div>
+          <div class="pref-label">Subject</div>
+          <div class="pref-note">Scopes your Gap Map, Learning Path and past papers.</div>
+        </div>
+        <div><span class="prefs-saved" id="prefsSaved">Saved ✓</span><div id="subjectMount"></div></div>
+      </div>
+      <div class="pref-row">
+        <div>
+          <div class="pref-label">Language</div>
+          <div class="pref-note">The Language the Learning Companion guides you in.</div>
+        </div>
+        <div id="languageMount"></div>
+      </div>
+      <div class="pref-row">
+        <div>
+          <div class="pref-label">Explanation level</div>
+          <div class="pref-note">How simply the Companion explains things.</div>
+        </div>
+        <div id="explanationLevelMount"></div>
+      </div>
+    </div>
+
+    <!-- GRADE -->
+    <div class="card">
+      <h2>Grade</h2>
+      <p class="card-note">Grade scopes your Subjects and the papers in your Library.</p>
+      <div class="pref-row">
+        <div>
+          <div class="grade-value" id="gradeValue">Grade 12</div>
+          <div class="grade-note">Part of Setup, not a preference — changing it means choosing your Subjects again.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const user = GapMapAuth.requireAuth();
+    if (user) initProfilePage();
+
+    function initProfilePage() {
+      // Avatar menu: identity glance + Log out (idempotent re-mount below).
+      GapMapAuth.mountProfileMenu({ avatar: '#avatar' });
+
+      // Account
+      document.getElementById('firstName').value = user.firstName || '';
+      document.getElementById('lastName').value = user.lastName || '';
+      document.getElementById('email').value = user.email || '';
+      document.getElementById('gradeValue').textContent =
+        'Grade ' + (GapMapAuth.normalizeSubject(user.grade) || '—');
+
+      document.getElementById('nameForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const firstName = document.getElementById('firstName').value.trim();
+        const lastName = document.getElementById('lastName').value.trim();
+        if (!firstName) return showMsg('nameMsg', 'Your first name is required.', true);
+
+        // Firebase Authentication owns the account; Firestore stores the Learner Profile.
+        const updated = { ...user, firstName, lastName, name: (firstName + ' ' + lastName).trim() };
+        try {
+          const [{ updateDisplayName }, { saveLearnerProfile }] = await Promise.all([
+            import('./frontend/js/firebase-auth.js'),
+            import('./frontend/js/firebase-data-store.js'),
+          ]);
+          await updateDisplayName(updated.name);
+          await saveLearnerProfile(updated);
+        } catch (error) {
+          return showMsg('nameMsg', error.message || 'Account could not be saved to Firebase.', true);
+        }
+        GapMapAuth.safeSessionSet('gapmap_user', JSON.stringify(updated));
+        Object.assign(user, updated);
+
+        // Refresh the avatar menu's glance (idempotent re-mount).
+        GapMapAuth.mountProfileMenu({ avatar: '#avatar' });
+        showMsg('nameMsg', 'Account saved ✓', false);
+      });
+
+      document.getElementById('passwordForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const current = document.getElementById('currentPassword').value;
+        const next = document.getElementById('newPassword').value;
+        if (!current || next.length < 6) return showMsg('passwordMsg', 'New password needs at least 6 characters.', true);
+        const btn = this.querySelector('button[type=submit]');
+        btn.disabled = true;
+        try {
+          const { changePassword } = await import('./frontend/js/firebase-auth.js');
+          await changePassword(current, next);
+          this.reset();
+          showMsg('passwordMsg', 'Password updated ✓', false);
+        } catch (error) {
+          showMsg('passwordMsg', error.message || 'Password could not be updated.', true);
+        } finally {
+          btn.disabled = false;
+        }
+      });
+
+      // Preferences: the same seam the nav switchers use — no reload needed
+      // here, the selects carry the change and it persists to the Profile.
+      const saved = () => {
+        const el = document.getElementById('prefsSaved');
+        el.style.visibility = 'visible';
+        clearTimeout(saved.timer);
+        saved.timer = setTimeout(() => { el.style.visibility = 'hidden'; }, 1500);
+      };
+      GapMapAuth.mountSubjectSwitcher({ container: '#subjectMount', onChange: saved });
+      GapMapAuth.mountLanguageSwitcher({ container: '#languageMount', onChange: saved });
+      GapMapAuth.mountExplanationLevelSwitcher({ container: '#explanationLevelMount', onChange: saved });
+    }
+
+    function showMsg(id, text, isError) {
+      const el = document.getElementById(id);
+      el.textContent = text;
+      el.className = 'msg show ' + (isError ? 'msg-err' : 'msg-ok');
+    }
+  </script>
+  <script src="frontend/agentPanel/agent-panel.js"></script>
+</body>
+</html>
