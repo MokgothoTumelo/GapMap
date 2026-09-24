@@ -1,0 +1,134 @@
+id: diagnostic-g12-life-science-html
+type: diagnostic
+subject: Grade 12 Life Sciences
+language: en
+explanation_level: Standard
+generated_at: 2026-09-12T00:00:00Z
+schema_version: 1.0.0
+concepts:
+  - name: Cell Biology
+    description: Molecular biology and cell processes
+  - name: Genetics
+    description: Inheritance, evolution and biotechnology
+  - name: Human Physiology
+    description: Coordination, reproduction and disease
+  - name: Ecology
+    description: Environmental studies and human impact
+  - name: Biodiversity
+    description: Diversity, change and conservation
+items:
+  - id: q1
+    concept: Cell Biology
+    prompt_type: multiple_choice
+    prompt: "Transcription is the process of:"
+    options: ["Making mRNA from DNA", "Making protein from mRNA", "DNA replication only", "Cell division only"]
+    correct: 0
+  - id: q2
+    concept: Cell Biology
+    prompt_type: multiple_choice
+    prompt: "Enzymes speed up reactions by:"
+    options: ["Lowering activation energy", "Increasing temperature only", "Changing the products permanently into reactants", "Removing all substrates"]
+    correct: 0
+  - id: q3
+    concept: Genetics
+    prompt_type: multiple_choice
+    prompt: "Natural selection results in:"
+    options: ["Differential survival and reproduction of better-adapted individuals", "All individuals surviving equally", "No change in populations", "Only artificial breeding"]
+    correct: 0
+  - id: q4
+    concept: Genetics
+    prompt_type: multiple_choice
+    prompt: "A transgenic organism contains:"
+    options: ["Genetic material from another species", "No DNA", "Only RNA", "Only proteins from food"]
+    correct: 0
+  - id: q5
+    concept: Human Physiology
+    prompt_type: multiple_choice
+    prompt: "The hormone ADH mainly helps to:"
+    options: ["Regulate water reabsorption in the kidneys", "Digest fats", "Contract skeletal muscle only", "Produce red blood cells only"]
+    correct: 0
+  - id: q6
+    concept: Human Physiology
+    prompt_type: multiple_choice
+    prompt: "HIV primarily infects:"
+    options: ["Helper T-cells (CD4 cells)", "Only red blood cells", "Only skin cells", "Only bone cells"]
+    correct: 0
+  - id: q7
+    concept: Ecology
+    prompt_type: multiple_choice
+    prompt: "The greenhouse effect is enhanced by increased:"
+    options: ["Greenhouse gases such as CO2 and methane", "Only oxygen", "Only nitrogen", "Only argon"]
+    correct: 0
+  - id: q8
+    concept: Ecology
+    prompt_type: multiple_choice
+    prompt: "An ecological footprint measures:"
+    options: ["Human demand on natural resources", "Only shoe size", "Only population density of insects", "Only rainfall"]
+    correct: 0
+  - id: q9
+    concept: Biodiversity
+    prompt_type: multiple_choice
+    prompt: "Speciation is the process by which:"
+    options: ["New species arise", "Species become extinct only", "Cells divide", "Proteins fold"]
+    correct: 0
+  - id: q10
+    concept: Biodiversity
+    prompt_type: multiple_choice
+    prompt: "A hotspot of biodiversity is an area with:"
+    options: ["High species richness that is under threat", "No species", "Only one crop", "Only deserts"]
+    correct: 0
+  - id: q11
+    concept: Cell Biology
+    prompt_type: short_answer
+    prompt: "What is the name of the process that converts glucose into ATP in cells?"
+    correct: "respiration"
+  - id: q12
+    concept: Genetics
+    prompt_type: short_answer
+    prompt: "What does DNA stand for?"
+    correct: "deoxyribonucleic acid"
+  - id: q13
+    concept: Human Physiology
+    prompt_type: short_answer
+    prompt: "Which gland is often called the master gland of the endocrine system?"
+    correct: "pituitary"
+  - id: q14
+    concept: Ecology
+    prompt_type: short_answer
+    prompt: "What is the term for the variety of genes within a species?"
+    correct: "genetic diversity"
+  - id: q15
+    concept: Biodiversity
+    prompt_type: short_answer
+    prompt: "What is the term for a species at high risk of extinction in the wild?"
+    correct: "endangered"
+  - id: q16
+    concept: Cell Biology
+    prompt_type: multiple_choice
+    prompt: "Translation occurs at the:"
+    options: ["Ribosome", "Nucleus only", "Cell wall", "Vacuole"]
+    correct: 0
+  - id: q17
+    concept: Genetics
+    prompt_type: multiple_choice
+    prompt: "Cloning produces organisms that are:"
+    options: ["Genetically identical to the donor", "Always different", "Only plants", "Only fossils"]
+    correct: 0
+  - id: q18
+    concept: Human Physiology
+    prompt_type: multiple_choice
+    prompt: "Vaccines work by:"
+    options: ["Stimulating an immune response without causing the full disease", "Replacing all blood", "Removing pathogens from food only", "Stopping all cell division"]
+    correct: 0
+  - id: q19
+    concept: Ecology
+    prompt_type: multiple_choice
+    prompt: "Biomagnification refers to:"
+    options: ["Increase in concentration of toxins up the food chain", "Decrease in all populations", "Only plant growth", "Only water cycle speed"]
+    correct: 0
+  - id: q20
+    concept: Biodiversity
+    prompt_type: multiple_choice
+    prompt: "Ex-situ conservation includes:"
+    options: ["Zoos, seed banks and botanical gardens", "Only national parks", "Only hunting", "Only pollution"]
+    correct: 0

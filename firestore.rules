@@ -1,0 +1,74 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function ownsLearner(learnerId) {
+      return signedIn() && request.auth.uid == learnerId;
+    }
+
+    match /learners/{learnerId} {
+      allow read: if ownsLearner(learnerId);
+      allow create: if ownsLearner(learnerId)
+        && request.resource.data.uid == learnerId
+        && request.resource.data.email == request.auth.token.email;
+      allow update: if ownsLearner(learnerId)
+        && resource.data.uid == learnerId
+        && request.resource.data.uid == learnerId
+        && request.resource.data.email == request.auth.token.email;
+      allow delete: if false;
+
+      // Assessments are frozen artefacts. A Learner can create an Assessment
+      // under their own document and read it later, but cannot replace/delete
+      // it from the client after creation.
+      match /assessments/{assessmentId} {
+        allow read: if ownsLearner(learnerId);
+        allow create: if ownsLearner(learnerId)
+          && request.resource.data.learner_id == learnerId;
+        allow update, delete: if false;
+      }
+
+      // Attempts are append-only: the app creates one document per completed
+      // Diagnostic/Practice Attempt and can read its own history.
+      match /attempts/{attemptId} {
+        allow read: if ownsLearner(learnerId);
+        allow create: if ownsLearner(learnerId)
+          && request.resource.data.learner_id == learnerId;
+        allow update, delete: if false;
+      }
+
+      // Subject summaries are derived convenience data for fast dashboard
+      // rendering. They are owned by the Learner and may be refreshed by the app.
+      match /subjects/{subjectId} {
+        allow read: if ownsLearner(learnerId);
+      allow create: if ownsLearner(learnerId)
+        && request.resource.data.uid == learnerId
+        && request.resource.data.email == request.auth.token.email;
+      allow update: if ownsLearner(learnerId)
+        && resource.data.uid == learnerId
+        && request.resource.data.uid == learnerId
+        && request.resource.data.email == request.auth.token.email;
+        allow delete: if false;
+      }
+
+
+      match /practiceHistory/{historyId} {
+        allow read: if ownsLearner(learnerId);
+        allow create, update: if ownsLearner(learnerId)
+          && request.resource.data.learner_id == learnerId;
+        allow delete: if false;
+      }
+
+      // Companion transcript entries are owned by the Learner.
+      match /companionMessages/{messageId} {
+        allow read: if ownsLearner(learnerId);
+        allow create: if ownsLearner(learnerId)
+          && request.resource.data.learner_id == learnerId;
+        allow update, delete: if false;
+      }
+    }
+  }
+}

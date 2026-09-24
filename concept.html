@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="frontend/js/auth-guard.js"></script>
+  <script>GapMapAuth.lockPage();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learn – GapMap</title>
+  <!-- The Concept Graph loader (ADR-0006) parses YAML with the vendored copy. -->
+  <script src="frontend/vendor/js-yaml.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="frontend/agentPanel/agent-panel.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Inter',system-ui,-apple-system,sans-serif;color:#1A1A2E;background:#F8FAFC;line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
+    .nav{background:#fff;border-bottom:1.5px solid #E5E7EB;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+    .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.25rem;color:#1A1A2E;text-decoration:none}
+    .logo-icon{width:28px;height:28px;background:#3B5BDB;border-radius:50%;display:grid;place-items:center;position:relative}
+    .logo-icon::after{content:'';width:9px;height:9px;background:#fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);margin-top:-1px}
+    .nav-context{font-size:.9rem;color:#5A5A72;font-weight:500;text-align:center;flex:1}
+    .nav-context strong{color:#1A1A2E;font-weight:600}
+    .nav-right{display:flex;align-items:center;gap:14px}
+    .back-link{font-size:.9rem;color:#5A5A72;text-decoration:none;font-weight:500}
+    .back-link:hover{color:#1A1A2E}
+    .avatar{width:36px;height:36px;background:#3B5BDB;color:#fff;border-radius:50%;display:grid;place-items:center;font-weight:600;font-size:.9rem}
+    .container{max-width:680px;margin:0 auto;padding:32px 24px 80px}
+    .screen{display:none}.screen.active{display:block}
+
+    /* Header block */
+    .concept-header{margin-bottom:24px}
+    .concept-eyebrow{display:inline-block;background:#EEF2FF;color:#3B5BDB;font-size:.78rem;font-weight:600;padding:4px 12px;border-radius:20px;margin-bottom:10px}
+    .concept-header h1{font-size:1.55rem;font-weight:800;letter-spacing:-.02em;margin-bottom:6px}
+    .concept-header p{color:#5A5A72;font-size:.98rem}
+
+    /* Cards */
+    .card{background:#fff;border:1.5px solid #E5E7EB;border-radius:16px;padding:28px;box-shadow:0 4px 20px -8px rgba(0,0,0,.05);margin-bottom:20px}
+    .card h2{font-size:1.1rem;font-weight:700;margin-bottom:12px}
+    .card p{color:#5A5A72;margin-bottom:12px;line-height:1.65}
+    .card p:last-child{margin-bottom:0}
+
+    .example-box{background:#F8FAFC;border:1.5px solid #E5E7EB;border-radius:12px;padding:18px 20px;margin:16px 0;line-height:1.7;font-size:.95rem}
+    .example-box .ex-label{font-size:.75rem;font-weight:700;color:#3B5BDB;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
+    .example-box .step{margin:6px 0}
+    .example-box strong{color:#1A1A2E}
+    .tip{background:#EEF2FF;border-left:4px solid #3B5BDB;padding:14px 16px;border-radius:0 10px 10px 0;font-size:.9rem;color:#1A1A2E;margin-top:14px}
+
+    /* Buttons */
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 22px;border-radius:10px;font-weight:600;font-size:.95rem;cursor:pointer;border:none;transition:all .2s;text-decoration:none}
+    .btn-primary{background:#3B5BDB;color:#fff}.btn-primary:hover{background:#2F4AC0}
+    .btn-primary:disabled{background:#9CA3AF;cursor:not-allowed}
+    .btn-secondary{background:#fff;color:#1A1A2E;border:1.5px solid #E5E7EB}.btn-secondary:hover{border-color:#C5C9D4;background:#FAFAFA}
+    .btn-ghost{background:transparent;color:#5A5A72;padding:12px 14px}.btn-ghost:hover{color:#1A1A2E}
+    .btn-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px}
+
+    /* Practice */
+    .progress-header{margin-bottom:22px}
+    .progress-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .progress-label{font-size:.9rem;font-weight:600;color:#5A5A72}
+    .progress-count{font-size:.9rem;font-weight:600;color:#3B5BDB}
+    .progress-track{height:8px;background:#E5E7EB;border-radius:4px;overflow:hidden}
+    .progress-fill{height:100%;background:#3B5BDB;border-radius:4px;transition:width .3s ease;width:0%}
+    .question-text{font-size:1.15rem;font-weight:600;line-height:1.45;margin-bottom:20px}
+    .options{display:flex;flex-direction:column;gap:10px}
+    .option{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1.5px solid #E5E7EB;border-radius:12px;cursor:pointer;transition:all .2s;background:#fff}
+    .option:hover{border-color:#C5C9D4;background:#FAFAFA}
+    .option.selected{border-color:#3B5BDB;background:#EEF2FF}
+    .option input{display:none}
+    .option-letter{width:30px;height:30px;border-radius:50%;background:#F3F4F6;display:grid;place-items:center;font-weight:600;font-size:.85rem;color:#5A5A72;flex-shrink:0}
+    .option.selected .option-letter{background:#3B5BDB;color:#fff}
+    .written-answer input{width:100%;padding:14px 16px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:1.05rem;font-family:inherit;outline:none}
+    .written-answer input:focus{border-color:#3B5BDB;box-shadow:0 0 0 4px rgba(59,91,219,.12)}
+    .written-hint{font-size:.8rem;color:#9CA3AF;margin-top:6px}
+    .actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:8px}
+
+    /* Results */
+    .results-card{background:#fff;border:1.5px solid #E5E7EB;border-radius:16px;padding:40px 32px;text-align:center;box-shadow:0 4px 20px -8px rgba(0,0,0,.05)}
+    .results-score{font-size:2.6rem;font-weight:800;color:#3B5BDB;margin:8px 0}
+    .results-lead{color:#5A5A72;max-width:400px;margin:0 auto 24px;line-height:1.6}
+    .results-next{background:#F8FAFC;border:1.5px solid #E5E7EB;border-radius:12px;padding:14px 18px;margin-bottom:24px;text-align:left;font-size:.95rem;color:#5A5A72;line-height:1.55}
+    .results-next strong{color:#1A1A2E}
+
+    .video-embed{position:relative;width:100%;padding-top:56.25%;border-radius:12px;overflow:hidden;background:#0F172A}
+    .video-embed iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+    .quantum-practice-card{background:linear-gradient(135deg,#F5F3FF,#EEF2FF);border:1.5px solid #DDD6FE}
+    .quantum-practice-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+    .quantum-chip{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:#1E1B4B;color:#fff;font-weight:800;font-size:.82rem;box-shadow:0 0 0 6px rgba(124,58,237,.07)}
+    .quantum-practice-card h3{margin:0;color:#1A1A2E;font-size:1rem}
+    .quantum-practice-card p{margin:0 0 8px;color:#5A5A72;font-size:.9rem;line-height:1.55}
+    .quantum-stage{display:inline-flex;padding:5px 9px;border-radius:999px;background:#fff;color:#6D28D9;font-size:.74rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;border:1px solid #DDD6FE}
+    .answer-how{margin-top:12px;padding:12px 14px;border-radius:10px;background:rgba(255,255,255,.82);border:1px solid rgba(196,181,253,.7);color:#312E81}
+    .answer-how strong{color:#1E1B4B}
+    .mistake-diagnosis{margin-top:10px;padding:12px 14px;border-radius:10px;background:rgba(255,255,255,.72);border-left:4px solid #EF4444;color:#7F1D1D}
+    .mistake-diagnosis strong{color:#991B1B}
+    .answer-feedback{margin-top:18px;padding:14px 16px;border-radius:12px;font-size:.92rem;line-height:1.55;border:1.5px solid #E5E7EB}
+    .answer-feedback.correct{background:#ECFDF3;border-color:#A7F3D0;color:#065F46}
+    .answer-feedback.incorrect{background:#FEF2F2;border-color:#FECACA;color:#991B1B}
+    .option.correct{border-color:#10B981;background:#ECFDF3}
+    .option.correct .option-letter{background:#10B981;color:#fff}
+    .option.incorrect{border-color:#EF4444;background:#FEF2F2}
+    .option.incorrect .option-letter{background:#EF4444;color:#fff}
+    .option.disabled{cursor:default}
+    .empty-state{text-align:center;padding:48px 24px;color:#5A5A72}
+    .empty-state h2{color:#1A1A2E;margin-bottom:8px}
+
+    @media(max-width:600px){
+      .nav{padding:12px 16px}.container{padding:24px 16px 60px}
+      .card,.results-card{padding:22px 18px}
+      .concept-header h1{font-size:1.35rem}
+      .btn-row{flex-direction:column}.btn-row .btn{width:100%}
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a href="index.html" class="logo"><div class="logo-icon"></div>GapMap</a>
+    <div class="nav-context" id="navContext"></div>
+    <div class="nav-right">
+      <div id="subjectSwitcherMount"></div>
+      <div id="languageSwitcherMount"></div>
+      <a href="dashboard.html" class="back-link">GapMap</a>
+      <a href="library.html" class="back-link">Library</a>
+      <div class="avatar" id="avatar">U</div>
+    </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- LEARN SCREEN -->
+    <div class="screen active" id="learnScreen">
+      <div class="concept-header">
+        <div class="concept-eyebrow" id="conceptEyebrow">From your GapMap</div>
+        <h1 id="conceptTitle">Loading…</h1>
+        <p id="conceptSubtitle">Short explanation and examples before you practise.</p>
+        <div id="pathWhy" style="display:none; margin-top:10px;"></div>
+
+      <div class="card" id="videosCard" style="display:none;">
+        <h2>Concept video</h2>
+        <p id="videoMeta" style="color:#5A5A72;font-size:0.95rem;margin-bottom:14px;"></p>
+        <div class="video-embed">
+          <iframe id="conceptVideo" title="Concept video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        </div>
+      </div>
+      </div>
+
+      <div class="card" id="explainCard">
+        <h2>What you need to know</h2>
+        <div id="explanationBody"></div>
+      </div>
+
+      <div class="card" id="exampleCard">
+        <h2>Worked example</h2>
+        <div id="exampleBody"></div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" id="anotherExampleBtn">Show another example</button>
+          <button class="btn btn-primary" id="startPracticeBtn">Start practice →</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PRACTICE SCREEN -->
+    <div class="screen" id="practiceScreen">
+      <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-bottom:12px;" id="quizLanguageRow">
+        <label for="quizLanguage" style="font-size:.82rem;font-weight:600;color:#5A5A72;">Item language</label>
+        <select id="quizLanguage" style="padding:9px 34px 9px 11px;border:1.5px solid #E5E7EB;border-radius:9px;background:#fff;font:inherit;color:#1A1A2E;cursor:pointer;">
+          <option value="English">English (Standard)</option>
+        </select>
+      </div>
+      <div class="card quantum-practice-card" id="quantumPracticeCard" style="display:none;">
+        <div class="quantum-practice-head">
+          <span class="quantum-chip" aria-hidden="true">Q</span>
+          <div>
+            <div style="font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6D28D9;">Quantum Adaptive Practice · simulated qubits</div>
+            <h3 id="quantumPracticeTitle">Targeted Concept Practice</h3>
+          </div>
+        </div>
+        <p id="quantumPracticeDescription">These Items are selected from your Diagnostic evidence rather than at random.</p>
+        <span class="quantum-stage" id="quantumStage">repair</span>
+      </div>
+      <div class="progress-header">
+        <div class="progress-top">
+          <span class="progress-label">Item <span id="currentNum">1</span> of <span id="progressTotal">6</span></span>
+          <span class="progress-count" id="progressPercent">0%</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="progressBar"></div></div>
+      </div>
+      <div class="card">
+        <div class="question-diagram" id="questionDiagram" style="display:none;text-align:center;margin-bottom:14px;"></div>
+        <div class="question-text" id="questionText">…</div>
+        <div class="options" id="optionsContainer"></div>
+        <div class="written-answer" id="writtenContainer" style="display:none">
+          <input type="text" id="writtenInput" placeholder="Type your Response" autocomplete="off" spellcheck="false">
+          <div class="written-hint" id="writtenHint">Enter your Response</div>
+        </div>
+        <div id="answerFeedback" class="answer-feedback" style="display:none" aria-live="polite"></div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-ghost" id="prevBtn" style="visibility:hidden">← Previous</button>
+        <div style="display:flex;gap:10px;align-items:center;margin-left:auto;">
+          <button class="btn btn-secondary" id="checkBtn" style="display:none">Check Response</button>
+          <button class="btn btn-primary" id="nextBtn" disabled>Next →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTS SCREEN -->
+    <div class="screen" id="resultsScreen">
+      <div class="results-card">
+        <div class="concept-eyebrow">Practice complete</div>
+        <h1 id="resultsTitle" style="font-size:1.4rem;font-weight:800;margin:10px 0">Nice work</h1>
+        <p class="results-lead" id="resultsLead">Practice is complete. Nothing from this Practice was saved as a Response or Attempt.</p>
+        <div class="results-next" id="resultsNext">
+          <strong>What’s next:</strong> Review the Concept again or return to your Gap Map when you are ready.
+        </div>
+        <div class="btn-row" style="justify-content:center">
+          <a href="dashboard.html" class="btn btn-primary">Back to GapMap</a>
+          <button class="btn btn-secondary" id="practiceAgainBtn">Practise again</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- EMPTY / ERROR -->
+    <div class="screen" id="emptyScreen">
+      <div class="empty-state">
+        <h2>Concept not found</h2>
+        <p id="emptyMessage">We couldn’t load this Concept. Go back to your Gap Map and choose a Concept.</p>        <a href="dashboard.html" class="btn btn-primary" style="margin-top:20px">Back to GapMap</a>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { buildLearningPath } from './core/learning-path.js';
+    import { createSubjectStore } from './frontend/js/subject-store.js';
+    import { shuffle, translateQuestion, balanceCorrectOptionPositions, quizLanguagesForSubject, presentationVariant, questionSignature, readQuizHistory, writeQuizHistory } from './frontend/js/quiz-engine.js';
+    import { getCurrentLearnerId } from './frontend/js/learner-store.js';
+    import { prepareQuantumPractice, readQuantumPlan, selectQuantumPracticeItems, explainAnswer } from './core/quantum-adaptive.js';
+    import { loadConceptQuestionPool } from './frontend/js/external-question-pool.js';
+    import { scoreFromFlags } from './core/scoring.js';
+    import { saveAssessment as saveFirebaseAssessment, saveAttempt as saveFirebaseAttempt, getPracticeHistory as getFirebasePracticeHistory, savePracticeHistory as saveFirebasePracticeHistory } from './frontend/js/firebase-data-store.js';
+
+    const CONCEPTS = {
+      factorisation: {
+        name: 'Factorisation',
+        subject: 'Mathematics',
+        explanation: `
+          <p>Factorisation means rewriting an expression as a product of simpler expressions (factors).</p>
+          <p>Common patterns:</p>
+          <p>• Common factor: <strong>2x + 6 = 2(x + 3)</strong><br>
+          • Difference of squares: <strong>x² − 9 = (x − 3)(x + 3)</strong><br>
+          • Trinomial: <strong>x² + 5x + 6 = (x + 2)(x + 3)</strong></p>
+        `,
+        tip: 'Always look for a common factor first, then check for difference of squares or a trinomial pattern.',
+        examples: [
+          { label: 'Example 1', html: '<div class="step"><strong>Factorise:</strong> x² − 16</div><div class="step">This is a difference of squares: a² − b² = (a − b)(a + b)</div><div class="step"><strong>Answer:</strong> (x − 4)(x + 4)</div>' },
+          { label: 'Example 2', html: '<div class="step"><strong>Factorise:</strong> x² + 7x + 12</div><div class="step">Find two numbers that multiply to 12 and add to 7 → 3 and 4</div><div class="step"><strong>Answer:</strong> (x + 3)(x + 4)</div>' },
+          { label: 'Example 3', html: '<div class="step"><strong>Factorise:</strong> 2x² + 10x</div><div class="step">Common factor is 2x</div><div class="step"><strong>Answer:</strong> 2x(x + 5)</div>' },
+          { label: 'Example 4', html: '<div class="step"><strong>Factorise:</strong> x² − 5x + 6</div><div class="step">Numbers that multiply to 6 and add to −5 → −2 and −3</div><div class="step"><strong>Answer:</strong> (x − 2)(x − 3)</div>' }
+        ],
+        questions: [
+          { type: 'mc', prompt: 'Factorise: x² − 9', options: ['(x − 3)(x + 3)', '(x − 9)(x + 1)', '(x − 3)²', 'x(x − 9)'], correct: 0 },
+          { type: 'mc', prompt: 'Factorise: x² + 5x + 6', options: ['(x + 2)(x + 3)', '(x + 1)(x + 6)', '(x − 2)(x − 3)', '(x + 6)(x − 1)'], correct: 0 },
+          { type: 'mc', prompt: 'Factorise: 3x + 12', options: ['3(x + 4)', '3(x + 12)', 'x(3 + 12)', '3x(1 + 4)'], correct: 0 },
+          { type: 'algebra', prompt: 'Factorise completely: x² − 25', correctAnswers: ['(x-5)(x+5)', '(x+5)(x-5)', '(x - 5)(x + 5)', '(x + 5)(x - 5)'] },
+          { type: 'algebra', prompt: 'Factorise: x² + 6x + 8', correctAnswers: ['(x+2)(x+4)', '(x+4)(x+2)', '(x + 2)(x + 4)', '(x + 4)(x + 2)'] },
+          { type: 'mc', prompt: 'Factorise: 2x² + 7x + 3', options: ['(2x + 1)(x + 3)', '(2x + 3)(x + 1)', '(x + 3)(x + 1)', '(2x − 1)(x − 3)'], correct: 0 }
+        ]
+      },
+      algebra: {
+        name: 'Algebra',
+        subject: 'Mathematics',
+        explanation: `
+          <p>Algebra uses symbols (like x) to represent numbers and to write general rules.</p>
+          <p>Key skills: simplify expressions, expand brackets, and solve linear equations.</p>
+        `,
+        tip: 'When solving equations, do the same operation to both sides to keep them balanced.',
+        examples: [
+          { label: 'Example 1', html: '<div class="step"><strong>Simplify:</strong> 3(x + 4) − 2(x − 1)</div><div class="step">= 3x + 12 − 2x + 2</div><div class="step"><strong>Answer:</strong> x + 14</div>' },
+          { label: 'Example 2', html: '<div class="step"><strong>Solve:</strong> 2x + 5 = 13</div><div class="step">2x = 8 → x = 4</div><div class="step"><strong>Answer:</strong> x = 4</div>' },
+          { label: 'Example 3', html: '<div class="step"><strong>Expand:</strong> (x + 3)(x − 2)</div><div class="step">= x² − 2x + 3x − 6</div><div class="step"><strong>Answer:</strong> x² + x − 6</div>' }
+        ],
+        questions: [
+          { type: 'mc', prompt: 'Simplify: 3(x + 4) − 2(x − 1)', options: ['x + 14', 'x + 10', '5x + 14', 'x − 14'], correct: 0 },
+          { type: 'mc', prompt: 'Solve: 5x − 7 = 3x + 9', options: ['x = 8', 'x = 1', 'x = −8', 'x = 16'], correct: 0 },
+          { type: 'numeric', prompt: 'Solve for x: 2x + 9 = 17. What is x?', correctAnswers: ['4'] },
+          { type: 'algebra', prompt: 'Simplify: 4(x − 2) + 3x', correctAnswers: ['7x-8', '7x - 8'] },
+          { type: 'mc', prompt: 'Expand: (2x − 3)(x + 5)', options: ['2x² + 7x − 15', '2x² − 15', '2x² + 7x + 15', '2x² + 10x − 3'], correct: 0 },
+          { type: 'numeric', prompt: 'Evaluate: 3² + 4² − 5', correctAnswers: ['20'] }
+        ]
+      },
+      'quadratic-equations': {
+        name: 'Quadratic Equations',
+        subject: 'Mathematics',
+        explanation: `
+          <p>A quadratic equation has the form <strong>ax² + bx + c = 0</strong> (a ≠ 0).</p>
+          <p>You can solve by factorising, using the quadratic formula, or completing the square. The discriminant <strong>Δ = b² − 4ac</strong> tells you about the nature of the roots.</p>
+        `,
+        tip: 'If Δ > 0 there are two real roots; Δ = 0 one real root; Δ < 0 no real roots.',
+        examples: [
+          { label: 'Example 1', html: '<div class="step"><strong>Solve:</strong> x² − 5x + 6 = 0</div><div class="step">Factorise: (x − 2)(x − 3) = 0</div><div class="step"><strong>Answer:</strong> x = 2 or x = 3</div>' },
+          { label: 'Example 2', html: '<div class="step"><strong>Discriminant of</strong> x² − 6x + 5 = 0</div><div class="step">Δ = (−6)² − 4(1)(5) = 36 − 20 = 16</div><div class="step"><strong>Answer:</strong> 16 (two real roots)</div>' },
+          { label: 'Example 3', html: '<div class="step"><strong>Equation with roots 2 and 3</strong></div><div class="step">Sum = 5, product = 6</div><div class="step"><strong>Answer:</strong> x² − 5x + 6 = 0</div>' }
+        ],
+        questions: [
+          { type: 'mc', prompt: 'Solve: x² − 5x + 6 = 0', options: ['x = 2 or x = 3', 'x = −2 or x = −3', 'x = 1 or x = 6', 'x = −1 or x = −6'], correct: 0 },
+          { type: 'numeric', prompt: 'What is the discriminant of x² − 6x + 5 = 0?', correctAnswers: ['16'] },
+          { type: 'mc', prompt: 'What is the discriminant of 2x² + 3x − 5 = 0?', options: ['49', '41', '−31', '9'], correct: 0 },
+          { type: 'algebra', prompt: 'Write the quadratic with roots 2 and 3 in the form x² − (sum)x + product = 0', correctAnswers: ['x^2-5x+6', 'x²-5x+6', 'x^2 - 5x + 6', 'x² - 5x + 6'] },
+          { type: 'mc', prompt: 'The roots of x² − 4 = 0 are:', options: ['x = 2 or x = −2', 'x = 4 or x = −4', 'x = 2 only', 'x = 0 or x = 4'], correct: 0 },
+          { type: 'numeric', prompt: 'If f(x) = x² − 9, what is f(5)?', correctAnswers: ['16'] }
+        ]
+      },
+      'ohms-law': {
+        name: "Ohm's Law",
+        subject: 'Physical Sciences',
+        explanation: `
+          <p><strong>Ohm’s Law</strong> relates voltage (V), current (I) and resistance (R):</p>
+          <p style="text-align:center;font-size:1.2rem;font-weight:700;color:#1A1A2E">V = I × R</p>
+          <p>So: <strong>I = V / R</strong> and <strong>R = V / I</strong>.</p>
+          <p>Voltage is measured in volts (V), current in amperes (A), resistance in ohms (Ω).</p>
+        `,
+        tip: 'In a series circuit the current is the same everywhere; voltages add up.',
+        examples: [
+          { label: 'Example 1', html: '<div class="step"><strong>Given:</strong> V = 12 V, R = 4 Ω</div><div class="step">I = V / R = 12 / 4 = 3</div><div class="step"><strong>Current:</strong> 3 A</div>' },
+          { label: 'Example 2', html: '<div class="step"><strong>Given:</strong> I = 2 A, R = 5 Ω</div><div class="step">V = I × R = 2 × 5 = 10</div><div class="step"><strong>Voltage:</strong> 10 V</div>' },
+          { label: 'Example 3', html: '<div class="step"><strong>Given:</strong> V = 9 V, I = 3 A</div><div class="step">R = V / I = 9 / 3 = 3</div><div class="step"><strong>Resistance:</strong> 3 Ω</div>' }
+        ],
+        questions: [
+          { type: 'mc', prompt: "Ohm's Law states that V =", options: ['IR', 'I/R', 'I + R', 'I − R'], correct: 0 },
+          { type: 'numeric', prompt: 'If V = 12 V and R = 4 Ω, what is the current I in amperes?', correctAnswers: ['3'] },
+          { type: 'numeric', prompt: 'V = 10 V, R = 5 Ω. Current I in amperes?', correctAnswers: ['2'] },
+          { type: 'mc', prompt: 'Unit of resistance is:', options: ['Ohm (Ω)', 'Ampere (A)', 'Volt (V)', 'Watt (W)'], correct: 0 },
+          { type: 'algebra', prompt: 'Write the formula for resistance R in terms of V and I', correctAnswers: ['R=V/I', 'R = V/I', 'R=V÷I'] },
+          { type: 'numeric', prompt: 'Two 3 Ω resistors in series. Total resistance in ohms?', correctAnswers: ['6'] }
+        ]
+      },
+      functions: {
+        name: 'Functions',
+        subject: 'Mathematics',
+        explanation: `
+          <p>A function assigns each input x exactly one output f(x).</p>
+          <p>You should be able to evaluate functions, find intercepts, and think about domain (allowed inputs).</p>
+        `,
+        tip: 'For a square root function, the expression inside the root must be ≥ 0.',
+        examples: [
+          { label: 'Example 1', html: '<div class="step"><strong>f(x) = 2x + 3</strong>. Find f(4)</div><div class="step">f(4) = 2(4) + 3 = 11</div><div class="step"><strong>Answer:</strong> 11</div>' },
+          { label: 'Example 2', html: '<div class="step"><strong>Domain of</strong> f(x) = √(x − 2)</div><div class="step">Need x − 2 ≥ 0 → x ≥ 2</div><div class="step"><strong>Domain:</strong> x ≥ 2</div>' },
+          { label: 'Example 3', html: '<div class="step"><strong>f(x) = x² − 4</strong>. Find f(−3)</div><div class="step">f(−3) = 9 − 4 = 5</div><div class="step"><strong>Answer:</strong> 5</div>' }
+        ],
+        questions: [
+          { type: 'mc', prompt: 'If f(x) = 2x + 3, what is f(4)?', options: ['11', '8', '5', '14'], correct: 0 },
+          { type: 'mc', prompt: 'Domain of f(x) = √(x − 2)?', options: ['x ≥ 2', 'x > 2', 'x ≤ 2', 'All real numbers'], correct: 0 },
+          { type: 'numeric', prompt: 'If f(x) = 3x − 5, what is f(4)?', correctAnswers: ['7'] },
+          { type: 'numeric', prompt: 'If f(x) = x² − 9, what is f(5)?', correctAnswers: ['16'] },
+          { type: 'mc', prompt: 'If f(x) = x² − 4, find f(−3)', options: ['5', '13', '−13', '4'], correct: 0 },
+          { type: 'numeric', prompt: 'What is the y-intercept of y = 2x + 7?', correctAnswers: ['7'] }
+        ]
+      },
+      'euclidean-geometry': {
+        name: 'Euclidean Geometry',
+        subject: 'Mathematics',
+        explanation: `
+          <p>Euclidean geometry is about shapes, angles and formal proofs using definitions, axioms and theorems.</p>
+          <p><strong>Core ideas you need:</strong></p>
+          <p>• Angles in a triangle always add to <strong>180°</strong><br>
+          • Parallel lines create equal corresponding angles and alternate angles<br>
+          • Circle theorems (e.g. angle in a semicircle is 90°, angle at the centre is twice the angle at the circumference)<br>
+          • Similar triangles have equal corresponding angles and proportional sides</p>
+          <p>A good proof names the reason for every step (e.g. “vertically opposite angles”, “corresponding angles, AB ∥ CD”).</p>
+        `,
+        tip: 'Sketch the figure, mark equal angles and equal sides, then write each reason clearly.',
+        examples: [
+          {
+            label: 'Angles in a triangle',
+            html: `<div class="step"><strong>Find ∠C</strong> in triangle ABC where ∠A = 50° and ∠B = 70°.</div>
+              <div style="margin:12px 0;text-align:center">
+                <svg width="220" height="140" viewBox="0 0 220 140" xmlns="http://www.w3.org/2000/svg">
+                  <polygon points="30,120 190,120 110,20" fill="#EEF2FF" stroke="#3B5BDB" stroke-width="2"/>
+                  <text x="20" y="132" font-size="13" fill="#1E1B4B">A</text>
+                  <text x="192" y="132" font-size="13" fill="#1E1B4B">B</text>
+                  <text x="106" y="16" font-size="13" fill="#1E1B4B">C</text>
+                  <text x="55" y="115" font-size="12" fill="#5A5A72">50°</text>
+                  <text x="145" y="115" font-size="12" fill="#5A5A72">70°</text>
+                  <text x="100" y="70" font-size="12" fill="#3B5BDB">?</text>
+                </svg>
+              </div>
+              <div class="step">Sum of angles in a triangle = 180°</div>
+              <div class="step">∠C = 180° − 50° − 70° = <strong>60°</strong></div>`
+          },
+          {
+            label: 'Parallel lines',
+            html: `<div class="step">Line AB ∥ CD. A transversal crosses them. One corresponding angle is 65°. Find the other corresponding angle.</div>
+              <div class="step">Corresponding angles formed by parallel lines are equal.</div>
+              <div class="step"><strong>Answer:</strong> 65°</div>`
+          },
+          {
+            label: 'Angle in a semicircle',
+            html: `<div class="step">AB is a diameter of a circle. C is a point on the circumference. What is ∠ACB?</div>
+              <div class="step">Theorem: the angle in a semicircle is a right angle.</div>
+              <div class="step"><strong>Answer:</strong> 90°</div>`
+          }
+        ],
+        questions: []
+      },
+      trigonometry: {
+        name: 'Trigonometry',
+        subject: 'Mathematics',
+        explanation: `
+          <p>Trigonometry links angles and side lengths in triangles (and on the unit circle).</p>
+          <p><strong>Right-angled triangle (SOH CAH TOA):</strong></p>
+          <p>• <strong>sin θ</strong> = opposite ÷ hypotenuse<br>
+          • <strong>cos θ</strong> = adjacent ÷ hypotenuse<br>
+          • <strong>tan θ</strong> = opposite ÷ adjacent</p>
+          <p>You also use the unit circle for any angle, and identities such as sin²θ + cos²θ = 1.</p>
+        `,
+        tip: 'Label opposite, adjacent and hypotenuse relative to the angle you are using before you write a ratio.',
+        examples: [
+          {
+            label: 'Find a side',
+            html: `<div class="step">In right triangle ABC, ∠C = 90°, ∠A = 30°, hypotenuse AB = 10. Find side BC (opposite A).</div>
+              <div style="margin:12px 0;text-align:center">
+                <svg width="220" height="150" viewBox="0 0 220 150" xmlns="http://www.w3.org/2000/svg">
+                  <polygon points="40,130 180,130 40,40" fill="#ECFDF3" stroke="#10B981" stroke-width="2"/>
+                  <text x="28" y="145" font-size="13" fill="#1E1B4B">C</text>
+                  <text x="182" y="145" font-size="13" fill="#1E1B4B">B</text>
+                  <text x="28" y="36" font-size="13" fill="#1E1B4B">A</text>
+                  <text x="95" y="148" font-size="11" fill="#5A5A72">BC = ?</text>
+                  <text x="110" y="80" font-size="11" fill="#5A5A72">10</text>
+                  <text x="22" y="90" font-size="11" fill="#5A5A72">30°</text>
+                </svg>
+              </div>
+              <div class="step">sin 30° = opposite / hypotenuse = BC / 10</div>
+              <div class="step">sin 30° = ½ → BC = 10 × ½ = <strong>5</strong></div>`
+          },
+          {
+            label: 'Find an angle',
+            html: `<div class="step">Opposite = 3, adjacent = 4. Find θ where tan θ = opp/adj.</div>
+              <div class="step">tan θ = 3/4 = 0.75 → θ = tan⁻¹(0.75) ≈ <strong>36.9°</strong></div>`
+          },
+          {
+            label: 'Identity',
+            html: `<div class="step">If sin θ = 3/5 and θ is acute, find cos θ.</div>
+              <div class="step">sin²θ + cos²θ = 1 → cos²θ = 1 − 9/25 = 16/25 → cos θ = <strong>4/5</strong></div>`
+          }
+        ],
+        questions: []
+      }
+    };
+
+    // Map any display name / URL param to a CONCEPTS key.
+    // Handles spaces, ampersands, punctuation, and common spelling variants.
+    function toConceptId(raw) {
+      if (!raw) return '';
+      let id = String(raw)
+        .toLowerCase()
+        .trim()
+        .replace(/&/g, ' and ')
+        .replace(/['’]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      const ALIASES = {
+        'factorise': 'factorisation',
+        'factorization': 'factorisation',
+        'quadratic': 'quadratic-equations',
+        'quadratics': 'quadratic-equations',
+        'quadratic-equation': 'quadratic-equations',
+        'ohm': 'ohms-law',
+        'ohms-law': 'ohms-law',
+        'ohms': 'ohms-law',
+        'function': 'functions',
+        'euclidean': 'euclidean-geometry',
+        'euclidean-geometry': 'euclidean-geometry',
+        'euclid': 'euclidean-geometry',
+        'trig': 'trigonometry',
+        'trigonometry': 'trigonometry',
+      };
+      return ALIASES[id] || id;
+    }
+
+    if (GapMapAuth.requireAuth()) {
+      initConceptPage().catch((error) => {
+        console.error('[Concept] page initialisation failed.', error);
+        learnScreen.classList.remove('active');
+        emptyScreen.classList.add('active');
+        const message = document.getElementById('emptyMessage');
+        if (message) message.textContent = error?.message || 'The Concept could not be loaded. Please return to your Gap Map and try again.';
+        if (typeof GapMapAuth.reveal === 'function') GapMapAuth.reveal();
+      });
+    }
+
+    let rawQuestions = [];
+    let questions = [];
+    let current = 0;
+    let answers = [];
+    let checked = [];
+    let correctStates = [];
+    let activeConcept = null;
+    let activeGraph = null;
+    let activeGraphPromise = null;
+    let exampleIndex = 0;
+    let practiceBankPromise = null;
+    let quantumPlan = null;
+    let quantumPracticeMeta = null;
+    let practiceStartedAt = null;
+    const quantumLearnerId = getCurrentLearnerId({ storage: localStorage });
+
+    const nextBtn = document.getElementById('nextBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const checkBtn = document.getElementById('checkBtn');
+    const writtenInput = document.getElementById('writtenInput');
+    const learnScreen = document.getElementById('learnScreen');
+    const practiceScreen = document.getElementById('practiceScreen');
+    const resultsScreen = document.getElementById('resultsScreen');
+    const emptyScreen = document.getElementById('emptyScreen');
+    const feedbackMount = document.getElementById('answerFeedback');
+
+    function quantumPlanKey() {
+      const learner = String(quantumLearnerId || 'learner-001');
+      const subject = String(
+        (typeof GapMapAuth.getActiveSubject === 'function' && GapMapAuth.getActiveSubject()) ||
+        activeConcept?.subject ||
+        'general',
+      ).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      return `gapmap.quantum.plan.${learner}.${subject}`;
+    }
+
+    // Per-Learner + Subject + Concept history of Items already shown in
+    // Targeted Practice, so repeat visits to "Start Practice" for the same
+    // Concept surface new Items instead of the same set every time.
+    function practiceHistoryKey(conceptName) {
+      const learner = String(quantumLearnerId || 'learner-001');
+      const subject = String(
+        (typeof GapMapAuth.getActiveSubject === 'function' && GapMapAuth.getActiveSubject()) ||
+        activeConcept?.subject ||
+        'general',
+      ).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      const concept = String(conceptName || 'general').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      return `gapmap.practice.history.${learner}.${subject}.${concept}`;
+    }
+
+    function normalisePrompt(prompt) {
+      return String(prompt || '').trim().toLowerCase().replace(/\s+/g, ' ');
+    }
+
+    // Recovers the plain prompt text of each previously-shown Item from its
+    // stored questionSignature() JSON, for the Quantum planner's seenPrompts.
+    function seenPromptsFromHistory(history) {
+      const prompts = [];
+      for (const signature of history || []) {
+        try {
+          const parsed = JSON.parse(signature);
+          if (parsed && parsed.prompt) prompts.push(parsed.prompt);
+        } catch (_) { /* ignore malformed/legacy entries */ }
+      }
+      return prompts;
+    }
+
+    function diagnosticContext() {
+      try {
+        return typeof GapMapAuth.loadDiagnosticResults === 'function'
+          ? GapMapAuth.loadDiagnosticResults(activeConcept?.subject)
+          : null;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    async function resolveQuantumPlan(bank, seenPrompts = []) {
+      const diagnostic = diagnosticContext();
+      const existing = readQuantumPlan(localStorage, quantumPlanKey());
+
+      // The saved plan is only "fresh" while at least one of its Items has
+      // not yet been shown to the Learner. Once every Item in it has been
+      // seen, it must not keep being reused — regenerate below so the
+      // Learner gets new Items instead of the same fixed set every attempt.
+      if (existing && existing.targetConcept &&
+          toConceptId(existing.targetConcept) === toConceptId(activeConcept.name) &&
+          Array.isArray(existing.itemIds) && existing.itemIds.length >= 3) {
+        const idSet = new Set(existing.itemIds);
+        const stillUnseen = bank.some((item) =>
+          idSet.has(item.id) && !seenPrompts.some((prompt) => normalisePrompt(prompt) === normalisePrompt(item.prompt)),
+        );
+        if (stillUnseen) return existing;
+      }
+
+      if (!diagnostic?.scores?.length) return null;
+      const plan = prepareQuantumPractice({
+        gapMap: diagnostic.scores,
+        mistakes: diagnostic.mistakes || [],
+        bankItems: bank,
+        targetConcept: activeConcept.name,
+        itemCount: 5,
+        seenPrompts,
+      });
+      return plan;
+    }
+
+    function renderQuantumPracticeMeta() {
+      const card = document.getElementById('quantumPracticeCard');
+      if (!card || !quantumPlan || !quantumPracticeMeta) return;
+      const title = document.getElementById('quantumPracticeTitle');
+      const description = document.getElementById('quantumPracticeDescription');
+      const stage = document.getElementById('quantumStage');
+
+      card.style.display = '';
+      if (title) title.textContent = `${activeConcept.name} · targeted Practice`;
+      const focus = (quantumPlan.focusKinds || []).length
+        ? `Your Diagnostic showed ${quantumPlan.focusKinds.join(' + ')} evidence, so the Items are weighted toward that repair.`
+        : 'Items are weighted toward concept understanding and worked reasoning.';
+      if (description) description.textContent =
+        `${focus} The set moves from repair to transfer to a final check.`;
+      if (stage) {
+        const item = rawQuestions[current];
+        stage.textContent = item?.quantum_stage || 'repair';
+      }
+    }
+
+    async function loadPracticeBank() {
+      if (practiceBankPromise) return practiceBankPromise;
+      practiceBankPromise = fetch('./core/demo-data/practice-bank.yaml')
+        .then((response) => {
+          if (!response.ok) throw new Error('Practice bank could not be loaded: ' + response.status);
+          return response.text();
+        })
+        .then((text) => {
+          if (!globalThis.jsyaml || typeof globalThis.jsyaml.load !== 'function') {
+            throw new Error('The YAML loader is unavailable.');
+          }
+          const bank = globalThis.jsyaml.load(text);
+          if (!Array.isArray(bank)) throw new Error('Practice bank must be a list of Item records.');
+          return bank;
+        });
+      return practiceBankPromise;
+    }
+
+    function withTimeout(promise, timeoutMs, label = 'operation') {
+      let timer = null;
+      const timeout = new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error(label + ' timed out')), timeoutMs);
+      });
+      return Promise.race([promise, timeout]).finally(() => {
+        if (timer) clearTimeout(timer);
+      });
+    }
+
+    async function loadConceptGraphSafely(grade, subject) {
+      try {
+        return await withTimeout(
+          createSubjectStore().getConceptGraph({ grade, subject }),
+          1200,
+          'Concept Graph loading',
+        );
+      } catch (error) {
+        console.warn('[Concept] Concept Graph unavailable.', error);
+        return null;
+      }
+    }
+
+    async function resolveConcept(conceptId, subject, grade) {
+      const authored = CONCEPTS[conceptId];
+
+      // Authored Concepts must render immediately. The Concept Graph is extra
+      // context for the Learning Path; a slow/missing graph must never leave
+      // the Learn screen stuck on “Loading…”.
+      const graphPromise = loadConceptGraphSafely(grade, subject);
+      activeGraphPromise = graphPromise;
+      if (authored) {
+        graphPromise.then((graph) => { activeGraph = graph; }).catch(() => {});
+        return authored;
+      }
+
+      activeGraph = await graphPromise;
+      const node = activeGraph && Array.isArray(activeGraph.nodes)
+        ? activeGraph.nodes.find((entry) => toConceptId(entry.concept) === conceptId)
+        : null;
+      if (!node) return null;
+      return {
+        name: node.concept,
+        subject,
+        explanation: '<p>' + node.description + '.</p>',
+        tip: 'Use the Concept explanation and then start Practice to work through Items for this Concept.',
+        examples: [{
+          label: 'Concept focus',
+          html: '<div class="step"><strong>' + node.concept + ':</strong> ' + node.description + '.</div>'
+        }],
+      };
+    }
+
+    // Only show a video when the existing Library recommendation is an exact
+    // Concept match. Broad keyword matches (for example Energy → Work, Energy
+    // & Power) are intentionally rejected so a related video is never presented
+    // as if it teaches the Concept itself.
+    const STRICT_CONCEPT_VIDEOS = {
+      'mathematics|11|euclidean geometry': {
+        youtubeId: 'Y76Q_QNs1NY',
+        title: 'Euclidean Geometry – Grade 11 Exam',
+        channel: 'Kevinmathscience',
+      },
+    };
+
+    function renderConceptVideo(concept) {
+      const card = document.getElementById('videosCard');
+      const frame = document.getElementById('conceptVideo');
+      const meta = document.getElementById('videoMeta');
+      if (!card || !frame || !meta) return;
+      card.style.display = 'none';
+      frame.removeAttribute('src');
+      meta.textContent = '';
+      if (!concept || typeof GapMapAuth.getVideosForConcept !== 'function') return;
+
+      const learnerGrade = String((typeof GapMapAuth.getUser === 'function' && GapMapAuth.getUser()?.grade) || '').trim();
+      const key = String((concept.subject || '') + '|' + learnerGrade + '|' + (concept.name || '')).toLowerCase().trim();
+      const video = STRICT_CONCEPT_VIDEOS[key];
+      if (!video || !video.youtubeId) return;
+
+      frame.src = 'https://www.youtube.com/embed/' + encodeURIComponent(video.youtubeId) + '?rel=0';
+      frame.title = video.title;
+      meta.textContent = (video.channel || 'YouTube') + ' · ' + video.title;
+      card.style.display = '';
+    }
+
+    const PRACTICE_LANGUAGES = [
+      { value: 'English', label: 'English (Standard)' },
+      { value: 'Afrikaans', label: 'Afrikaans' },
+    ];
+
+    function applyQuizLanguageAvailability() {
+      const select = document.getElementById('quizLanguage');
+      const note = document.getElementById('quizLanguageNote');
+      if (select) {
+        select.innerHTML = '';
+        PRACTICE_LANGUAGES.forEach((language) => {
+          const option = document.createElement('option');
+          option.value = language.value;
+          option.textContent = language.label;
+          select.appendChild(option);
+        });
+      }
+      if (note) {
+        note.textContent = '';
+        note.style.display = 'none';
+      }
+      return PRACTICE_LANGUAGES;
+    }
+
+    function showExample() {
+      const examples = activeConcept && Array.isArray(activeConcept.examples) ? activeConcept.examples : [];
+      const body = document.getElementById('exampleBody');
+      if (!body) return;
+      if (!examples.length) {
+        body.innerHTML = '<div class="example-box"><div class="ex-label">Concept focus</div><div class="step">Review the explanation above, then start Practice.</div></div>';
+        return;
+      }
+      const example = examples[exampleIndex % examples.length];
+      body.innerHTML = '<div class="example-box"><div class="ex-label">' + example.label + '</div>' + example.html + '</div>';
+    }
+
+    function toPageItem(item, index) {
+      const type = String(item.prompt_type || '').toLowerCase();
+      const base = {
+        id: item.id || ('q' + (index + 1)),
+        prompt: item.prompt || '',
+        diagram: item.diagram || null,
+        sourceConcept: item.concept,
+        quantum_stage: item.quantum_stage || 'transfer',
+      };
+      if (type === 'multiple_choice') {
+        return { ...base, type: 'mc', options: Array.isArray(item.options) ? item.options.slice() : [], correct: Number(item.correct) };
+      }
+      if (type === 'numeric') {
+        return { ...base, type: 'numeric', correctAnswers: [String(item.correct)] };
+      }
+      return { ...base, type: 'algebra', correctAnswers: [String(item.correct)] };
+    }
+
+    function uniqueByPrompt(items) {
+      const seen = new Set();
+      const out = [];
+      for (const item of items) {
+        const key = String(item.prompt || '')
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, ' ')
+          .trim();
+        if (!key || seen.has(key)) continue;
+        seen.add(key);
+        out.push(item);
+      }
+      return out;
+    }
+
+    async function questionsForPractice() {
+      const authoredBank = await loadPracticeBank();
+      const externalResult = await loadConceptQuestionPool({
+        concepts: [{ name: activeConcept.name, description: '' }],
+        timeoutMs: 2200,
+        limit: 1200,
+      });
+      const externalBank = externalResult.items || [];
+      const bank = uniqueByPrompt([
+        ...authoredBank,
+        ...externalBank,
+      ].filter((item) => toConceptId(item.concept) === toConceptId(activeConcept.name)));
+
+      if (!bank.length) {
+        throw new Error('Targeted Practice has no usable Items for ' + activeConcept.name + '.');
+      }
+
+      const historyKey = practiceHistoryKey(activeConcept.name);
+      let history = readQuizHistory(localStorage, historyKey);
+      try {
+        const remoteHistory = await getFirebasePracticeHistory(quantumLearnerId, { subject: activeConcept?.subject, concept: activeConcept?.name });
+        if (Array.isArray(remoteHistory) && remoteHistory.length) {
+          history = [...new Set([...history, ...remoteHistory])];
+          writeQuizHistory(localStorage, historyKey, history);
+        }
+      } catch (error) {
+        console.warn('[Firebase] Practice history hydration skipped.', error);
+      }
+      const seenPrompts = seenPromptsFromHistory(history);
+      const notSeen = (item) => !seenPrompts.some(
+        (prompt) => normalisePrompt(prompt) === normalisePrompt(item.prompt),
+      );
+
+      quantumPlan = await resolveQuantumPlan(bank, seenPrompts);
+
+      let selected = [];
+      if (quantumPlan?.itemIds?.length) {
+        const idSet = new Set(quantumPlan.itemIds);
+        selected = bank.filter((item) => idSet.has(item.id));
+      }
+
+      if (selected.length < 3) {
+        const diagnostic = diagnosticContext();
+        const fallback = selectQuantumPracticeItems({
+          bankItems: bank,
+          concept: activeConcept.name,
+          mistakes: diagnostic?.mistakes || [],
+          itemCount: 8,
+          seenPrompts,
+        });
+        selected = uniqueByPrompt(fallback.items);
+        quantumPracticeMeta = fallback;
+      } else {
+        selected = uniqueByPrompt(selected);
+        quantumPracticeMeta = {
+          concept: activeConcept.name,
+          focusKinds: quantumPlan.focusKinds || [],
+          items: selected,
+        };
+      }
+
+      // Fresh Items first. We never erase history merely because a Concept's
+      // authored bank is smaller than the requested Practice length.
+      const unseenPool = bank.filter(notSeen);
+      selected = uniqueByPrompt([
+        ...selected.filter(notSeen),
+        ...shuffle(unseenPool),
+        ...selected,
+        ...shuffle(bank),
+      ]);
+
+      if (selected.length < 3) {
+        throw new Error('Targeted Practice has fewer than 3 usable Items for ' + activeConcept.name + '.');
+      }
+
+      const targetCount = Math.min(
+        Math.max(5, Number(document.getElementById('practiceItemCount')?.value || 10)),
+        15,
+        selected.length,
+      );
+      const chosen = shuffle(selected).slice(0, targetCount);
+
+      const finalItems = chosen.map((item, index) => {
+        const pageItem = toPageItem(item, index);
+        if (notSeen(item)) return pageItem;
+        let variant = pageItem;
+        for (let attempt = 0; attempt < 24; attempt += 1) {
+          const candidate = presentationVariant(
+            pageItem,
+            `${quantumLearnerId}|${pageItem.id}|${history.length}|${attempt}`,
+          );
+          if (!seenPrompts.some((prompt) =>
+            normalisePrompt(prompt) === normalisePrompt(candidate.prompt))) {
+            variant = candidate;
+            break;
+          }
+        }
+        return variant;
+      });
+
+      return balanceCorrectOptionPositions(
+        finalItems,
+        Date.now().toString(36) + Math.random(),
+      );
+    }
+
+    const PRACTICE_DIAGRAMS = {
+      triangle_abc_50_70: `<svg width="220" height="140" viewBox="0 0 220 140" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <polygon points="30,120 190,120 110,20" fill="#EEF2FF" stroke="#3B5BDB" stroke-width="2"/>
+        <text x="20" y="132" font-size="13" fill="#1E1B4B">A</text>
+        <text x="192" y="132" font-size="13" fill="#1E1B4B">B</text>
+        <text x="106" y="16" font-size="13" fill="#1E1B4B">C</text>
+        <text x="55" y="115" font-size="12" fill="#5A5A72">50°</text>
+        <text x="145" y="115" font-size="12" fill="#5A5A72">70°</text>
+        <text x="100" y="70" font-size="12" fill="#3B5BDB">?</text>
+      </svg>`,
+      semicircle_angle: `<svg width="220" height="130" viewBox="0 0 220 130" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M20,110 A90,90 0 0 1 200,110" fill="#EEF2FF" stroke="#3B5BDB" stroke-width="2"/>
+        <line x1="20" y1="110" x2="200" y2="110" stroke="#3B5BDB" stroke-width="2"/>
+        <circle cx="110" cy="110" r="3" fill="#1E1B4B"/>
+        <line x1="20" y1="110" x2="150" y2="35" stroke="#3B5BDB" stroke-width="2"/>
+        <line x1="200" y1="110" x2="150" y2="35" stroke="#3B5BDB" stroke-width="2"/>
+        <text x="12" y="126" font-size="12" fill="#1E1B4B">A</text>
+        <text x="198" y="126" font-size="12" fill="#1E1B4B">B</text>
+        <text x="148" y="28" font-size="12" fill="#1E1B4B">C</text>
+        <text x="130" y="85" font-size="12" fill="#3B5BDB">?</text>
+      </svg>`,
+      right_triangle_3_4_5: `<svg width="200" height="150" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <polygon points="30,130 150,130 30,40" fill="#ECFDF3" stroke="#10B981" stroke-width="2"/>
+        <text x="18" y="145" font-size="12" fill="#1E1B4B">C</text>
+        <text x="152" y="145" font-size="12" fill="#1E1B4B">B</text>
+        <text x="18" y="36" font-size="12" fill="#1E1B4B">A</text>
+        <text x="80" y="146" font-size="11" fill="#5A5A72">4</text>
+        <text x="8" y="90" font-size="11" fill="#5A5A72">3</text>
+        <text x="95" y="80" font-size="11" fill="#5A5A72">5</text>
+      </svg>`,
+      right_triangle_30_hyp10: `<svg width="220" height="150" viewBox="0 0 220 150" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <polygon points="40,130 180,130 40,40" fill="#ECFDF3" stroke="#10B981" stroke-width="2"/>
+        <text x="28" y="145" font-size="13" fill="#1E1B4B">C</text>
+        <text x="182" y="145" font-size="13" fill="#1E1B4B">B</text>
+        <text x="28" y="36" font-size="13" fill="#1E1B4B">A</text>
+        <text x="95" y="148" font-size="11" fill="#5A5A72">?</text>
+        <text x="110" y="80" font-size="11" fill="#5A5A72">10</text>
+        <text x="22" y="90" font-size="11" fill="#5A5A72">30°</text>
+      </svg>`,
+    };
+
+    function normalise(value) {
+      if (value == null) return '';
+      return String(value)
+        .toLowerCase()
+        .replace(/\s+/g, '')
+        .replace(/×/g, '*')
+        .replace(/−/g, '-')
+        .replace(/²/g, '^2');
+    }
+
+    function writtenCorrect(item, value) {
+      if (!value) return false;
+      const normalised = normalise(value);
+      return (item.correctAnswers || []).some((answer) => normalise(answer) === normalised);
+    }
+
+    function correctAnswerText(item) {
+      if (item.type === 'mc') return (item.options || [])[item.correct] || 'the correct option';
+      return (item.correctAnswers || [])[0] || 'the stored correct answer';
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function showFeedback(item, isCorrect) {
+      if (!feedbackMount) return;
+      const response = isCorrect
+        ? (item.type === 'mc' ? item.correct : answers[current])
+        : answers[current];
+      const explanation = explainAnswer(item, response, { correct: isCorrect });
+      feedbackMount.className = 'answer-feedback ' + (isCorrect ? 'correct' : 'incorrect');
+
+      const diagnosis = (!isCorrect && explanation.mistakeExplanation)
+        ? `<div class="mistake-diagnosis"><strong>Mistake Diagnosis · ${escapeHtml(explanation.mistakeKind || 'concept')}</strong><div>${escapeHtml(explanation.mistakeExplanation)}</div></div>`
+        : '';
+
+      feedbackMount.innerHTML =
+        `<strong>${isCorrect ? 'Correct.' : 'Not correct.'}</strong> ` +
+        `The correct answer is <strong>${escapeHtml(explanation.correctAnswer)}</strong>.` +
+        diagnosis +
+        `<div class="answer-how"><strong>How the answer was worked out</strong><div>${escapeHtml(explanation.how)}</div></div>`;
+
+      feedbackMount.style.display = 'block';
+      checked[current] = true;
+      correctStates[current] = isCorrect;
+    }
+
+    function lockMcOptions(selectedIndex) {
+      const item = questions[current];
+      document.querySelectorAll('#optionsContainer .option').forEach((option, index) => {
+        option.classList.add('disabled');
+        option.style.pointerEvents = 'none';
+        if (index === item.correct) option.classList.add('correct');
+        if (index === selectedIndex && index !== item.correct) option.classList.add('incorrect');
+      });
+    }
+
+    function renderQuestion() {
+      const item = questions[current];
+      const isWritten = item.type === 'numeric' || item.type === 'algebra';
+      document.getElementById('currentNum').textContent = current + 1;
+      document.getElementById('progressTotal').textContent = questions.length;
+      const pct = Math.round(((current + 1) / questions.length) * 100);
+      document.getElementById('progressPercent').textContent = pct + '%';
+      document.getElementById('progressBar').style.width = pct + '%';
+      document.getElementById('questionText').textContent = item.prompt;
+      const diagramEl = document.getElementById('questionDiagram');
+      if (diagramEl) {
+        const svg = item.diagram && PRACTICE_DIAGRAMS[item.diagram];
+        if (svg) {
+          diagramEl.innerHTML = svg;
+          diagramEl.style.display = 'block';
+        } else {
+          diagramEl.innerHTML = '';
+          diagramEl.style.display = 'none';
+        }
+      }
+      feedbackMount.style.display = 'none';
+      feedbackMount.className = 'answer-feedback';
+      feedbackMount.innerHTML = '';
+      renderQuantumPracticeMeta();
+
+      const optionsContainer = document.getElementById('optionsContainer');
+      const writtenContainer = document.getElementById('writtenContainer');
+      optionsContainer.innerHTML = '';
+
+      if (isWritten) {
+        optionsContainer.style.display = 'none';
+        writtenContainer.style.display = 'block';
+        writtenInput.value = answers[current] == null ? '' : String(answers[current]);
+        writtenInput.placeholder = item.type === 'algebra' ? 'Type your Response, e.g. (x-3)(x+3)' : 'Type your Response, e.g. 4';
+        document.getElementById('writtenHint').textContent = item.type === 'algebra' ? 'Expression accepted with spaces ignored.' : 'Enter the number only.';
+        if (checked[current]) {
+          showFeedback(item, Boolean(correctStates[current]));
+          checkBtn.style.display = 'none';
+          nextBtn.style.display = 'inline-flex';
+          nextBtn.disabled = false;
+        } else {
+          checkBtn.style.display = 'inline-flex';
+          checkBtn.disabled = !String(writtenInput.value || '').trim();
+          nextBtn.style.display = 'none';
+        }
+      } else {
+        writtenContainer.style.display = 'none';
+        optionsContainer.style.display = 'flex';
+        checkBtn.style.display = 'none';
+        nextBtn.style.display = 'inline-flex';
+        (item.options || []).forEach((option, index) => {
+          const letter = String.fromCharCode(65 + index);
+          const div = document.createElement('label');
+          div.className = 'option';
+          div.innerHTML = '<input type="radio" name="item" value="' + index + '"><span class="option-letter">' + letter + '</span><span class="option-text">' + option + '</span>';
+          div.addEventListener('click', () => {
+            if (checked[current]) return;
+            answers[current] = index;
+            const correct = index === item.correct;
+            showFeedback(item, correct);
+            lockMcOptions(index);
+            nextBtn.disabled = false;
+          });
+          optionsContainer.appendChild(div);
+        });
+        if (checked[current] && answers[current] != null) {
+          lockMcOptions(Number(answers[current]));
+          showFeedback(item, Boolean(correctStates[current]));
+          nextBtn.disabled = false;
+        } else {
+          nextBtn.disabled = true;
+        }
+      }
+      prevBtn.style.visibility = current === 0 ? 'hidden' : 'visible';
+      nextBtn.textContent = current === questions.length - 1 ? 'Finish →' : 'Next →';
+    }
+
+    function startPractice() {
+      practiceStartedAt = new Date().toISOString();
+      applyQuizLanguageAvailability();
+      const savedLanguage = GapMapAuth.getActiveLanguage ? GapMapAuth.getActiveLanguage() : 'English';
+      const supported = PRACTICE_LANGUAGES;
+      const language = supported.some((entry) => entry.value === savedLanguage) ? savedLanguage : 'English';
+      const quizLanguage = document.getElementById('quizLanguage');
+      if (quizLanguage) quizLanguage.value = language;
+      questionsForPractice()
+        .then((items) => {
+          rawQuestions = items;
+          questions = rawQuestions.map((item) => translateQuestion(item, language));
+          current = 0;
+          answers = [];
+          checked = [];
+          correctStates = [];
+          learnScreen.classList.remove('active');
+          resultsScreen.classList.remove('active');
+          practiceScreen.classList.add('active');
+          renderQuestion();
+        })
+        .catch((error) => {
+          console.error('[Concept] Practice could not start.', error);
+          document.getElementById('emptyMessage').textContent = error.message || 'Practice could not be loaded.';
+          learnScreen.classList.remove('active');
+          emptyScreen.classList.add('active');
+        });
+    }
+
+    async function finishPractice() {
+      practiceScreen.classList.remove('active');
+      resultsScreen.classList.add('active');
+      document.getElementById('resultsTitle').textContent = 'Targeted Practice complete';
+      document.getElementById('resultsLead').textContent = 'Your Responses and this Practice Attempt have been saved to your Learner record.';
+      document.getElementById('resultsNext').innerHTML =
+        '<strong>What’s next:</strong> Retake the Diagnostic later to re-measure this Concept and update your Gap Map.';
+      recordPracticeHistory();
+
+      const flags = questions.map((item, index) => {
+        if (item.type === 'mc') return answers[index] === item.correct;
+        return writtenCorrect(item, answers[index]);
+      });
+      const scoringItems = questions.map((item) => ({ ...item, concept: activeConcept.name }));
+      const rollup = scoreFromFlags(scoringItems, flags);
+      const language = document.getElementById('quizLanguage')?.value || 'English';
+      const assessmentId = `practice-${toConceptId(activeConcept.name)}-${Date.now().toString(36)}`;
+      const practiceAssessment = {
+        id: assessmentId,
+        type: 'practice',
+        subject: `Grade ${String((GapMapAuth.getUser && GapMapAuth.getUser()?.grade) || '12')} ${String(activeConcept.subject || 'General')}`.trim(),
+        language,
+        explanation_level: (GapMapAuth.getActiveExplanationLevel && GapMapAuth.getActiveExplanationLevel()) || 'Standard',
+        concepts: [{ name: activeConcept.name }],
+        items: rawQuestions.map((item) => ({
+          id: item.id, prompt: item.prompt, concept: activeConcept.name,
+          prompt_type: item.type === 'mc' ? 'multiple_choice' : (item.type === 'numeric' ? 'numeric' : 'short_answer'),
+          ...(item.type === 'mc' ? { options: item.options || [], correct: item.correct } : { correct: (item.correctAnswers || [])[0] || '' }),
+          quantum_stage: item.quantum_stage || 'transfer',
+        })),
+        generated_at: new Date().toISOString(),
+        generated_by: 'gapmap-practice-composer',
+        schema_version: '1.0.0',
+      };
+      const attempt = {
+        id: `attempt-practice-${Date.now()}-${Math.random().toString(36).slice(2,8)}`,
+        assessment_id: assessmentId,
+        learner_id: quantumLearnerId,
+        grade: (GapMapAuth.getUser && GapMapAuth.getUser()?.grade) || null,
+        subject: activeConcept.subject || (GapMapAuth.getActiveSubject && GapMapAuth.getActiveSubject()) || null,
+        concept: activeConcept.name,
+        started_at: practiceStartedAt || new Date().toISOString(),
+        completed_at: new Date().toISOString(),
+        responses: questions.map((item, index) => ({ item_id: item.id, answer: answers[index], correct: flags[index] })),
+        scores: rollup.scores,
+        overall_pct: rollup.overall_pct,
+      };
+      Promise.allSettled([
+        saveFirebaseAssessment(quantumLearnerId, practiceAssessment),
+        saveFirebaseAttempt(quantumLearnerId, attempt),
+      ]).then((settled) => {
+        const failed = settled.filter((entry) => entry.status === 'rejected');
+        if (failed.length) console.warn('[Firebase] Practice persistence partially failed.', failed);
+      });
+    }
+
+    // Marks this attempt's Items as seen so the next "Start Practice" for the
+    // same Concept draws fresh, unseen Items instead of repeating this set.
+    function recordPracticeHistory() {
+      if (!activeConcept || !Array.isArray(rawQuestions) || !rawQuestions.length) return;
+      const key = practiceHistoryKey(activeConcept.name);
+      const history = readQuizHistory(localStorage, key);
+      const signatures = rawQuestions.map((item) => questionSignature(item));
+      const mergedHistory = [...new Set([...history, ...signatures])];
+      writeQuizHistory(localStorage, key, mergedHistory);
+      saveFirebasePracticeHistory(quantumLearnerId, {
+        subject: activeConcept.subject, concept: activeConcept.name, signatures: mergedHistory,
+      }).catch((error) => console.warn('[Firebase] Practice history sync skipped.', error));
+    }
+
+    checkBtn.addEventListener('click', () => {
+      const value = writtenInput.value.trim();
+      if (!value || checked[current]) return;
+      answers[current] = value;
+      const correct = writtenCorrect(questions[current], value);
+      showFeedback(questions[current], correct);
+      checkBtn.style.display = 'none';
+      nextBtn.style.display = 'inline-flex';
+      nextBtn.disabled = false;
+    });
+
+    writtenInput.addEventListener('input', () => {
+      if (checked[current]) return;
+      answers[current] = writtenInput.value.trim() || null;
+      checkBtn.disabled = !String(answers[current] || '').trim();
+    });
+
+    writtenInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' && !checkBtn.disabled) {
+        event.preventDefault();
+        checkBtn.click();
+      }
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (!checked[current]) return;
+      if (current < questions.length - 1) {
+        current += 1;
+        renderQuestion();
+      } else {
+        void finishPractice();
+      }
+    });
+
+    prevBtn.addEventListener('click', () => {
+      if (current > 0) {
+        current -= 1;
+        renderQuestion();
+      }
+    });
+
+    document.getElementById('startPracticeBtn').addEventListener('click', startPractice);
+
+    document.getElementById('quizLanguage').addEventListener('change', function () {
+      if (GapMapAuth.setActiveLanguage) GapMapAuth.setActiveLanguage(this.value);
+      questions = rawQuestions.map((item) => translateQuestion(item, this.value));
+      renderQuestion();
+    });
+
+    document.getElementById('practiceAgainBtn').addEventListener('click', () => {
+      resultsScreen.classList.remove('active');
+      learnScreen.classList.add('active');
+      exampleIndex = 0;
+      showExample();
+    });
+
+    async function initConceptPage() {
+      let learnerProfile = null;
+      try {
+        learnerProfile = typeof GapMapAuth.getUser === 'function' ? GapMapAuth.getUser() : null;
+      } catch (_) {}
+      GapMapAuth.mountProfileMenu({ avatar: '#avatar' });
+
+      const params = new URLSearchParams(window.location.search);
+      const conceptId = toConceptId(params.get('concept') || '');
+      const activeSubject = (GapMapAuth.getActiveSubject && GapMapAuth.getActiveSubject()) || learnerProfile?.subject || '';
+      const grade = String(learnerProfile?.grade || '12');
+      activeConcept = await resolveConcept(conceptId, activeSubject, grade);
+
+      if (!activeConcept) {
+        learnScreen.classList.remove('active');
+        emptyScreen.classList.add('active');
+        document.getElementById('emptyMessage').textContent = conceptId
+          ? 'We don’t have learning content for “' + conceptId + '” yet. Choose another Concept from your Gap Map.'
+          : 'Choose a Concept from your Gap Map to begin.';
+        return;
+      }
+
+      document.title = activeConcept.name + ' – GapMap';
+      document.getElementById('conceptTitle').textContent = activeConcept.name;
+      document.getElementById('conceptSubtitle').textContent = 'Learn the idea, study examples, then practise — all in one place.';
+      document.getElementById('navContext').innerHTML = '<strong>' + activeConcept.subject + '</strong> · ' + activeConcept.name;
+      document.getElementById('explanationBody').innerHTML = activeConcept.explanation + (activeConcept.tip ? '<div class="tip"><strong>Tip:</strong> ' + activeConcept.tip + '</div>' : '');
+      showExample();
+
+      document.getElementById('anotherExampleBtn').addEventListener('click', () => {
+        exampleIndex += 1;
+        showExample();
+      });
+
+      renderConceptVideo(activeConcept);
+
+      (async function renderPathWhy() {
+        const mount = document.getElementById('pathWhy');
+        if (!mount) return;
+        try {
+          const results = typeof GapMapAuth.loadDiagnosticResults === 'function'
+            ? GapMapAuth.loadDiagnosticResults(activeSubject)
+            : null;
+          if (!activeGraph && activeGraphPromise) {
+            activeGraph = await activeGraphPromise;
+          }
+          if (!results || !results.concepts || !activeGraph) return;
+          const gapMapEntries = Object.entries(results.concepts).map(([name, value]) => ({
+            concept: name,
+            pct: value.score,
+            correct: value.correct,
+            total: value.total,
+            status: value.status,
+          }));
+          const derived = buildLearningPath({ gapMap: gapMapEntries, graph: activeGraph });
+          const pathEntry = derived.path.find((entry) => entry.concept === activeConcept.name);
+          if (!pathEntry) return;
+          const parts = [];
+          if (pathEntry.origin) parts.push('first taught in Grade ' + pathEntry.origin);
+          if (pathEntry.blocks.length) parts.push('it unblocks ' + pathEntry.blocks.join(' and '));
+          if (pathEntry.blockedBy.length) parts.push('builds on ' + pathEntry.blockedBy.join(' and '));
+          mount.style.display = 'block';
+          mount.innerHTML = '<span style="display:inline-flex;align-items:center;gap:8px;background:#EEF2FF;color:#3B5BDB;font-size:0.85rem;font-weight:600;padding:6px 14px;border-radius:20px;">📍 Learning Path · ' + (parts.length ? parts.join(', ') : 'this Concept is on your path') + '.</span>';
+        } catch (error) {
+          console.warn('[Concept] Path context unavailable.', error);
+        }
+      })();
+
+      if (typeof GapMapAuth.mountSubjectSwitcher === 'function') {
+        GapMapAuth.mountSubjectSwitcher({
+          container: '#subjectSwitcherMount',
+          onChange: () => { window.location.href = 'dashboard.html'; },
+        });
+      }
+      if (typeof GapMapAuth.mountLanguageSwitcher === 'function') {
+        GapMapAuth.mountLanguageSwitcher({
+          container: '#languageSwitcherMount',
+          onChange: (nextLanguage) => {
+            const supported = PRACTICE_LANGUAGES;
+            if (!supported.some((language) => language.value === nextLanguage)) return;
+            const quizLanguage = document.getElementById('quizLanguage');
+            if (quizLanguage) quizLanguage.value = nextLanguage;
+            if (practiceScreen.classList.contains('active')) {
+              questions = rawQuestions.map((item) => translateQuestion(item, nextLanguage));
+              renderQuestion();
+            }
+          },
+        });
+        const navLanguageSelect = document.querySelector('#languageSwitcherMount select');
+        if (navLanguageSelect) {
+          const allowed = new Set(PRACTICE_LANGUAGES.map((language) => language.value));
+          Array.from(navLanguageSelect.options).forEach((option) => {
+            if (!allowed.has(option.value)) option.remove();
+          });
+          if (!allowed.has(navLanguageSelect.value)) navLanguageSelect.value = 'English';
+        }
+      }
+    }
+  </script>
+  <script src="frontend/agentPanel/agent-panel.js"></script>
+</body>
+</html>

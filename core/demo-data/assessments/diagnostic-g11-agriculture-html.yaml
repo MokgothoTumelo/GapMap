@@ -1,0 +1,134 @@
+id: diagnostic-g11-agriculture-html
+type: diagnostic
+subject: Grade 11 Agricultural Sciences
+language: en
+explanation_level: Standard
+generated_at: 2026-09-12T00:00:00Z
+schema_version: 1.0.0
+concepts:
+  - name: Soil Science
+    description: Soil chemistry, nutrients and conservation
+  - name: Plant Production
+    description: Crop science, pests and yield
+  - name: Animal Production
+    description: Nutrition, breeding and health
+  - name: Agricultural Ecology
+    description: Agro-ecosystems and resource management
+  - name: Farm Management
+    description: Planning, marketing and labour
+items:
+  - id: q1
+    concept: Soil Science
+    prompt_type: multiple_choice
+    prompt: "Nitrogen in the soil is especially important for:"
+    options: ["Leafy green growth", "Flower colour only", "Seed coat hardness", "Root hair colour"]
+    correct: 0
+  - id: q2
+    concept: Soil Science
+    prompt_type: multiple_choice
+    prompt: "Contour ploughing is mainly used to:"
+    options: ["Reduce soil erosion on slopes", "Increase wind speed", "Remove all water", "Plant only trees"]
+    correct: 0
+  - id: q3
+    concept: Plant Production
+    prompt_type: multiple_choice
+    prompt: "A monoculture is:"
+    options: ["Growing one crop type over a large area", "Growing many crop types mixed", "Raising only animals", "Leaving land fallow forever"]
+    correct: 0
+  - id: q4
+    concept: Plant Production
+    prompt_type: multiple_choice
+    prompt: "Integrated pest management (IPM) aims to:"
+    options: ["Control pests using a combination of methods", "Use maximum chemicals always", "Ignore pests", "Remove all insects from Earth"]
+    correct: 0
+  - id: q5
+    concept: Animal Production
+    prompt_type: multiple_choice
+    prompt: "Selective breeding is used to:"
+    options: ["Improve desirable traits in offspring", "Reduce all genetic diversity intentionally for no reason", "Stop animals eating", "Change the climate"]
+    correct: 0
+  - id: q6
+    concept: Animal Production
+    prompt_type: multiple_choice
+    prompt: "Colostrum is important for newborn animals because it:"
+    options: ["Provides antibodies and nutrients", "Is only water", "Replaces all vaccines forever", "Is a type of feed additive only"]
+    correct: 0
+  - id: q7
+    concept: Agricultural Ecology
+    prompt_type: multiple_choice
+    prompt: "Biodiversity on a farm can help by:"
+    options: ["Supporting natural pest control and resilience", "Always reducing yields", "Removing soil", "Stopping photosynthesis"]
+    correct: 0
+  - id: q8
+    concept: Agricultural Ecology
+    prompt_type: multiple_choice
+    prompt: "Water harvesting on a farm is mainly about:"
+    options: ["Collecting and storing rainwater for later use", "Dumping water into rivers", "Removing all dams", "Increasing evaporation only"]
+    correct: 0
+  - id: q9
+    concept: Farm Management
+    prompt_type: multiple_choice
+    prompt: "Cash flow on a farm refers to:"
+    options: ["Movement of money in and out over time", "Only the colour of notes", "Soil moisture", "Animal movement"]
+    correct: 0
+  - id: q10
+    concept: Farm Management
+    prompt_type: multiple_choice
+    prompt: "A break-even point is where:"
+    options: ["Total income equals total costs", "Profit is maximum", "There are no costs", "No products are sold"]
+    correct: 0
+  - id: q11
+    concept: Soil Science
+    prompt_type: short_answer
+    prompt: "Name the three main plant nutrients often abbreviated N, P and K."
+    correct: "nitrogen phosphorus potassium"
+  - id: q12
+    concept: Plant Production
+    prompt_type: short_answer
+    prompt: "What is the term for plants of the same species grown together as a crop?"
+    correct: "monoculture"
+  - id: q13
+    concept: Animal Production
+    prompt_type: short_answer
+    prompt: "What is the stomach system of cattle called (multi-compartment)?"
+    correct: "ruminant"
+  - id: q14
+    concept: Agricultural Ecology
+    prompt_type: short_answer
+    prompt: "What do we call the practice of planting trees among crops or on farmland?"
+    correct: "agroforestry"
+  - id: q15
+    concept: Farm Management
+    prompt_type: short_answer
+    prompt: "What is the term for the difference between total income and total costs?"
+    correct: "profit"
+  - id: q16
+    concept: Soil Science
+    prompt_type: multiple_choice
+    prompt: "Organic matter in soil mainly comes from:"
+    options: ["Decomposed plant and animal material", "Only plastic", "Only metal", "Only pure sand"]
+    correct: 0
+  - id: q17
+    concept: Plant Production
+    prompt_type: multiple_choice
+    prompt: "Irrigation is used to:"
+    options: ["Supply water when rainfall is insufficient", "Remove all soil nutrients", "Increase frost", "Stop plant growth"]
+    correct: 0
+  - id: q18
+    concept: Animal Production
+    prompt_type: multiple_choice
+    prompt: "Zoonotic diseases are diseases that:"
+    options: ["Can spread between animals and humans", "Only affect plants", "Only affect soil", "Cannot be prevented"]
+    correct: 0
+  - id: q19
+    concept: Agricultural Ecology
+    prompt_type: multiple_choice
+    prompt: "Climate change can affect agriculture by:"
+    options: ["Changing rainfall patterns and temperatures", "Removing the need for soil", "Stopping all pests forever", "Making records unnecessary"]
+    correct: 0
+  - id: q20
+    concept: Farm Management
+    prompt_type: multiple_choice
+    prompt: "Value adding on a farm means:"
+    options: ["Processing products to increase their market value", "Throwing products away", "Reducing quality on purpose", "Avoiding markets"]
+    correct: 0

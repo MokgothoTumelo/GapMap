@@ -1,0 +1,134 @@
+id: diagnostic-g11-life-science-html
+type: diagnostic
+subject: Grade 11 Life Sciences
+language: en
+explanation_level: Standard
+generated_at: 2026-09-12T00:00:00Z
+schema_version: 1.0.0
+concepts:
+  - name: Cell Biology
+    description: Cell division, membranes and energy
+  - name: Genetics
+    description: Mendelian genetics and DNA
+  - name: Human Physiology
+    description: Systems in more detail
+  - name: Ecology
+    description: Population ecology and human impact
+  - name: Biodiversity
+    description: Classification and conservation
+items:
+  - id: q1
+    concept: Cell Biology
+    prompt_type: multiple_choice
+    prompt: "Mitosis produces:"
+    options: ["Two genetically identical daughter cells", "Four genetically different cells", "Only gametes", "Only bacteria"]
+    correct: 0
+  - id: q2
+    concept: Cell Biology
+    prompt_type: multiple_choice
+    prompt: "The cell membrane is described as selectively permeable because it:"
+    options: ["Controls what enters and leaves the cell", "Lets everything through", "Blocks all substances", "Only allows solids"]
+    correct: 0
+  - id: q3
+    concept: Genetics
+    prompt_type: multiple_choice
+    prompt: "In a heterozygous individual the alleles are:"
+    options: ["Different", "Identical", "Missing", "Only recessive"]
+    correct: 0
+  - id: q4
+    concept: Genetics
+    prompt_type: multiple_choice
+    prompt: "Phenotype refers to:"
+    options: ["The observable characteristics of an organism", "Only the DNA sequence", "Only the parents", "Only the environment"]
+    correct: 0
+  - id: q5
+    concept: Human Physiology
+    prompt_type: multiple_choice
+    prompt: "Insulin helps to:"
+    options: ["Lower blood glucose levels", "Raise only body temperature", "Digest protein in the stomach", "Carry oxygen"]
+    correct: 0
+  - id: q6
+    concept: Human Physiology
+    prompt_type: multiple_choice
+    prompt: "The central nervous system consists of:"
+    options: ["Brain and spinal cord", "Only nerves in the arms", "Only the heart", "Only the skin"]
+    correct: 0
+  - id: q7
+    concept: Ecology
+    prompt_type: multiple_choice
+    prompt: "Carrying capacity is:"
+    options: ["The maximum population an environment can sustain", "The minimum number of species", "Only rainfall", "Only temperature"]
+    correct: 0
+  - id: q8
+    concept: Ecology
+    prompt_type: multiple_choice
+    prompt: "Eutrophication is often caused by:"
+    options: ["Excess nutrients entering water bodies", "Too little sunlight", "Lack of any plants", "Only wind"]
+    correct: 0
+  - id: q9
+    concept: Biodiversity
+    prompt_type: multiple_choice
+    prompt: "A binomial scientific name has:"
+    options: ["Genus and species", "Only the common name", "Only the kingdom", "Only the family"]
+    correct: 0
+  - id: q10
+    concept: Biodiversity
+    prompt_type: multiple_choice
+    prompt: "An endemic species is one that:"
+    options: ["Is found naturally in only one specific area", "Lives everywhere on Earth", "Is always extinct", "Is only domesticated"]
+    correct: 0
+  - id: q11
+    concept: Cell Biology
+    prompt_type: short_answer
+    prompt: "What process do plants use to convert light energy into chemical energy?"
+    correct: "photosynthesis"
+  - id: q12
+    concept: Genetics
+    prompt_type: short_answer
+    prompt: "What is the term for different forms of the same gene?"
+    correct: "alleles"
+  - id: q13
+    concept: Human Physiology
+    prompt_type: short_answer
+    prompt: "Which blood vessels carry blood away from the heart?"
+    correct: "arteries"
+  - id: q14
+    concept: Ecology
+    prompt_type: short_answer
+    prompt: "What is the term for a community of organisms and their physical environment?"
+    correct: "ecosystem"
+  - id: q15
+    concept: Biodiversity
+    prompt_type: short_answer
+    prompt: "What is the highest taxonomic rank commonly used in classification?"
+    correct: "kingdom"
+  - id: q16
+    concept: Cell Biology
+    prompt_type: multiple_choice
+    prompt: "Meiosis is important because it:"
+    options: ["Produces gametes with half the chromosome number", "Makes body cells identical always", "Stops variation", "Only occurs in plants"]
+    correct: 0
+  - id: q17
+    concept: Genetics
+    prompt_type: multiple_choice
+    prompt: "A mutation is:"
+    options: ["A change in the DNA sequence", "Always beneficial", "Only a change in diet", "Only found in fossils"]
+    correct: 0
+  - id: q18
+    concept: Human Physiology
+    prompt_type: multiple_choice
+    prompt: "Homeostasis means:"
+    options: ["Maintaining a stable internal environment", "Ignoring external change", "Only growing taller", "Only sleeping"]
+    correct: 0
+  - id: q19
+    concept: Ecology
+    prompt_type: multiple_choice
+    prompt: "A keystone species is one that:"
+    options: ["Has a disproportionately large effect on its ecosystem", "Is always the largest animal", "Is never eaten", "Only lives in water"]
+    correct: 0
+  - id: q20
+    concept: Biodiversity
+    prompt_type: multiple_choice
+    prompt: "In-situ conservation means protecting species:"
+    options: ["In their natural habitat", "Only in zoos", "Only in laboratories", "Only as fossils"]
+    correct: 0

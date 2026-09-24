@@ -1,0 +1,134 @@
+id: diagnostic-g10-agriculture-html
+type: diagnostic
+subject: Grade 10 Agricultural Sciences
+language: en
+explanation_level: Standard
+generated_at: 2026-09-12T00:00:00Z
+schema_version: 1.0.0
+concepts:
+  - name: Soil Science
+    description: Soil types, composition and fertility
+  - name: Plant Production
+    description: Crop growth, planting and basic husbandry
+  - name: Animal Production
+    description: Livestock basics and animal care
+  - name: Agricultural Ecology
+    description: Ecosystems, resources and sustainability
+  - name: Farm Management
+    description: Basic planning, records and safety
+items:
+  - id: q1
+    concept: Soil Science
+    prompt_type: multiple_choice
+    prompt: "Which soil type holds water the best?"
+    options: ["Clay", "Sand", "Gravel", "Rock"]
+    correct: 0
+  - id: q2
+    concept: Soil Science
+    prompt_type: multiple_choice
+    prompt: "Loam soil is a mixture of:"
+    options: ["Sand, silt and clay", "Only sand and rock", "Only clay and water", "Gravel and air"]
+    correct: 0
+  - id: q3
+    concept: Plant Production
+    prompt_type: multiple_choice
+    prompt: "Photosynthesis mainly takes place in the:"
+    options: ["Leaves", "Roots", "Flowers", "Seeds"]
+    correct: 0
+  - id: q4
+    concept: Plant Production
+    prompt_type: multiple_choice
+    prompt: "A seed needs which of the following to germinate?"
+    options: ["Water, air and suitable temperature", "Only sunlight", "Only fertilizer", "Only soil"]
+    correct: 0
+  - id: q5
+    concept: Animal Production
+    prompt_type: multiple_choice
+    prompt: "Cattle are classified as:"
+    options: ["Ruminants", "Monogastric only", "Birds", "Insects"]
+    correct: 0
+  - id: q6
+    concept: Animal Production
+    prompt_type: multiple_choice
+    prompt: "The main purpose of vaccination in livestock is to:"
+    options: ["Prevent disease", "Increase meat colour", "Change breed", "Reduce feed cost only"]
+    correct: 0
+  - id: q7
+    concept: Agricultural Ecology
+    prompt_type: multiple_choice
+    prompt: "Crop rotation helps to:"
+    options: ["Maintain soil fertility and reduce pests", "Use more chemicals", "Grow only one crop forever", "Remove all insects"]
+    correct: 0
+  - id: q8
+    concept: Agricultural Ecology
+    prompt_type: multiple_choice
+    prompt: "An example of a renewable resource is:"
+    options: ["Sunlight", "Coal", "Crude oil", "Natural gas"]
+    correct: 0
+  - id: q9
+    concept: Farm Management
+    prompt_type: multiple_choice
+    prompt: "Keeping farm records is important because it helps the farmer to:"
+    options: ["Make better decisions and track performance", "Avoid all work", "Stop using tools", "Ignore costs"]
+    correct: 0
+  - id: q10
+    concept: Farm Management
+    prompt_type: multiple_choice
+    prompt: "Personal protective equipment (PPE) on a farm is used to:"
+    options: ["Protect the worker from injury and hazards", "Decorate the farm", "Increase crop yield directly", "Replace tools"]
+    correct: 0
+  - id: q11
+    concept: Soil Science
+    prompt_type: short_answer
+    prompt: "What is the top layer of soil called, where most plant roots grow?"
+    correct: "topsoil"
+  - id: q12
+    concept: Plant Production
+    prompt_type: short_answer
+    prompt: "Name the process by which plants make their own food using sunlight."
+    correct: "photosynthesis"
+  - id: q13
+    concept: Animal Production
+    prompt_type: short_answer
+    prompt: "What do we call a young cattle animal?"
+    correct: "calf"
+  - id: q14
+    concept: Agricultural Ecology
+    prompt_type: short_answer
+    prompt: "What term describes farming that protects the environment for future generations?"
+    correct: "sustainable"
+  - id: q15
+    concept: Farm Management
+    prompt_type: short_answer
+    prompt: "What is the term for the money a farmer spends to run the farm?"
+    correct: "costs"
+  - id: q16
+    concept: Soil Science
+    prompt_type: multiple_choice
+    prompt: "pH is a measure of:"
+    options: ["How acidic or alkaline the soil is", "Soil colour only", "Soil temperature only", "Rainfall"]
+    correct: 0
+  - id: q17
+    concept: Plant Production
+    prompt_type: multiple_choice
+    prompt: "Weeds compete with crops for:"
+    options: ["Water, nutrients and light", "Only space in the sky", "Farm buildings", "Machinery"]
+    correct: 0
+  - id: q18
+    concept: Animal Production
+    prompt_type: multiple_choice
+    prompt: "A balanced animal ration should provide:"
+    options: ["Energy, protein, vitamins and minerals", "Only water", "Only salt", "Only grass colour"]
+    correct: 0
+  - id: q19
+    concept: Agricultural Ecology
+    prompt_type: multiple_choice
+    prompt: "Overgrazing can lead to:"
+    options: ["Soil erosion and land degradation", "Better soil structure", "More rainfall", "Higher biodiversity always"]
+    correct: 0
+  - id: q20
+    concept: Farm Management
+    prompt_type: multiple_choice
+    prompt: "A fixed cost on a farm is a cost that:"
+    options: ["Does not change with production level in the short run", "Changes every hour", "Is only paid in cash", "Is never recorded"]
+    correct: 0

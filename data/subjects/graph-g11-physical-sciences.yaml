@@ -1,0 +1,58 @@
+# GapMap Concept Graph – Grade 11 Physical Sciences (authored, inspectable subject data)
+#
+# ADR-0006: the Subject's prerequisite edges, spanning grades where a Concept
+# builds on earlier years' work. Served to every Learner through the subject
+# store (frontend/js/subject-store.js); the Learning Path is derived from this
+# graph and the Gap Map (core/learning-path.js). See
+# docs/adr/0006-concept-graph-learning-path.md.
+
+id: graph-g11-physical-science
+type: concept-graph
+subject: Grade 11 Physical Sciences
+language: en
+generated_at: 2026-09-21T00:00:00Z
+generated_by: authored
+schema_version: 1.0.0
+nodes:
+  - concept: Matter
+    grade: "9"
+    description: States, particles and classification of matter
+  - concept: Matter & Materials
+    grade: "9"
+    description: Materials, mixtures and their properties
+  - concept: Forces & Motion
+    grade: "10"
+    description: Forces, motion and Newton's laws
+  - concept: Mechanics
+    grade: "10"
+    description: Kinematics and dynamics in one dimension
+  - concept: Energy
+    grade: "10"
+    description: Work, energy and its conservation
+  - concept: Waves & Sound
+    grade: "10"
+    description: Wave properties, sound and light basics
+  - concept: Waves
+    grade: "10"
+    description: Transverse and longitudinal waves
+  - concept: Electricity
+    grade: "11"
+    description: Circuits, current, resistance and power
+  - concept: Chemical Change
+    grade: "11"
+    description: Reactions, balancing and stoichiometry
+edges:
+  - requires: Matter
+    for: Waves & Sound
+  - requires: Forces & Motion
+    for: Energy
+  - requires: Energy
+    for: Electricity
+  - requires: Energy
+    for: Waves & Sound
+  - requires: Matter & Materials
+    for: Chemical Change
+  - requires: Mechanics
+    for: Electricity
+  - requires: Mechanics
+    for: Waves

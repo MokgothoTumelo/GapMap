@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gapmap.app/schema/assessment-common.schema.json",
+  "title": "GapMap Assessment Metadata",
+  "type": "object",
+  "required": ["id", "type", "subject", "language", "explanation_level", "concepts", "items", "generated_at"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "type": { "enum": ["diagnostic", "practice"] },
+    "subject": { "type": "string" },
+    "language": { "type": "string", "description": "BCP-47 language tag" },
+    "explanation_level": { "enum": ["Simple", "Standard", "Detailed"] },
+    "concepts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "assessment-item.schema.json" }
+    },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "generated_by": { "type": "string" },
+    "schema_version": { "type": "string", "default": "1.0.0" }
+  }
+}

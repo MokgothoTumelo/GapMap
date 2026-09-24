@@ -1,0 +1,75 @@
+# GapMap Concept Graph – Grade 12 Mathematics (authored, inspectable subject data)
+#
+# ADR-0006: the Subject-level map of Concepts and their Prerequisite edges,
+# spanning grades where a Concept builds on earlier years' work. This file is
+# the format's inspectable sample — not application state. The Learning Path
+# is derived from this graph and the Gap Map (core/learning-path.js): roots
+# first, severity as tie-break.
+#
+# The demo narrative: Factorisation (Grade 9 origin) is weak AND blocks
+# Quadratic Equations (also weak) — so the path starts at Factorisation, below
+# the Learner's grade, because strengthening it lifts both. A Learner who did
+# Mathematical Literacy meets this as a Foundational Gap: the graph is where
+# "your path starts below your grade" becomes data instead of a claim.
+id: graph-g12-mathematics
+type: concept-graph
+subject: Grade 12 Mathematics
+language: en
+generated_at: 2026-09-24T00:00:00Z
+generated_by: authored-demo
+schema_version: 1.0.0
+nodes:
+  - concept: Linear Equations
+    grade: "8"
+    description: Solving one- and two-step linear equations
+  - concept: Expanding Brackets
+    grade: "9"
+    description: The distributive law and binomial products
+  - concept: Factorisation
+    grade: "9"
+    description: Common factors, difference of squares, and trinomials
+  - concept: Algebra
+    grade: "10"
+    description: Simplifying expressions and solving linear equations
+  - concept: Exponents & Surds
+    grade: "10"
+    description: Laws of exponents and simplifying surds
+  - concept: Functions
+    grade: "10"
+    description: Function notation, evaluation, and inverses
+  - concept: Quadratic Equations
+    grade: "11"
+    description: Solving quadratics by factoring, the formula, and completing the square
+  - concept: Geometry
+    grade: "10"
+    description: Angle relationships, parallel lines, and basic triangle theorems
+  - concept: Euclidean Geometry
+    grade: "11"
+    description: Euclidean definitions, circle theorems, similarity, and formal proofs
+  - concept: Trigonometry
+    grade: "11"
+    description: Right-angled trig ratios, the unit circle, identities, and solving triangles
+edges:
+  # Factoring is expanding undone — the distributive law must be fluent first.
+  - requires: Expanding Brackets
+    for: Factorisation
+  # Solving equations is the core of both.
+  - requires: Linear Equations
+    for: Algebra
+  - requires: Linear Equations
+    for: Functions
+  - requires: Algebra
+    for: Functions
+  # The demo tie-break: solving by factoring needs the factor patterns.
+  - requires: Factorisation
+    for: Quadratic Equations
+  # Rearranging into standard form before applying the formula.
+  - requires: Algebra
+    for: Quadratic Equations
+  # Geometry foundations before formal Euclidean work and trig.
+  - requires: Geometry
+    for: Euclidean Geometry
+  - requires: Geometry
+    for: Trigonometry
+  - requires: Algebra
+    for: Trigonometry

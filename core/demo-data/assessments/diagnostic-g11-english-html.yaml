@@ -1,0 +1,134 @@
+id: diagnostic-g11-english-html
+type: diagnostic
+subject: Grade 11 English Home Language
+language: en
+explanation_level: Standard
+generated_at: 2026-09-12T00:00:00Z
+schema_version: 1.0.0
+concepts:
+  - name: Grammar
+    description: Complex sentences, clauses and agreement
+  - name: Vocabulary
+    description: Nuanced word choice, idioms and academic vocabulary
+  - name: Comprehension
+    description: Inference, tone and author's purpose
+  - name: Writing
+    description: Essays, argument structure and coherence
+  - name: Literature
+    description: Theme, character and figurative language
+items:
+  - id: q1
+    concept: Grammar
+    prompt_type: multiple_choice
+    prompt: "Identify the dependent clause: 'Although it rained, we went outside.'"
+    options: ["Although it rained", "we went outside", "it rained we", "went outside"]
+    correct: 0
+  - id: q2
+    concept: Grammar
+    prompt_type: multiple_choice
+    prompt: "Which sentence uses the correct subject-verb agreement?"
+    options: ["The list of items is on the desk.", "The list of items are on the desk.", "The list of items were on the desk.", "The list of items be on the desk."]
+    correct: 0
+  - id: q3
+    concept: Vocabulary
+    prompt_type: multiple_choice
+    prompt: "'Ambiguous' most nearly means:"
+    options: ["Unclear or open to more than one meaning", "Very clear", "Extremely large", "Friendly"]
+    correct: 0
+  - id: q4
+    concept: Vocabulary
+    prompt_type: multiple_choice
+    prompt: "The idiom 'break the ice' means:"
+    options: ["To start a conversation in a social setting", "To destroy something frozen", "To end a friendship", "To run quickly"]
+    correct: 0
+  - id: q5
+    concept: Comprehension
+    prompt_type: multiple_choice
+    prompt: "An author's purpose might be to:"
+    options: ["Inform, persuade or entertain", "Only list facts", "Avoid the reader", "Remove punctuation"]
+    correct: 0
+  - id: q6
+    concept: Comprehension
+    prompt_type: multiple_choice
+    prompt: "Tone in a text refers to:"
+    options: ["The writer's attitude toward the subject", "The font size", "The number of pages", "The publishing date"]
+    correct: 0
+  - id: q7
+    concept: Writing
+    prompt_type: multiple_choice
+    prompt: "A thesis statement usually appears in the:"
+    options: ["Introduction", "Conclusion only", "Title", "Bibliography"]
+    correct: 0
+  - id: q8
+    concept: Literature
+    prompt_type: multiple_choice
+    prompt: "A metaphor:"
+    options: ["States that one thing is another", "Always uses 'like' or 'as'", "Is only used in poetry", "Repeats the same sound"]
+    correct: 0
+  - id: q9
+    concept: Grammar
+    prompt_type: multiple_choice
+    prompt: "Which is a complex sentence?"
+    options: ["When the bell rang, the students left.", "The students left.", "The bell rang and the students left.", "Students."]
+    correct: 0
+  - id: q10
+    concept: Vocabulary
+    prompt_type: multiple_choice
+    prompt: "'Concise' means:"
+    options: ["Brief and clear", "Long and detailed", "Confusing", "Loud"]
+    correct: 0
+  - id: q11
+    concept: Grammar
+    prompt_type: short_answer
+    prompt: "What is the past participle of 'write'?"
+    correct: "written"
+  - id: q12
+    concept: Vocabulary
+    prompt_type: short_answer
+    prompt: "Give an antonym for 'scarce'."
+    correct: "abundant"
+  - id: q13
+    concept: Literature
+    prompt_type: short_answer
+    prompt: "What do we call the main character in a story?"
+    correct: "protagonist"
+  - id: q14
+    concept: Writing
+    prompt_type: short_answer
+    prompt: "What is the term for the final paragraph that sums up an essay?"
+    correct: "conclusion"
+  - id: q15
+    concept: Comprehension
+    prompt_type: short_answer
+    prompt: "What is the term for reading quickly to get a general idea of a text?"
+    correct: "skimming"
+  - id: q16
+    concept: Grammar
+    prompt_type: multiple_choice
+    prompt: "Choose the correctly punctuated sentence:"
+    options: ["However, the results were unclear.", "However the results were unclear.", "However the results, were unclear.", "However; the results were unclear"]
+    correct: 0
+  - id: q17
+    concept: Literature
+    prompt_type: multiple_choice
+    prompt: "Irony is when:"
+    options: ["The opposite of what is expected happens", "A word is repeated", "A story is very short", "There is no conflict"]
+    correct: 0
+  - id: q18
+    concept: Writing
+    prompt_type: multiple_choice
+    prompt: "Cohesion in writing means:"
+    options: ["Ideas connect smoothly and logically", "Using only short sentences", "Avoiding paragraphs", "Writing in capital letters"]
+    correct: 0
+  - id: q19
+    concept: Vocabulary
+    prompt_type: multiple_choice
+    prompt: "'Pragmatic' is closest in meaning to:"
+    options: ["Practical", "Emotional", "Imaginary", "Noisy"]
+    correct: 0
+  - id: q20
+    concept: Comprehension
+    prompt_type: multiple_choice
+    prompt: "Bias in a text means the writer:"
+    options: ["Favours one side unfairly", "Is always objective", "Uses no adjectives", "Writes only facts"]
+    correct: 0

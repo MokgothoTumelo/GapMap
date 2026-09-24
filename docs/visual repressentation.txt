@@ -1,0 +1,61 @@
+ 1.                      GAPMAP
+                          │
+          ┌────────────┴────────────┐
+          │                         │
+ Firebase Authentication       Firestore Database
+          │                         │
+     Login / Signup         ┌───────┴────────┐
+                            │                │
+                         Users           Subjects
+                            │                │
+                     Diagnostic Tests    Questions
+                            │                │
+                      Results/Gaps       Learning
+                            │             Content
+                            │                │
+                         Progress       Learning Paths
+
+
+         2.(So when someone creates an account, Firebase Authentication should handle:
+
+                     Email
+                     Password
+
+         3.(Then Firestore stores the additional information.
+
+            For example:
+
+                  Authentication
+                         ↓
+                  UID: abc123xyz
+
+
+       4.users
+       └── abc123xyz
+      ├── firstName: "Thabo"
+      ├── lastName: "Mokoena"
+      ├── email: "thabo@gmail.com"
+      ├── role: "student"
+      ├── grade: 12
+      ├── preferredLanguage: "English"
+      └── createdAt: ...
+
+
+       5.Never store the user's password in Firestore.
+
+       Firebase Authentication stores and manages the password.
+
+     6)
+    users
+    └── USER_UID
+      ├── firstName
+      ├── lastName
+      ├── email
+      ├── role
+      ├── grade
+      ├── school
+      ├── preferredLanguage
+      ├── explanationLevel
+      ├── selectedSubject
+      ├── createdAt
+      └── lastLogin
