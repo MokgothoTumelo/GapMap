@@ -1,9 +1,0 @@
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://gapmap.app/schema/practice.schema.json",
-  "title": "GapMap Practice Assessment",
-  "allOf": [
-    { "$ref": "assessment-common.schema.json" },
-    { "type": "object", "properties": { "type": { "const": "practice" }, "concepts": { "minItems": 1, "maxItems": 1 }, "items": { "minItems": 3, "maxItems": 5 } } }
-  ]
-}

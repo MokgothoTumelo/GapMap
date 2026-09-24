@@ -1,9 +1,0 @@
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://gapmap.app/schema/diagnostic.schema.json",
-  "title": "GapMap Diagnostic Assessment",
-  "allOf": [
-    { "$ref": "assessment-common.schema.json" },
-    { "type": "object", "properties": { "type": { "const": "diagnostic" }, "concepts": { "minItems": 2 } } }
-  ]
-}
