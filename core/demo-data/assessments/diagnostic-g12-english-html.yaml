@@ -1,0 +1,134 @@
+id: diagnostic-g12-english-html
+type: diagnostic
+subject: Grade 12 English Home Language
+language: en
+explanation_level: Standard
+generated_at: 2026-09-12T00:00:00Z
+schema_version: 1.0.0
+concepts:
+  - name: Grammar
+    description: Advanced syntax, register and style
+  - name: Vocabulary
+    description: Academic and nuanced vocabulary in context
+  - name: Comprehension
+    description: Critical reading, evaluation and synthesis
+  - name: Writing
+    description: Argumentative and discursive essays
+  - name: Literature
+    description: Critical analysis of theme, style and context
+items:
+  - id: q1
+    concept: Grammar
+    prompt_type: multiple_choice
+    prompt: "Which sentence is in the passive voice?"
+    options: ["The exam was written by the students.", "The students wrote the exam.", "Students are writing.", "Write the exam."]
+    correct: 0
+  - id: q2
+    concept: Grammar
+    prompt_type: multiple_choice
+    prompt: "A dangling modifier is:"
+    options: ["A descriptive phrase that doesn't clearly modify any word in the sentence", "A very long sentence", "A missing full stop", "A type of verb"]
+    correct: 0
+  - id: q3
+    concept: Vocabulary
+    prompt_type: multiple_choice
+    prompt: "'Ubiquitous' means:"
+    options: ["Present everywhere", "Very rare", "Extremely large", "Silent"]
+    correct: 0
+  - id: q4
+    concept: Vocabulary
+    prompt_type: multiple_choice
+    prompt: "'Ephemeral' is closest in meaning to:"
+    options: ["Short-lived", "Permanent", "Heavy", "Colourful"]
+    correct: 0
+  - id: q5
+    concept: Comprehension
+    prompt_type: multiple_choice
+    prompt: "When evaluating a source, you should consider:"
+    options: ["Credibility, bias and relevance", "Only the length", "The font", "The page number"]
+    correct: 0
+  - id: q6
+    concept: Comprehension
+    prompt_type: multiple_choice
+    prompt: "Synthesis in reading means:"
+    options: ["Combining ideas from different sources into a new understanding", "Copying one source", "Ignoring the text", "Counting paragraphs"]
+    correct: 0
+  - id: q7
+    concept: Writing
+    prompt_type: multiple_choice
+    prompt: "In an argumentative essay, a counter-argument is:"
+    options: ["An opposing view that you acknowledge and respond to", "Your main thesis", "A quote with no explanation", "The title"]
+    correct: 0
+  - id: q8
+    concept: Literature
+    prompt_type: multiple_choice
+    prompt: "The setting of a text refers to:"
+    options: ["Time and place", "Only the main character", "The publisher", "The page count"]
+    correct: 0
+  - id: q9
+    concept: Literature
+    prompt_type: multiple_choice
+    prompt: "Dramatic irony occurs when:"
+    options: ["The audience knows something a character does not", "A character speaks in rhyme", "The story has no conflict", "The ending is happy"]
+    correct: 0
+  - id: q10
+    concept: Grammar
+    prompt_type: multiple_choice
+    prompt: "Which is an example of parallel structure?"
+    options: ["She likes reading, writing and swimming.", "She likes reading, to write and swim.", "She likes read, writing and to swim.", "She likes reading and write."]
+    correct: 0
+  - id: q11
+    concept: Vocabulary
+    prompt_type: short_answer
+    prompt: "What is a synonym for 'meticulous'?"
+    correct: "careful"
+  - id: q12
+    concept: Grammar
+    prompt_type: short_answer
+    prompt: "What do we call a verb form used as a noun (e.g. 'Swimming is fun')?"
+    correct: "gerund"
+  - id: q13
+    concept: Literature
+    prompt_type: short_answer
+    prompt: "What is the term for the central message or insight of a literary work?"
+    correct: "theme"
+  - id: q14
+    concept: Writing
+    prompt_type: short_answer
+    prompt: "What is the term for acknowledging another author's ideas in your work?"
+    correct: "citation"
+  - id: q15
+    concept: Comprehension
+    prompt_type: short_answer
+    prompt: "What is the term for the reason a writer produces a text (to inform, persuade, etc.)?"
+    correct: "purpose"
+  - id: q16
+    concept: Literature
+    prompt_type: multiple_choice
+    prompt: "Symbolism is when:"
+    options: ["An object or image represents a deeper idea", "A word is misspelled", "A sentence is incomplete", "The author uses only dialogue"]
+    correct: 0
+  - id: q17
+    concept: Writing
+    prompt_type: multiple_choice
+    prompt: "Register in writing refers to:"
+    options: ["The level of formality appropriate to audience and purpose", "The font used", "The number of pages", "The publishing house"]
+    correct: 0
+  - id: q18
+    concept: Vocabulary
+    prompt_type: multiple_choice
+    prompt: "'Pragmatic' most nearly means:"
+    options: ["Practical and realistic", "Overly emotional", "Imaginary", "Noisy"]
+    correct: 0
+  - id: q19
+    concept: Comprehension
+    prompt_type: multiple_choice
+    prompt: "A logical fallacy is:"
+    options: ["A flaw in reasoning that weakens an argument", "A type of metaphor", "A correct conclusion", "A bibliography entry"]
+    correct: 0
+  - id: q20
+    concept: Grammar
+    prompt_type: multiple_choice
+    prompt: "Which sentence is grammatically correct?"
+    options: ["Neither of the answers is correct.", "Neither of the answers are correct.", "Neither of the answers be correct.", "Neither of the answers were correct."]
+    correct: 0

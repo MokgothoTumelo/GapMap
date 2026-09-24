@@ -1,0 +1,38 @@
+# GapMap Concept Graph – Grade 10 Life Sciences (authored, inspectable subject data)
+#
+# ADR-0006: the Subject's prerequisite edges, spanning grades where a Concept
+# builds on earlier years' work. Served to every Learner through the subject
+# store (frontend/js/subject-store.js); the Learning Path is derived from this
+# graph and the Gap Map (core/learning-path.js). See
+# docs/adr/0006-concept-graph-learning-path.md.
+
+id: graph-g10-life-science
+type: concept-graph
+subject: Grade 10 Life Sciences
+language: en
+generated_at: 2026-09-21T00:00:00Z
+generated_by: authored
+schema_version: 1.0.0
+nodes:
+  - concept: Cell Biology
+    grade: "10"
+    description: Cell structure and basic functions
+  - concept: Genetics
+    grade: "11"
+    description: Basic inheritance and variation
+  - concept: Human Physiology
+    grade: "11"
+    description: Body systems overview
+  - concept: Ecology
+    grade: "10"
+    description: Ecosystems, food chains and environment
+  - concept: Biodiversity
+    grade: "11"
+    description: Classification and variety of life
+edges:
+  - requires: Cell Biology
+    for: Genetics
+  - requires: Cell Biology
+    for: Human Physiology
+  - requires: Ecology
+    for: Biodiversity

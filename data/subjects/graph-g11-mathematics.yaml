@@ -1,0 +1,82 @@
+# GapMap Concept Graph – Grade 11 Mathematics (authored, inspectable subject data)
+#
+# ADR-0006: the Subject's prerequisite edges, spanning grades where a Concept
+# builds on earlier years' work. Served to every Learner through the subject
+# store (frontend/js/subject-store.js); the Learning Path is derived from this
+# graph and the Gap Map (core/learning-path.js). See
+# docs/adr/0006-concept-graph-learning-path.md.
+
+id: graph-g11-mathematics
+type: concept-graph
+subject: Grade 11 Mathematics
+language: en
+generated_at: 2026-09-21T00:00:00Z
+generated_by: authored
+schema_version: 1.0.0
+nodes:
+  - concept: Linear Equations
+    grade: "8"
+    description: Solving one- and two-step linear equations
+  - concept: Expanding Brackets
+    grade: "9"
+    description: The distributive law and binomial products
+  - concept: Factorisation
+    grade: "9"
+    description: Common factors, difference of squares, and trinomials
+  - concept: Exponents
+    grade: "9"
+    description: Laws of exponents
+  - concept: Algebra
+    grade: "10"
+    description: Simplifying expressions and solving equations
+  - concept: Numbers
+    grade: "10"
+    description: Number systems, fractions and ratios
+  - concept: Functions
+    grade: "10"
+    description: Function notation, evaluation, and graphs
+  - concept: Geometry
+    grade: "10"
+    description: Angle relationships and basic theorems
+  - concept: Measurement
+    grade: "10"
+    description: Perimeter, area, volume and conversions
+  - concept: Euclidean Geometry
+    grade: "10"
+    description: Euclidean definitions, axioms and proofs
+  - concept: Exponents & Surds
+    grade: "10"
+    description: Laws of exponents and simplifying surds
+  - concept: Quadratic Equations
+    grade: "11"
+    description: Solving quadratics by factoring, the formula, and completing the square
+  - concept: Trigonometry
+    grade: "11"
+    description: Right-angled trig ratios, the unit circle, identities, and solving triangles
+edges:
+  - requires: Expanding Brackets
+    for: Factorisation
+  - requires: Factorisation
+    for: Algebra
+  - requires: Exponents
+    for: Algebra
+  - requires: Linear Equations
+    for: Algebra
+  - requires: Algebra
+    for: Functions
+  - requires: Algebra
+    for: Quadratic Equations
+  - requires: Factorisation
+    for: Quadratic Equations
+  - requires: Numbers
+    for: Geometry
+  - requires: Geometry
+    for: Euclidean Geometry
+  - requires: Geometry
+    for: Measurement
+  - requires: Exponents
+    for: Exponents & Surds
+  - requires: Geometry
+    for: Trigonometry
+  - requires: Algebra
+    for: Trigonometry

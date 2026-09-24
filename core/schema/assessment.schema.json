@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gapmap.app/schema/assessment.schema.json",
+  "title": "GapMap Assessment",
+  "description": "The discriminated Assessment contract for Diagnostic and Practice.",
+  "oneOf": [
+    { "$ref": "diagnostic.schema.json" },
+    { "$ref": "practice.schema.json" }
+  ]
+}

@@ -1,0 +1,42 @@
+# GapMap Concept Graph – Grade 11 English Home Language (authored, inspectable subject data)
+#
+# ADR-0006: the Subject's prerequisite edges, spanning grades where a Concept
+# builds on earlier years' work. Served to every Learner through the subject
+# store (frontend/js/subject-store.js); the Learning Path is derived from this
+# graph and the Gap Map (core/learning-path.js). See
+# docs/adr/0006-concept-graph-learning-path.md.
+
+id: graph-g11-english
+type: concept-graph
+subject: Grade 11 English Home Language
+language: en
+generated_at: 2026-09-21T00:00:00Z
+generated_by: authored
+schema_version: 1.0.0
+nodes:
+  - concept: Grammar
+    grade: "8"
+    description: Parts of speech, tenses and sentence structure
+  - concept: Vocabulary
+    grade: "9"
+    description: Word meanings, synonyms, antonyms and context
+  - concept: Comprehension
+    grade: "10"
+    description: Understanding and interpreting written texts
+  - concept: Writing
+    grade: "10"
+    description: Paragraph structure, tone and register
+  - concept: Literature
+    grade: "11"
+    description: Basic literary devices and text analysis
+edges:
+  - requires: Grammar
+    for: Writing
+  - requires: Vocabulary
+    for: Writing
+  - requires: Grammar
+    for: Comprehension
+  - requires: Vocabulary
+    for: Comprehension
+  - requires: Comprehension
+    for: Literature

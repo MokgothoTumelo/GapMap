@@ -1,0 +1,134 @@
+id: diagnostic-g10-life-science-html
+type: diagnostic
+subject: Grade 10 Life Sciences
+language: en
+explanation_level: Standard
+generated_at: 2026-09-12T00:00:00Z
+schema_version: 1.0.0
+concepts:
+  - name: Cell Biology
+    description: Cell structure and basic functions
+  - name: Genetics
+    description: Basic inheritance and variation
+  - name: Human Physiology
+    description: Body systems overview
+  - name: Ecology
+    description: Ecosystems, food chains and environment
+  - name: Biodiversity
+    description: Classification and variety of life
+items:
+  - id: q1
+    concept: Cell Biology
+    prompt_type: multiple_choice
+    prompt: "The control centre of the cell is the:"
+    options: ["Nucleus", "Cell membrane", "Cytoplasm", "Vacuole"]
+    correct: 0
+  - id: q2
+    concept: Cell Biology
+    prompt_type: multiple_choice
+    prompt: "Plant cells have a cell wall made mainly of:"
+    options: ["Cellulose", "Protein only", "Lipid only", "Starch only"]
+    correct: 0
+  - id: q3
+    concept: Genetics
+    prompt_type: multiple_choice
+    prompt: "Genes are found on:"
+    options: ["Chromosomes", "Ribosomes only", "Cell walls", "Vacuoles"]
+    correct: 0
+  - id: q4
+    concept: Genetics
+    prompt_type: multiple_choice
+    prompt: "The basic unit of heredity is the:"
+    options: ["Gene", "Organ", "Tissue", "Species"]
+    correct: 0
+  - id: q5
+    concept: Human Physiology
+    prompt_type: multiple_choice
+    prompt: "The organ that pumps blood around the body is the:"
+    options: ["Heart", "Liver", "Stomach", "Kidney"]
+    correct: 0
+  - id: q6
+    concept: Human Physiology
+    prompt_type: multiple_choice
+    prompt: "Oxygen is carried in the blood mainly by:"
+    options: ["Red blood cells", "White blood cells", "Platelets", "Plasma only"]
+    correct: 0
+  - id: q7
+    concept: Ecology
+    prompt_type: multiple_choice
+    prompt: "In a food chain, plants are usually:"
+    options: ["Producers", "Top consumers", "Decomposers only", "Parasites only"]
+    correct: 0
+  - id: q8
+    concept: Ecology
+    prompt_type: multiple_choice
+    prompt: "A habitat is:"
+    options: ["The place where an organism lives", "Only the food it eats", "Only its predators", "A type of cell"]
+    correct: 0
+  - id: q9
+    concept: Biodiversity
+    prompt_type: multiple_choice
+    prompt: "Biodiversity refers to:"
+    options: ["The variety of life in an area", "Only the number of humans", "Only plant colour", "Soil pH only"]
+    correct: 0
+  - id: q10
+    concept: Biodiversity
+    prompt_type: multiple_choice
+    prompt: "Animals that have a backbone are called:"
+    options: ["Vertebrates", "Invertebrates", "Prokaryotes", "Fungi"]
+    correct: 0
+  - id: q11
+    concept: Cell Biology
+    prompt_type: short_answer
+    prompt: "What organelle is known as the powerhouse of the cell?"
+    correct: "mitochondria"
+  - id: q12
+    concept: Genetics
+    prompt_type: short_answer
+    prompt: "What is the shape of a DNA molecule often described as?"
+    correct: "double helix"
+  - id: q13
+    concept: Human Physiology
+    prompt_type: short_answer
+    prompt: "Which organ filters waste from the blood to produce urine?"
+    correct: "kidney"
+  - id: q14
+    concept: Ecology
+    prompt_type: short_answer
+    prompt: "What do we call organisms that break down dead material?"
+    correct: "decomposers"
+  - id: q15
+    concept: Biodiversity
+    prompt_type: short_answer
+    prompt: "What is the scientific term for a living thing?"
+    correct: "organism"
+  - id: q16
+    concept: Cell Biology
+    prompt_type: multiple_choice
+    prompt: "Diffusion is the movement of particles from:"
+    options: ["High concentration to low concentration", "Low to high concentration only", "Only through pumps", "Only in solids"]
+    correct: 0
+  - id: q17
+    concept: Human Physiology
+    prompt_type: multiple_choice
+    prompt: "The lungs are the main organs of the:"
+    options: ["Respiratory system", "Digestive system", "Skeletal system", "Nervous system"]
+    correct: 0
+  - id: q18
+    concept: Ecology
+    prompt_type: multiple_choice
+    prompt: "An example of a biotic factor is:"
+    options: ["A predator", "Temperature", "Sunlight", "Soil pH"]
+    correct: 0
+  - id: q19
+    concept: Genetics
+    prompt_type: multiple_choice
+    prompt: "Offspring that are genetically identical to the parent are produced by:"
+    options: ["Asexual reproduction", "Only sexual reproduction", "Only mutation", "Only extinction"]
+    correct: 0
+  - id: q20
+    concept: Biodiversity
+    prompt_type: multiple_choice
+    prompt: "Extinction means:"
+    options: ["A species no longer exists", "A species increases rapidly", "Only seasonal migration", "Only hibernation"]
+    correct: 0

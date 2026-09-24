@@ -1,0 +1,134 @@
+id: diagnostic-g12-agriculture-html
+type: diagnostic
+subject: Grade 12 Agricultural Sciences
+language: en
+explanation_level: Standard
+generated_at: 2026-09-12T00:00:00Z
+schema_version: 1.0.0
+concepts:
+  - name: Soil Science
+    description: Advanced soil management and fertility
+  - name: Plant Production
+    description: Crop improvement, protection and production systems
+  - name: Animal Production
+    description: Intensive production, health and genetics
+  - name: Agricultural Ecology
+    description: Sustainable systems and environmental impact
+  - name: Farm Management
+    description: Agribusiness, risk and decision-making
+items:
+  - id: q1
+    concept: Soil Science
+    prompt_type: multiple_choice
+    prompt: "Cation exchange capacity (CEC) indicates a soil's ability to:"
+    options: ["Hold and exchange nutrient cations", "Reflect sunlight only", "Produce rainfall", "Store only oxygen"]
+    correct: 0
+  - id: q2
+    concept: Soil Science
+    prompt_type: multiple_choice
+    prompt: "Salinisation of soil is often caused by:"
+    options: ["Poor drainage and unsuitable irrigation", "Too much organic mulch only", "Planting trees", "Crop rotation"]
+    correct: 0
+  - id: q3
+    concept: Plant Production
+    prompt_type: multiple_choice
+    prompt: "Hybrid vigour refers to:"
+    options: ["Improved performance of crossbred offspring", "Weaker plants", "Only seed colour", "Loss of yield"]
+    correct: 0
+  - id: q4
+    concept: Plant Production
+    prompt_type: multiple_choice
+    prompt: "Precision agriculture uses technology mainly to:"
+    options: ["Apply inputs more accurately and efficiently", "Remove all human labour immediately", "Stop using data", "Ignore field variation"]
+    correct: 0
+  - id: q5
+    concept: Animal Production
+    prompt_type: multiple_choice
+    prompt: "Feed conversion ratio (FCR) measures:"
+    options: ["How efficiently an animal converts feed into body mass", "Only water intake", "Fence length", "Number of workers"]
+    correct: 0
+  - id: q6
+    concept: Animal Production
+    prompt_type: multiple_choice
+    prompt: "Biosecurity on a farm aims to:"
+    options: ["Prevent introduction and spread of disease", "Increase visitor numbers only", "Remove all fencing", "Stop record keeping"]
+    correct: 0
+  - id: q7
+    concept: Agricultural Ecology
+    prompt_type: multiple_choice
+    prompt: "Carbon sequestration in agriculture can be increased by:"
+    options: ["Building soil organic matter and planting trees", "Burning all residues always", "Removing all vegetation", "Maximising bare soil"]
+    correct: 0
+  - id: q8
+    concept: Agricultural Ecology
+    prompt_type: multiple_choice
+    prompt: "An externality in agriculture is:"
+    options: ["A cost or benefit affecting others not reflected in the market price", "Only the farm gate price", "A type of fertiliser", "A breed of cattle"]
+    correct: 0
+  - id: q9
+    concept: Farm Management
+    prompt_type: multiple_choice
+    prompt: "Diversification on a farm can help to:"
+    options: ["Spread risk across enterprises", "Guarantee zero risk", "Eliminate all costs", "Remove the need for markets"]
+    correct: 0
+  - id: q10
+    concept: Farm Management
+    prompt_type: multiple_choice
+    prompt: "Gross margin is calculated as:"
+    options: ["Enterprise income minus variable costs", "Total assets minus liabilities", "Only fixed costs", "Tax only"]
+    correct: 0
+  - id: q11
+    concept: Soil Science
+    prompt_type: short_answer
+    prompt: "What does pH measure in soil?"
+    correct: "acidity"
+  - id: q12
+    concept: Plant Production
+    prompt_type: short_answer
+    prompt: "What is the term for breeding plants for improved traits?"
+    correct: "plant breeding"
+  - id: q13
+    concept: Animal Production
+    prompt_type: short_answer
+    prompt: "What does FCR stand for in animal production?"
+    correct: "feed conversion ratio"
+  - id: q14
+    concept: Agricultural Ecology
+    prompt_type: short_answer
+    prompt: "Name one greenhouse gas linked to livestock production."
+    correct: "methane"
+  - id: q15
+    concept: Farm Management
+    prompt_type: short_answer
+    prompt: "What is the term for money borrowed that must be repaid with interest?"
+    correct: "loan"
+  - id: q16
+    concept: Soil Science
+    prompt_type: multiple_choice
+    prompt: "Minimum tillage aims to:"
+    options: ["Reduce soil disturbance and protect soil structure", "Plough as deeply as possible always", "Remove all organic matter", "Increase erosion"]
+    correct: 0
+  - id: q17
+    concept: Plant Production
+    prompt_type: multiple_choice
+    prompt: "A pathogen is:"
+    options: ["An organism that causes disease", "A type of fertiliser", "A farm tool", "A marketing strategy"]
+    correct: 0
+  - id: q18
+    concept: Animal Production
+    prompt_type: multiple_choice
+    prompt: "Intensive animal production systems typically have:"
+    options: ["Higher stocking rates and more controlled environments", "No housing", "No health management", "Only free-range by definition"]
+    correct: 0
+  - id: q19
+    concept: Agricultural Ecology
+    prompt_type: multiple_choice
+    prompt: "Sustainable agriculture should meet present needs without:"
+    options: ["Compromising future generations' ability to meet their needs", "Using any technology", "Making any profit", "Keeping records"]
+    correct: 0
+  - id: q20
+    concept: Farm Management
+    prompt_type: multiple_choice
+    prompt: "A SWOT analysis examines:"
+    options: ["Strengths, Weaknesses, Opportunities and Threats", "Only soil water content", "Only animal weight", "Only rainfall"]
+    correct: 0

@@ -1,0 +1,129 @@
+id: diagnostic-g10-mathematics-html
+type: diagnostic
+subject: Grade 10 Mathematics
+language: en
+explanation_level: Standard
+generated_at: 2026-08-28T22:15:00Z
+schema_version: 1.0.0
+concepts:
+  - name: Algebra
+    description: Basic algebraic expressions and linear equations
+  - name: Numbers
+    description: Integers, fractions, percentages and ratios
+  - name: Functions
+    description: Linear relationships and tables
+  - name: Geometry
+    description: Angles, triangles and basic properties
+  - name: Measurement
+    description: Perimeter, area and volume of simple shapes
+items:
+  - id: q1
+    concept: Algebra
+    prompt_type: multiple_choice
+    prompt: "Simplify: 3x + 5x"
+    options: ["8x", "15x", "8", "3x + 5"]
+    correct: 0
+  - id: q2
+    concept: Algebra
+    prompt_type: multiple_choice
+    prompt: "Solve for x: x + 7 = 12"
+    options: ["x = 5", "x = 19", "x = −5", "x = 7"]
+    correct: 0
+  - id: q3
+    concept: Numbers
+    prompt_type: multiple_choice
+    prompt: "What is 25% of 80?"
+    options: ["20", "25", "40", "15"]
+    correct: 0
+  - id: q4
+    concept: Numbers
+    prompt_type: multiple_choice
+    prompt: "Simplify the ratio 12 : 18"
+    options: ["2 : 3", "3 : 2", "4 : 6", "6 : 9"]
+    correct: 0
+  - id: q5
+    concept: Functions
+    prompt_type: multiple_choice
+    prompt: "If y = 2x, what is y when x = 4?"
+    options: ["8", "6", "4", "2"]
+    correct: 0
+  - id: q6
+    concept: Geometry
+    prompt_type: multiple_choice
+    prompt: "A right angle measures:"
+    options: ["90°", "180°", "45°", "60°"]
+    correct: 0
+  - id: q7
+    concept: Geometry
+    prompt_type: multiple_choice
+    prompt: "The sum of angles on a straight line is:"
+    options: ["180°", "90°", "360°", "270°"]
+    correct: 0
+  - id: q8
+    concept: Measurement
+    prompt_type: multiple_choice
+    prompt: "Perimeter of a rectangle with length 8 and width 3 is:"
+    options: ["22", "24", "11", "16"]
+    correct: 0
+  - id: q9
+    concept: Measurement
+    prompt_type: multiple_choice
+    prompt: "Area of a square with side 5 is:"
+    options: ["25", "20", "10", "15"]
+    correct: 0
+  - id: q10
+    concept: Algebra
+    prompt_type: multiple_choice
+    prompt: "Expand: 2(x + 4)"
+    options: ["2x + 8", "2x + 4", "x + 8", "2x + 6"]
+    correct: 0
+  - id: q11
+    concept: Algebra
+    prompt_type: numeric
+    prompt: "Solve for x: 2x = 14. What is x?"
+    correct: 7
+  - id: q12
+    concept: Numbers
+    prompt_type: numeric
+    prompt: "What is 10% of 50?"
+    correct: 5
+  - id: q13
+    concept: Functions
+    prompt_type: numeric
+    prompt: "If y = x + 3 and x = 6, what is y?"
+    correct: 9
+  - id: q14
+    concept: Measurement
+    prompt_type: numeric
+    prompt: "Area of a rectangle with length 6 and width 4?"
+    correct: 24
+  - id: q15
+    concept: Numbers
+    prompt_type: numeric
+    prompt: "Evaluate: 12 ÷ 3 + 2"
+    correct: 6
+  - id: q16
+    concept: Algebra
+    prompt_type: short_answer
+    prompt: "Simplify: 4x + 2x − x"
+    correct: "5x"
+  - id: q17
+    concept: Algebra
+    prompt_type: short_answer
+    prompt: "Expand: 3(x − 2)"
+    correct: "3x - 6"
+  - id: q18
+    concept: Algebra
+    prompt_type: short_answer
+    prompt: "Solve for x: x − 4 = 9. Write the value of x."
+    correct: "13"
+  - id: q19
+    concept: Numbers
+    prompt_type: short_answer
+    prompt: "Write 0.5 as a fraction in simplest form"
+    correct: "1/2"
+  - id: q20
+    concept: Measurement
+    prompt_type: short_answer
+    prompt: "Perimeter of a square with side 6 (write the number only)"
+    correct: "24"

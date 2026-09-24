@@ -1,0 +1,134 @@
+id: diagnostic-g10-english-html
+type: diagnostic
+subject: Grade 10 English Home Language
+language: en
+explanation_level: Standard
+generated_at: 2026-09-12T00:00:00Z
+schema_version: 1.0.0
+concepts:
+  - name: Grammar
+    description: Parts of speech, tenses and sentence structure
+  - name: Vocabulary
+    description: Word meanings, synonyms, antonyms and context
+  - name: Comprehension
+    description: Understanding and interpreting written texts
+  - name: Writing
+    description: Paragraph structure, tone and register
+  - name: Literature
+    description: Basic literary devices and text analysis
+items:
+  - id: q1
+    concept: Grammar
+    prompt_type: multiple_choice
+    prompt: "Which word is a verb in the sentence: 'She runs every morning'?"
+    options: ["runs", "She", "every", "morning"]
+    correct: 0
+  - id: q2
+    concept: Grammar
+    prompt_type: multiple_choice
+    prompt: "Choose the correct past tense of 'go':"
+    options: ["went", "goed", "gone", "going"]
+    correct: 0
+  - id: q3
+    concept: Vocabulary
+    prompt_type: multiple_choice
+    prompt: "A synonym for 'happy' is:"
+    options: ["joyful", "angry", "tired", "loud"]
+    correct: 0
+  - id: q4
+    concept: Vocabulary
+    prompt_type: multiple_choice
+    prompt: "An antonym for 'ancient' is:"
+    options: ["modern", "old", "historic", "traditional"]
+    correct: 0
+  - id: q5
+    concept: Comprehension
+    prompt_type: multiple_choice
+    prompt: "The main idea of a paragraph is usually found in the:"
+    options: ["Topic sentence", "Last word", "Title only", "Footnotes"]
+    correct: 0
+  - id: q6
+    concept: Comprehension
+    prompt_type: multiple_choice
+    prompt: "When you infer meaning, you:"
+    options: ["Read between the lines using clues", "Ignore the text", "Copy the first sentence", "Count the words"]
+    correct: 0
+  - id: q7
+    concept: Writing
+    prompt_type: multiple_choice
+    prompt: "A formal letter should begin with:"
+    options: ["A salutation such as 'Dear Sir/Madam'", "Hey there", "Yo", "Nothing"]
+    correct: 0
+  - id: q8
+    concept: Literature
+    prompt_type: multiple_choice
+    prompt: "A comparison using 'like' or 'as' is called a:"
+    options: ["Simile", "Metaphor", "Hyperbole", "Alliteration"]
+    correct: 0
+  - id: q9
+    concept: Grammar
+    prompt_type: multiple_choice
+    prompt: "Which sentence is punctuated correctly?"
+    options: ["Where are you going?", "Where are you going", "where are you going?", "Where are you going."]
+    correct: 0
+  - id: q10
+    concept: Vocabulary
+    prompt_type: multiple_choice
+    prompt: "The word 'benevolent' most nearly means:"
+    options: ["Kind", "Angry", "Confused", "Silent"]
+    correct: 0
+  - id: q11
+    concept: Grammar
+    prompt_type: short_answer
+    prompt: "What is the plural of 'child'?"
+    correct: "children"
+  - id: q12
+    concept: Grammar
+    prompt_type: short_answer
+    prompt: "Write the present continuous form of 'run' for 'he' (e.g. he ___)."
+    correct: "is running"
+  - id: q13
+    concept: Vocabulary
+    prompt_type: short_answer
+    prompt: "Give a synonym for 'begin'."
+    correct: "start"
+  - id: q14
+    concept: Literature
+    prompt_type: short_answer
+    prompt: "What literary device repeats the same starting sound in nearby words (e.g. 'wild wind')?"
+    correct: "alliteration"
+  - id: q15
+    concept: Writing
+    prompt_type: short_answer
+    prompt: "What do we call the first paragraph of an essay that introduces the topic?"
+    correct: "introduction"
+  - id: q16
+    concept: Comprehension
+    prompt_type: multiple_choice
+    prompt: "A fact is something that:"
+    options: ["Can be proved true or false", "Is always an opinion", "Cannot be checked", "Is a feeling"]
+    correct: 0
+  - id: q17
+    concept: Grammar
+    prompt_type: multiple_choice
+    prompt: "Which word is an adjective?"
+    options: ["beautiful", "quickly", "run", "and"]
+    correct: 0
+  - id: q18
+    concept: Vocabulary
+    prompt_type: multiple_choice
+    prompt: "'Beneath' is closest in meaning to:"
+    options: ["Under", "Above", "Beside", "Beyond"]
+    correct: 0
+  - id: q19
+    concept: Writing
+    prompt_type: multiple_choice
+    prompt: "In formal writing you should avoid:"
+    options: ["Slang and contractions", "Full stops", "Capital letters", "Paragraphs"]
+    correct: 0
+  - id: q20
+    concept: Literature
+    prompt_type: multiple_choice
+    prompt: "The person who tells the story is the:"
+    options: ["Narrator", "Publisher", "Editor", "Illustrator"]
+    correct: 0

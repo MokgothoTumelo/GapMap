@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gapmap.app/schema/concept-graph.schema.json",
+  "title": "GapMap Concept Graph",
+  "description": "A Subject-level map of Concepts and their Prerequisite edges, spanning grades where a Concept builds on earlier years' work. One frozen artefact per Subject; with the Gap Map it drives the Learning Path. See ADR-0006.",
+  "type": "object",
+  "required": ["id", "type", "subject", "nodes", "edges", "generated_at"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "type": { "const": "concept-graph" },
+    "subject": { "type": "string" },
+    "language": { "type": "string", "description": "BCP-47 language tag" },
+    "nodes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["concept"],
+        "properties": {
+          "concept": { "type": "string" },
+          "grade": { "type": "string", "description": "Origin grade — where the Concept is first taught, e.g. \"9\". A below-grade origin on a Learner's path is a Foundational Gap." },
+          "description": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["requires", "for"],
+        "properties": {
+          "requires": { "type": "string", "description": "The Prerequisite Concept — must be a node." },
+          "for": { "type": "string", "description": "The dependent Concept — must be a node." }
+        },
+        "additionalProperties": false
+      }
+    },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "generated_by": { "type": "string" },
+    "schema_version": { "type": "string", "default": "1.0.0" }
+  },
+  "additionalProperties": false
+}

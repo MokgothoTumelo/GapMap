@@ -1,0 +1,102 @@
+id: attempt-2026-01-15-learner-001
+assessment_id: diagnostic-g12-mathematics
+learner_id: learner-001
+started_at: 2026-01-15T14:00:00Z
+completed_at: 2026-01-15T14:14:22Z
+responses:
+  - item_id: q1
+    answer: 0
+    correct: true
+    time_ms: 18400
+  - item_id: q2
+    answer: 0
+    correct: true
+    time_ms: 12100
+  - item_id: q3
+    answer: 0
+    correct: true
+    time_ms: 22600
+  - item_id: q4
+    answer: 0
+    correct: true
+    time_ms: 15300
+  - item_id: q5                       # the "why did I get this wrong" showcase
+    answer: 1                         # chose "-9"
+    correct: false
+    time_ms: 31200
+    feedback: >
+      You treated -2^2 as -(2^2) = -4, then did -4 - 5 = -9. But f(-2) means
+      substitute -2 into x^2, which is (-2)^2 = 4. So f(-2) = 4 - 5 = -1.
+      Tip: when you see f(-2) with a squared term, write (-2)^2 with the
+      brackets so you don't lose the sign.
+  - item_id: q6
+    answer: 0
+    correct: true
+    time_ms: 19800
+  - item_id: q7
+    answer: 0
+    correct: true
+    time_ms: 16700
+  - item_id: q8
+    answer: 1                         # chose "(x + 1)(x + 6)"
+    correct: false
+    time_ms: 24400
+    feedback: >
+      You picked factors that multiply to 6, but 1 + 6 = 7, not 5. For
+      x^2 + 5x + 6 you need two numbers that BOTH multiply to 6 AND add to 5
+      -- that's 2 and 3, giving (x + 2)(x + 3).
+  - item_id: q9
+    answer: 1                         # chose "(x - 2)(x + 2)" -- dropped the 2
+    correct: false
+    time_ms: 28900
+    feedback: >
+      You factored x^2 - 4 into (x - 2)(x + 2) correctly, but you dropped the
+      common factor. 2x^2 - 8 = 2(x^2 - 4) = 2(x - 2)(x + 2). Always check for
+      a common factor first.
+  - item_id: q10
+    answer: 1                         # chose "x = 4"
+    correct: false
+    time_ms: 9800
+    feedback: >
+      You took the square root but kept only the positive root. x^2 = 16 has
+      two solutions: x = 4 and x = -4, since both square to 16.
+  - item_id: q11
+    answer: 0
+    correct: true
+    time_ms: 21300
+  - item_id: q12
+    answer: 1                         # chose "x = 2 or x = -2"
+    correct: false
+    time_ms: 26700
+    feedback: >
+      x^2 + 4x + 4 is a perfect square: (x + 2)^2, so the only root is x = -2
+      (a repeated root). You treated it as a difference of squares, which it
+      isn't -- there's no subtraction.
+scores:
+  - concept: Algebra
+    correct: 3
+    total: 3
+    pct: 100
+    status: strong
+  - concept: Functions
+    correct: 2
+    total: 3
+    pct: 67
+    status: improve
+  - concept: Factorisation
+    correct: 1
+    total: 3
+    pct: 33
+    status: weak
+  - concept: Quadratic Equations
+    correct: 1
+    total: 3
+    pct: 33
+    status: weak
+overall_pct: 58
+next_concept: Factorisation
+# Tie-break note: Factorisation and Quadratic equations both scored 33%.
+# Factorisation is chosen first because it is a prerequisite for solving
+# quadratics by factoring (q11), so strengthening it lifts both. That
+# prerequisite is now data — see ../graphs/graph-g12-mathematics.yaml and
+# docs/adr/0006-concept-graph-learning-path.md.
