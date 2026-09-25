@@ -235,12 +235,7 @@ on it.
 4. **Companion chat wiring** (system prompt, context injection) is already
    specified in `core/README.md` *Integration points* and `companion.md`;
    this doc defers to those.
-5. **Derived-summary write vs the checked-in rules.** `saveDiagnosticSummary`
-   writes `learners/{uid}/subjects/{subjectId}` without the `uid`/`email`
-   fields `firestore.rules` requires on create/update, so under those rules
-   the write is denied: the Diagnostic swallows it in its `allSettled` batch
-   and sign-in hydration then finds no summary. The payload or the rule needs
-   a decision; the append-only Assessment/Attempt writes are unaffected.
+5. **Derived-summary write vs the checked-in rules.** Resolved per `CONTEXT.md` (uid IS learnerId): `saveDiagnosticSummary` now writes both `learner_id` and `uid` (same value) and `firestore.rules#/subjects` accepts either owner field, so existing Gap Maps refresh instead of being denied. The Diagnostic still swallows the write in its `allSettled` batch; the append-only Assessment/Attempt writes are unaffected.
 
 ## See also
 

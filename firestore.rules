@@ -42,15 +42,28 @@ service cloud.firestore {
 
       // Subject summaries are derived convenience data for fast dashboard
       // rendering. They are owned by the Learner and may be refreshed by the app.
+      // uid IS learnerId (CONTEXT.md): path id, Profile `uid`, and
+      // subcollection `learner_id` are the same value. Accept either owner
+      // field so existing Gap Maps keep refreshing; the name must not block
+      // reads or writes.
       match /subjects/{subjectId} {
         allow read: if ownsLearner(learnerId);
-      allow create: if ownsLearner(learnerId)
-        && request.resource.data.uid == learnerId
-        && request.resource.data.email == request.auth.token.email;
-      allow update: if ownsLearner(learnerId)
-        && resource.data.uid == learnerId
-        && request.resource.data.uid == learnerId
-        && request.resource.data.email == request.auth.token.email;
+        allow create: if ownsLearner(learnerId)
+          && (
+            request.resource.data.learner_id == learnerId
+            || (
+              request.resource.data.uid == learnerId
+              && request.resource.data.email == request.auth.token.email
+            )
+          );
+        allow update: if ownsLearner(learnerId)
+          && (
+            request.resource.data.learner_id == learnerId
+            || (
+              request.resource.data.uid == learnerId
+              && request.resource.data.email == request.auth.token.email
+            )
+          );
         allow delete: if false;
       }
 

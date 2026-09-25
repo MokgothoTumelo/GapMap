@@ -11,7 +11,7 @@ A person whose Knowledge Gaps we identify and guide through study.
 _Avoid_: student, user, pupil
 
 **Learner Profile**:
-The Learner's saved setup and preferences — their stable Firebase Authentication uid (the key the data layer joins their data by), name and email, grade, active Subject, the Subjects they have used, active Language, Explanation Level, and Setup status. One concept, one owner: Firebase Authentication owns the account identity and the durable Learner Profile lives at `learners/{uid}` in Firestore; `gapmap_user` is only a lightweight local session snapshot for page rendering.
+The Learner's saved setup and preferences — their stable Firebase Authentication uid, name and email, grade, active Subject, the Subjects they have used, active Language, Explanation Level, and Setup status. uid IS learnerId: the same stable value under two names — `uid` in Authentication and the Profile doc, `learnerId` in the store interface, `{uid}` in the `learners/{uid}` path, `learner_id` in Assessment/Attempt/subject-summary docs. The name is semantic and must never block reads or writes. One concept, one owner: Firebase Authentication owns the account identity and the durable Learner Profile lives at `learners/{uid}` in Firestore; `gapmap_user` is only a lightweight local session snapshot for page rendering.
 _Avoid_: user profile, account settings, preferences blob
 
 **Subject**:
@@ -144,3 +144,4 @@ _Avoid_: chatbot, assistant, tutor
 - "feedback" is a generic term for any system response; the domain concept we mean is **Mistake Diagnosis** — resolved: use Mistake Diagnosis for the "why was this wrong" explanation; reserve "feedback" for generic UI responses.
 - "user" survives in the demo's client-side storage key (`gapmap_user`) — resolved: that name is implementation, not domain language; Firebase Authentication is the account source of truth, the Firestore record is the durable **Learner Profile**, and the local key is only a page-session snapshot.
 - the Profile's fields (grade, Subject, Language, Explanation Level) lived as an unnamed bag on the session — resolved: canonical is **Learner Profile**; "user profile" and "account settings" are avoided, and switchable preferences are owned by the one helper (`frontend/js/auth-guard.js`), not scattered across pages.
+- `uid` vs `learnerId` — resolved: same stable value, different label per layer (`uid` in Authentication/Profile, `learnerId`/`learner_id` in the store); the difference is semantic and must not block data reads or writes.

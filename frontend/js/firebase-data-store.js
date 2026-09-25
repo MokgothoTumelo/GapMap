@@ -146,7 +146,12 @@ export async function saveDiagnosticSummary(uid, results) {
   const subject = String(results?.subject || 'General').trim();
   const { db, firebase } = await services();
   const ref = firebase.doc(db, 'learners', learnerId, 'subjects', subjectKey(subject));
+  // uid IS learnerId (CONTEXT.md): same stable value, two labels. Write both
+  // so the checked-in subjects rule passes however it checks ownership, and
+  // existing Gap Maps refresh instead of being denied.
   const payload = {
+    learner_id: learnerId,
+    uid: learnerId,
     subject,
     grade: results?.grade || null,
     latestScore: Number(results?.overall || 0),
