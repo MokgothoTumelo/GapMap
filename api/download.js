@@ -1,14 +1,20 @@
 // Vercel Function: GET /api/download?id=...
 // Proxies official past papers so learners stay on GapMap.
 //
-// IMPORTANT: this uses the Web Handler signature (request -> Response) instead
-// of the old (req, res) Node signature. That's what lets us STREAM the upstream
-// PDF straight through to the client. The old version buffered the whole file
-// into memory with `await upstream.arrayBuffer()` then called `res.send(buffer)` —
-// Vercel Functions hard-cap buffered responses at 4.5MB, so any resource bigger
-// than that (most of the Siyavula textbooks, the Mind the Gap guides, many past
-// papers) failed with a 500 FUNCTION_RESPONSE_PAYLOAD_TOO_LARGE, which is why
-// View/Download looked broken for a chunk of the library.
+// This keeps the classic Node.js (req, res) handler signature — that's the
+// signature Vercel was actually invoking this function with (switching to the
+// Web Handler `request -> Response` style caused `new URL(request.url)` to
+// throw, since req.url on the Node signature is just a path, not a full URL —
+// that's what caused the 500 FUNCTION_INVOCATION_FAILED you just saw).
+//
+// The real fix is to STREAM the upstream PDF straight into `res` via Node
+// streams instead of buffering it with `await upstream.arrayBuffer()` then
+// `res.send(buffer)`. Vercel Functions hard-cap buffered responses at 4.5MB —
+// several of the Siyavula textbooks and Mind the Gap guides are bigger than
+// that, which is why View/Download looked broken for a chunk of the library.
+
+import { Readable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
 
 const DOWNLOAD_WHITELIST = {
   '1': { url: 'https://www.education.gov.za/LinkClick.aspx?fileticket=CsNcmi8-trM%3D&tabid=4933&portalid=0&mid=13146', filename: 'Mathematics-P1-Nov-2024.pdf' },
@@ -43,20 +49,21 @@ export const config = {
   maxDuration: 60,
 };
 
-export default async function handler(request) {
-  if (request.method !== 'GET' && request.method !== 'HEAD') {
-    return jsonResponse({ error: 'method not allowed' }, 405);
+export default async function handler(req, res) {
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    res.status(405).json({ error: 'method not allowed' });
+    return;
   }
 
-  const reqUrl = new URL(request.url);
-  const id = reqUrl.searchParams.get('id');
+  const id = req.query?.id;
   const entry = id ? DOWNLOAD_WHITELIST[id] : null;
 
   if (!entry) {
-    return jsonResponse({ error: 'unknown resource id' }, 404);
+    res.status(404).json({ error: 'unknown resource id' });
+    return;
   }
 
-  const disposition = reqUrl.searchParams.get('disposition') === 'inline' ? 'inline' : 'attachment';
+  const disposition = req.query?.disposition === 'inline' ? 'inline' : 'attachment';
 
   let upstream;
   try {
@@ -68,11 +75,13 @@ export default async function handler(request) {
       },
     });
   } catch (err) {
-    return jsonResponse({ error: 'upstream unavailable', detail: String(err) }, 502);
+    res.status(502).json({ error: 'upstream unavailable', detail: String(err.message || err) });
+    return;
   }
 
   if (!upstream.ok || !upstream.body) {
-    return jsonResponse({ error: 'upstream returned ' + upstream.status }, 502);
+    res.status(502).json({ error: 'upstream returned ' + upstream.status });
+    return;
   }
 
   const upstreamType = (upstream.headers.get('content-type') || '').toLowerCase();
@@ -81,29 +90,36 @@ export default async function handler(request) {
   // 200 status instead of the actual PDF when hit by a non-browser client. Catch
   // that here rather than silently handing the browser a "corrupt PDF".
   if (upstreamType.includes('text/html')) {
-    return jsonResponse(
-      { error: 'source did not return a PDF (got HTML) — the upstream link may be dead or blocking automated requests' },
-      502
-    );
+    res.status(502).json({
+      error: 'source did not return a PDF (got HTML) — the upstream link may be dead or blocking automated requests',
+    });
+    return;
   }
 
-  const headers = new Headers();
-  headers.set('Content-Type', upstreamType.includes('pdf') ? 'application/pdf' : (upstreamType || 'application/pdf'));
-  headers.set('Content-Disposition', `${disposition}; filename="${entry.filename}"`);
-  headers.set('Cache-Control', 'private, max-age=3600');
-  headers.set('X-Content-Type-Options', 'nosniff');
+  res.status(200);
+  res.setHeader('Content-Type', upstreamType.includes('pdf') ? 'application/pdf' : (upstreamType || 'application/pdf'));
+  res.setHeader('Content-Disposition', `${disposition}; filename="${entry.filename}"`);
+  res.setHeader('Cache-Control', 'private, max-age=3600');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
 
   const upstreamLength = upstream.headers.get('content-length');
-  if (upstreamLength) headers.set('Content-Length', upstreamLength);
+  if (upstreamLength) res.setHeader('Content-Length', upstreamLength);
 
-  // Stream the body straight through — this is the key fix. We never hold the
-  // whole file in memory, so there's no 4.5MB response-size ceiling.
-  return new Response(upstream.body, { status: 200, headers });
-}
+  if (req.method === 'HEAD') {
+    res.end();
+    return;
+  }
 
-function jsonResponse(obj, status) {
-  return new Response(JSON.stringify(obj), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  });
+  // Stream the body straight through — this is the key fix. We convert the
+  // upstream fetch Response's web ReadableStream into a Node stream and pipe
+  // it directly to `res`, so we never hold the whole file in memory at once.
+  // That's what removes the 4.5MB buffered-response ceiling.
+  try {
+    await pipeline(Readable.fromWeb(upstream.body), res);
+  } catch (err) {
+    // If streaming fails partway through, the headers are already sent, so we
+    // can't send a JSON error — just log and let the connection end.
+    console.error('[download] stream error', err.message);
+    if (!res.writableEnded) res.end();
+  }
 }
