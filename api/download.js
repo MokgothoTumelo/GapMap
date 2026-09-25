@@ -1,5 +1,14 @@
-// Vercel serverless function: GET /api/download?id=...
+// Vercel Function: GET /api/download?id=...
 // Proxies official past papers so learners stay on GapMap.
+//
+// IMPORTANT: this uses the Web Handler signature (request -> Response) instead
+// of the old (req, res) Node signature. That's what lets us STREAM the upstream
+// PDF straight through to the client. The old version buffered the whole file
+// into memory with `await upstream.arrayBuffer()` then called `res.send(buffer)` —
+// Vercel Functions hard-cap buffered responses at 4.5MB, so any resource bigger
+// than that (most of the Siyavula textbooks, the Mind the Gap guides, many past
+// papers) failed with a 500 FUNCTION_RESPONSE_PAYLOAD_TOO_LARGE, which is why
+// View/Download looked broken for a chunk of the library.
 
 const DOWNLOAD_WHITELIST = {
   '1': { url: 'https://www.education.gov.za/LinkClick.aspx?fileticket=CsNcmi8-trM%3D&tabid=4933&portalid=0&mid=13146', filename: 'Mathematics-P1-Nov-2024.pdf' },
@@ -29,45 +38,72 @@ const DOWNLOAD_WHITELIST = {
   '212': { url: 'https://www.siyavula.com/downloads/books/maths/Gr12_Mathematics_Learner_Eng.pdf', filename: 'Gr12_Mathematics_Learner_Eng.pdf' },
 };
 
-export default async function handler(req, res) {
-  if (req.method !== 'GET' && req.method !== 'HEAD') {
-    res.status(405).json({ error: 'method not allowed' });
-    return;
+// Allow Vercel to give this function more time/memory for big textbook PDFs.
+export const config = {
+  maxDuration: 60,
+};
+
+export default async function handler(request) {
+  if (request.method !== 'GET' && request.method !== 'HEAD') {
+    return jsonResponse({ error: 'method not allowed' }, 405);
   }
 
-  const id = req.query?.id;
-  if (!id || !DOWNLOAD_WHITELIST[id]) {
-    res.status(404).json({ error: 'unknown resource id' });
-    return;
+  const reqUrl = new URL(request.url);
+  const id = reqUrl.searchParams.get('id');
+  const entry = id ? DOWNLOAD_WHITELIST[id] : null;
+
+  if (!entry) {
+    return jsonResponse({ error: 'unknown resource id' }, 404);
   }
 
-  const entry = DOWNLOAD_WHITELIST[id];
-  const disposition = req.query?.disposition === 'inline' ? 'inline' : 'attachment';
+  const disposition = reqUrl.searchParams.get('disposition') === 'inline' ? 'inline' : 'attachment';
 
+  let upstream;
   try {
-    const upstream = await fetch(entry.url, {
+    upstream = await fetch(entry.url, {
       redirect: 'follow',
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; GapMap/1.0)',
         Accept: 'application/pdf,*/*',
       },
     });
-
-    if (!upstream.ok) {
-      res.status(502).json({ error: 'upstream returned ' + upstream.status });
-      return;
-    }
-
-    const contentType = upstream.headers.get('content-type') || 'application/pdf';
-    const buffer = Buffer.from(await upstream.arrayBuffer());
-
-    res.setHeader('Content-Type', contentType.includes('pdf') ? 'application/pdf' : contentType);
-    res.setHeader('Content-Disposition', `${disposition}; filename="${entry.filename}"`);
-    res.setHeader('Cache-Control', 'private, max-age=3600');
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.status(200).send(buffer);
   } catch (err) {
-    console.error('[download]', err.message);
-    res.status(502).json({ error: 'upstream unavailable' });
+    return jsonResponse({ error: 'upstream unavailable', detail: String(err) }, 502);
   }
+
+  if (!upstream.ok || !upstream.body) {
+    return jsonResponse({ error: 'upstream returned ' + upstream.status }, 502);
+  }
+
+  const upstreamType = (upstream.headers.get('content-type') || '').toLowerCase();
+
+  // Some LinkClick.aspx-style links serve an HTML interstitial/error page with a
+  // 200 status instead of the actual PDF when hit by a non-browser client. Catch
+  // that here rather than silently handing the browser a "corrupt PDF".
+  if (upstreamType.includes('text/html')) {
+    return jsonResponse(
+      { error: 'source did not return a PDF (got HTML) — the upstream link may be dead or blocking automated requests' },
+      502
+    );
+  }
+
+  const headers = new Headers();
+  headers.set('Content-Type', upstreamType.includes('pdf') ? 'application/pdf' : (upstreamType || 'application/pdf'));
+  headers.set('Content-Disposition', `${disposition}; filename="${entry.filename}"`);
+  headers.set('Cache-Control', 'private, max-age=3600');
+  headers.set('X-Content-Type-Options', 'nosniff');
+
+  const upstreamLength = upstream.headers.get('content-length');
+  if (upstreamLength) headers.set('Content-Length', upstreamLength);
+
+  // Stream the body straight through — this is the key fix. We never hold the
+  // whole file in memory, so there's no 4.5MB response-size ceiling.
+  return new Response(upstream.body, { status: 200, headers });
+}
+
+function jsonResponse(obj, status) {
+  return new Response(JSON.stringify(obj), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
 }
