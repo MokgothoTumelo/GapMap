@@ -478,17 +478,6 @@
       return ALIASES[id] || id;
     }
 
-    if (GapMapAuth.requireAuth()) {
-      initConceptPage().catch((error) => {
-        console.error('[Concept] page initialisation failed.', error);
-        learnScreen.classList.remove('active');
-        emptyScreen.classList.add('active');
-        const message = document.getElementById('emptyMessage');
-        if (message) message.textContent = error?.message || 'The Concept could not be loaded. Please return to your Gap Map and try again.';
-        if (typeof GapMapAuth.reveal === 'function') GapMapAuth.reveal();
-      });
-    }
-
     let rawQuestions = [];
     let questions = [];
     let current = 0;
@@ -514,6 +503,20 @@
     const resultsScreen = document.getElementById('resultsScreen');
     const emptyScreen = document.getElementById('emptyScreen');
     const feedbackMount = document.getElementById('answerFeedback');
+
+    // Must run after every declaration above: initConceptPage() executes
+    // synchronously until its first await and touches activeGraphPromise and
+    // the screen consts, so calling it earlier would hit the temporal dead zone.
+    if (GapMapAuth.requireAuth()) {
+      initConceptPage().catch((error) => {
+        console.error('[Concept] page initialisation failed.', error);
+        learnScreen.classList.remove('active');
+        emptyScreen.classList.add('active');
+        const message = document.getElementById('emptyMessage');
+        if (message) message.textContent = error?.message || 'The Concept could not be loaded. Please return to your Gap Map and try again.';
+        if (typeof GapMapAuth.reveal === 'function') GapMapAuth.reveal();
+      });
+    }
 
     function quantumPlanKey() {
       const learner = String(quantumLearnerId || 'learner-001');
