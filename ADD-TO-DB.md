@@ -66,7 +66,8 @@ graph — the model-proposal path exists in
 ### 3. Transcript — resolved (implemented)
 
 Persisted at `learners/{uid}/companionMessages/{messageId}` (append-only;
-`saveCompanionMessage` in `frontend/js/firebase-data-store.js`), written
-alongside the mock store's local transcript. Replay still reads the mock copy
-(`learnerStore.getTranscript`), so dropping the local transcript is the
-remaining half — not a new collection.
+`saveCompanionMessage` in `frontend/js/firebase-data-store.js`). Replay reads
+the same collection through the Firestore-backed Learner store
+(`frontend/js/firebase-learner-store.js`); clearing is a per-Learner local
+marker because the rules make the cloud transcript append-only — not a new
+collection.

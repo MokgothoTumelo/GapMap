@@ -68,7 +68,7 @@ precedence when a Firebase account is available.
 
 ## Deployment shape
 
-One page, two Firebase apps, one Learner store with two persistence
+One page, two Firebase apps, one Learner store behind two persistence
 targets:
 
 ```text
@@ -101,14 +101,22 @@ Firebase project, and this two-project shape does not contradict it.
 ## The store seam
 
 Everything is keyed by `learnerId` everywhere — never a global session id
-(the retired Node agent's sin). There is no adapter between the two
-implementations: the mock store implements the interface below, and the pages
-call the Firestore functions (`frontend/js/firebase-data-store.js`) directly
-alongside it. The mock is the contract the offline demo and tests exercise;
-Firestore is the durable copy.
+(the retired Node agent's sin). There are two implementations, joined by the
+`learnerStore` interface in
+[`firebase-learner-store.js`](../frontend/js/firebase-learner-store.js): the
+mock store is the offline fallback and the test contract; the Firestore-backed
+store implements the same interface on the existing seam
+(`frontend/js/firebase-data-store.js`), Firestore-first with anything written
+while offline merged in, and the mock's validation run before any write. The
+agent panel composes them: live sessions use the Firestore-backed store (it
+gates on a signed-in Firebase Auth identity, so the signed-out page and the
+key-free demo never attempt a read the rules would deny), and the opted-out
+`?agent=off` demo plus every test stay entirely local.
 
 ```js
-// frontend/js/learner-store.js (ES module, static-server safe)
+// frontend/js/learner-store.js (ES module, static-server safe) — the mock
+// fallback. frontend/js/firebase-learner-store.js implements this interface
+// on the Firestore seam in frontend/js/firebase-data-store.js.
 export const learnerStore = {
   // Assessments — frozen once written
   async putAssessment(learnerId, assessment) {}, // validate → freeze → write
@@ -130,14 +138,13 @@ Design rules:
 
 - **The mock is the test/demo contract.** `learnerStore`
   (`frontend/js/learner-store.js`; localStorage keys
-  `gapmap.learner.<encoded learnerId>`) remains the implementation the offline
+  `gapmap.learner.<encoded learnerId>`) remains the implementation the key-free
   demo and tests touch — no test may touch a real database. It starts empty;
   Assessments enter it through its own validation on `putAssessment`, from
   either `frontend/js/assessment-generator.js` (in-code fixtures) or the
   authored `core/demo-data/assessments/` YAML loaded through
   `frontend/js/assessment-loader.js` (fetch + vendored js-yaml + validation),
-  so the mock exercises the same validation the real store will. Production
-  additionally persists through `frontend/js/firebase-data-store.js`.
+  so the mock exercises the same validation the real store will.
 - **Validation at the boundary.** `putAssessment` enforces persistence
   invariants (required identity/artefact fields, immutable ids, and the
   Concept-tag bridge through `core/validate.js`) before writing. Structural
@@ -218,8 +225,11 @@ on it.
 1. **Firestore collection names** are now fixed by `frontend/js/firebase-data-store.js`:
    `learners/{uid}` plus the documented subcollections. Revisit only if the
    database team adopts a different top-level serialization.
-2. **Transcript persistence** is implemented at
-   `learners/{uid}/companionMessages/{messageId}` and remains append-only.
+2. **Transcript persistence and replay** are implemented at
+   `learners/{uid}/companionMessages/{messageId}` — append-only by rule.
+   `clearTranscript` is therefore local-only: the adapter records a per-Learner
+   cleared-at marker (localStorage) that hides earlier turns from replay on
+   that browser; the cloud copy cannot be truncated without a rule change.
 3. **Agent project per-user rate keys** (anonymous sign-in on project B) —
    deferred until real usage shows a need.
 4. **Companion chat wiring** (system prompt, context injection) is already

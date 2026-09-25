@@ -94,8 +94,9 @@ service and the rest of the product is prominent, not buried in code.
   Learning Path, not inventing Diagnostic results, and — via the
   `getPlatformHelp` tool — grounding platform guidance in the Learner's state
   (their grade + Subject, whether a Gap Map exists, whether an unattempted
-  Practice is waiting) — plus the conversation transcript. The mock
-  `learnerStore` supplies the current Learner context; the Firebase AI Logic
+  Practice is waiting) — plus the conversation transcript. The Learner store
+  supplies the current Learner context — the mock store offline, the
+  Firestore-backed adapter in a live session; the Firebase AI Logic
   model is an optional runtime seam.
 - **Assessment generation** (implemented locally; live model adapter ready):
   Subject, Concepts, assessment type (Diagnostic / Practice), target

@@ -897,15 +897,11 @@ export function createAgentClient({
           content: liveReply.text,
         });
       }
-      // Keep a cloud copy as well as the local transcript so future Firebase
-      // backed sessions can retain the Companion history. The live response is
-      // never blocked by a transient Firestore write failure.
-      import('./firebase-data-store.js').then(({ saveCompanionMessage }) =>
-        Promise.all([
-          saveCompanionMessage(id, userTurn),
-          saveCompanionMessage(id, { role: 'assistant', content: liveReply.text }),
-        ]),
-      ).catch((error) => console.warn('[Firebase] Companion transcript sync skipped.', error));
+      // Persistence is the Learner store's job, not the client's: the
+      // Firestore-backed store appends to Firestore and mirrors locally, the
+      // mock store stays local (the key-free demo and tests never require a
+      // live project). A failed store write surfaces and never blocks the
+      // reply.
 
       return {
         text: liveReply.text,

@@ -170,6 +170,119 @@ export async function getLatestDiagnosticSummary(uid, subject) {
   return snapshot.exists() ? snapshot.data() : null;
 }
 
+// ------------------------------------------------------------------
+// Reads — the same paths saveAssessment / saveAttempt / saveCompanionMessage
+// write, unchanged: owner-readable under the checked-in rules, no index
+// required (docs carry ISO sort fields, so ordering happens client-side).
+// Firestore Timestamps for the server-field extras (storedAt / createdAt /
+// updatedAt) are normalised to ISO strings on the way out; nothing is written.
+
+function isoFromTimestamp(value) {
+  if (!value) return null;
+  if (typeof value.toDate === 'function') {
+    try {
+      return value.toDate().toISOString();
+    } catch (_error) {
+      return null;
+    }
+  }
+  return value;
+}
+
+function withIsoServerFields(snapshotData) {
+  const data = clone(snapshotData);
+  for (const field of ['storedAt', 'createdAt', 'updatedAt']) {
+    if (data[field]) data[field] = isoFromTimestamp(data[field]);
+  }
+  return data;
+}
+
+function sortedByIsoField(docs, field) {
+  return docs.sort((left, right) => {
+    const leftDate = Date.parse(left[field] || '') || 0;
+    const rightDate = Date.parse(right[field] || '') || 0;
+    if (rightDate !== leftDate) return rightDate - leftDate;
+    return String(right.id).localeCompare(String(left.id));
+  });
+}
+
+/**
+ * Assessments for a Learner, newest first. Frozen once written, so each doc
+ * is returned as written (with the server-field extras normalised to ISO).
+ */
+export async function listAssessments(uid, { type } = {}) {
+  const learnerId = requireUid(uid);
+  const { db, firebase } = await services();
+  const snapshot = await firebase.getDocs(
+    firebase.collection(db, 'learners', learnerId, 'assessments'),
+  );
+  const assessments = snapshot.empty
+    ? []
+    : snapshot.docs
+        .map((doc) => withIsoServerFields(doc.data()))
+        .filter((assessment) => !type || assessment.type === type);
+  return sortedByIsoField(assessments, 'generated_at');
+}
+
+export async function getAssessment(uid, assessmentId) {
+  const learnerId = requireUid(uid);
+  const { db, firebase } = await services();
+  const snapshot = await firebase.getDoc(
+    firebase.doc(db, 'learners', learnerId, 'assessments', String(assessmentId)),
+  );
+  return snapshot.exists() ? withIsoServerFields(snapshot.data()) : null;
+}
+
+export async function getAttempt(uid, attemptId) {
+  const learnerId = requireUid(uid);
+  const { db, firebase } = await services();
+  const snapshot = await firebase.getDoc(
+    firebase.doc(db, 'learners', learnerId, 'attempts', String(attemptId)),
+  );
+  return snapshot.exists() ? withIsoServerFields(snapshot.data()) : null;
+}
+
+/** Attempts for a Learner, newest first (started_at desc). */
+export async function listAttempts(uid) {
+  const learnerId = requireUid(uid);
+  const { db, firebase } = await services();
+  const snapshot = await firebase.getDocs(
+    firebase.collection(db, 'learners', learnerId, 'attempts'),
+  );
+  const attempts = snapshot.empty
+    ? []
+    : snapshot.docs.map((doc) => withIsoServerFields(doc.data()));
+  return sortedByIsoField(attempts, 'started_at');
+}
+
+/**
+ * Companion transcript turns for a Learner, oldest first, each as
+ * `{ id, role, content, at }` (at taken from the server write time).
+ */
+export async function listCompanionMessages(uid) {
+  const learnerId = requireUid(uid);
+  const { db, firebase } = await services();
+  const snapshot = await firebase.getDocs(
+    firebase.collection(db, 'learners', learnerId, 'companionMessages'),
+  );
+  if (snapshot.empty) return [];
+  return snapshot.docs
+    .map((doc) => {
+      const data = withIsoServerFields(doc.data());
+      return {
+        id: doc.id,
+        role: data.role,
+        content: data.content,
+        at: data.at || data.createdAt || null,
+      };
+    })
+    .sort((left, right) => {
+      const leftDate = Date.parse(left.at || '') || 0;
+      const rightDate = Date.parse(right.at || '') || 0;
+      return leftDate - rightDate;
+    });
+}
+
 export async function saveCompanionMessage(uid, message) {
   const learnerId = requireUid(uid);
   const { db, firebase } = await services();

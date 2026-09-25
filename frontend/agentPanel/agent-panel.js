@@ -497,7 +497,23 @@
     import('../js/learner-store.js'),
     import('../js/subject-store.js'),
   ])).then(async ([agentModule, storeModule, subjectStoreModule]) => {
-    const store = storeModule.createMockLearnerStore({ storage: demoStorage() });
+    const localStore = storeModule.createMockLearnerStore({ storage: demoStorage() });
+    // A live session reads and writes per-Learner records through Firestore
+    // (`frontend/js/firebase-learner-store.js`) with the mock store as the
+    // offline fallback; the opted-out key-free demo (`?agent=off`) and every
+    // test stay entirely local — no database, no CDN fetch.
+    let store = localStore;
+    if ((await liveAgentSetup) !== null) {
+      try {
+        const { createFirebaseLearnerStore } = await import('../js/firebase-learner-store.js');
+        store = await createFirebaseLearnerStore({
+          fallbackStore: localStore,
+          storage: demoStorage(),
+        });
+      } catch (error) {
+        console.warn('[Agent panel] Firestore-backed Learner store unavailable; using the local store.', error);
+      }
+    }
     const subjectStore = subjectStoreModule.createSubjectStore();
     const identityOptions = {
       auth: globalThis.auth,

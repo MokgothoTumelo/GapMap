@@ -43,10 +43,10 @@ bootstrap, and the key-free demo/test path opts out per session with
 - The agent panel (`frontend/agentPanel/`) now uses the request-scoped
   `frontend/js/agent-client.js` seam. It no longer calls `/api/agent/*` or
   opens an `EventSource`; it uses request-scoped Firebase AI Logic and
-  persists successful turns through the mock `learnerStore` and appends them
-  to Firestore (`saveCompanionMessage` →
-  `learners/{uid}/companionMessages`); a failed cloud write never blocks the
-  reply. The live agent
+  persists successful turns through the Learner store — the Firestore-backed
+  adapter (`frontend/js/firebase-learner-store.js`) appends to
+  `learners/{uid}/companionMessages` and mirrors locally, so a failed cloud
+  write never blocks the reply. The live agent
   is **on by default** — the panel loads `agent-config.js` on every page
   unless the session opted out with `?agent=off` (sticky in sessionStorage,
   so the key-free demo flow stays key-free across navigation). Missing live
@@ -71,8 +71,9 @@ bootstrap, and the key-free demo/test path opts out per session with
   every prompt. The execution loop lives in `agent-client.js`; the tools
   `getGapMap`, `getLearningPath`, `getConcept`, `getItem`, `getAttemptHistory`,
   `getPlatformHelp`, `getSubjectConcepts`, `getMistakeDiagnosis`,
-  `navigateTo`, and `generateAssessment` are wired end-to-end against the mock
-  `learnerStore` and the Subject store. `generateAssessment` uses the
+  `navigateTo`, and `generateAssessment` are wired end-to-end against the
+  Learner store (Firestore-backed in a live session, the mock store offline)
+  and the Subject store. `generateAssessment` uses the
   model-backed generator when a live model is available and the local
   deterministic generator otherwise. The Gemini 3 thought-signature
   requirement is handled by echoing the raw `functionCall` parts back
@@ -98,17 +99,18 @@ bootstrap, and the key-free demo/test path opts out per session with
    pool to `agent-client.js`.~~ **Done:** the panel loads the bootstrap by
    default and the client retries transient capacity failures, tries the next
    stable model, and surfaces the provider error when live inference fails.
-2. Replace the mock `learnerStore` as the Companion's context source with
-   project-A Firestore reads. **Partly done:** the pages persist the same
-   artefacts to Firestore (`frontend/js/firebase-data-store.js`) alongside the
-   mock store, but the tool executor still reads the mock context. The
-   derived-summary rule/payload mismatch is recorded in
-   [`learner-store.md`](learner-store.md) Open points.
+2. ~~Replace the mock `learnerStore` as the Companion's context source with
+   project-A Firestore reads~~ **Done:** the panel mounts
+   `frontend/js/firebase-learner-store.js` — Firestore-first reads of
+   Assessments/Attempts/transcript on the existing paths (mock fallback when
+   Firebase is absent or the session opts out with `?agent=off`), no
+   collection or rule changes. The derived-summary rule/payload mismatch
+   remains recorded in [`learner-store.md`](learner-store.md) Open points.
 3. ~~Move the mock transcript from localStorage to the project-A Firestore
-   transcript subtree~~ **Done for writes:** successful turns are appended to
-   `learners/{uid}/companionMessages` as well as the mock transcript. Replay
-   still reads the mock copy, so dropping the local transcript remains the
-   open half. No per-Learner identity is dropped into the agent project.
+   transcript subtree~~ **Done:** turns are appended to
+   `learners/{uid}/companionMessages` and replay reads them (clear is a local
+   marker; the cloud transcript is append-only by rule). No per-Learner
+   identity is dropped into the agent project.
 4. Keep App Check unenforced for the current shared development setup.
    Before production enforcement, restore the commented App Check wiring and
    limited-use-token replay protection; authenticated-users mode remains
