@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Auth helper loads first so the nav + current-plan state can react to
+       whether a Learner is logged in. This page is public — logged-out
+       visitors can still browse plans; they're routed to Login when they
+       try to subscribe. -->
+  <script src="frontend/js/auth-guard.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subscription &amp; Pricing – GapMap</title>
+  <meta name="description" content="Start with a 30-day free trial on GapMap. Then choose a simple plan — R40/month or R480/year (save R60) — for unlimited diagnostics and personalised learning paths.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <!-- Paystack Inline JS (v2) -->
+  <script src="https://js.paystack.co/v2/inline.js"></script>
+
+  <style>
+    /* Page-specific styles only. Reuses GapMap tokens from style.css
+       (Inter, #3B5BDB primary, #7C3AED accent, #1A1A2E text, #5A5A72 muted,
+       10px/14px/16px rounding, soft shadows) so this page feels native. */
+
+    body { background: #F8FAFC; }
+
+    /* Sticky product-style nav (white + border) – matches dashboard feel */
+    .nav {
+      background: #FFFFFF;
+      border-bottom: 1.5px solid #E5E7EB;
+      max-width: none;
+      padding: 16px 32px;
+      position: sticky;
+      top: 0;
+      z-index: 60;
+    }
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Current-plan ribbon */
+    .plan-ribbon {
+      display: none;
+      background: linear-gradient(90deg, #EEF2FF, #F5F3FF);
+      border-bottom: 1.5px solid #E0E7FF;
+      position: sticky;
+      top: 68px;
+      z-index: 55;
+    }
+    .plan-ribbon.show { display: block; }
+    .plan-ribbon-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 10px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #3B2E9E;
+      text-align: center;
+    }
+    .plan-ribbon-inner .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #10B981; flex-shrink: 0;
+    }
+    .plan-ribbon-inner a {
+      color: #3B5BDB;
+      text-decoration: underline;
+      font-weight: 600;
+    }
+
+    /* Hero */
+    .sub-hero {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 56px 32px 12px;
+      text-align: center;
+    }
+    .sub-hero .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #EEF2FF;
+      color: #3B5BDB;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+    }
+    .sub-hero h1 {
+      font-size: clamp(1.9rem, 4.2vw, 2.6rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 14px;
+      color: #1A1A2E;
+    }
+    .sub-hero h1 .accent { color: #3B5BDB; }
+    .sub-hero p {
+      font-size: 1.05rem;
+      color: #5A5A72;
+      line-height: 1.65;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Billing toggle */
+    .billing-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin: 28px 0 4px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #5A5A72;
+    }
+    .billing-toggle .switch {
+      position: relative;
+      width: 48px;
+      height: 26px;
+      background: #3B5BDB;
+      border-radius: 999px;
+      cursor: pointer;
+      border: none;
+      flex-shrink: 0;
+      padding: 0;
+    }
+    .billing-toggle .switch::after {
+      content: '';
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 20px; height: 20px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .billing-toggle .switch.annual::after { transform: translateX(22px); }
+    .billing-toggle .save-pill {
+      background: #ECFDF5;
+      color: #059669;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .billing-toggle .label-active { color: #1A1A2E; }
+
+    /* Pricing grid */
+    .pricing-wrap {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 20px 32px 12px;
+    }
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+      align-items: stretch;
+    }
+
+    .plan-card {
+      position: relative;
+      background: white;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 16px;
+      padding: 30px 26px;
+      box-shadow: 0 8px 30px -10px rgba(0,0,0,0.07);
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: flex;
+      flex-direction: column;
+    }
+    .plan-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 14px 36px -12px rgba(0,0,0,0.11);
+    }
+    .plan-card.popular {
+      border-color: #3B5BDB;
+      box-shadow: 0 14px 40px -12px rgba(59,91,219,0.25);
+    }
+    .plan-card.popular:hover { transform: translateY(-5px); }
+    .plan-card.current { border-color: #10B981; }
+
+    .plan-badge {
+      position: absolute;
+      top: -13px; left: 50%;
+      transform: translateX(-50%);
+      background: #3B5BDB;
+      color: white;
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      padding: 5px 14px;
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(59,91,219,0.3);
+      white-space: nowrap;
+    }
+    .plan-badge.save {
+      background: #10B981;
+      box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+    }
+
+    .plan-name {
+      font-size: 1.12rem;
+      font-weight: 700;
+      margin-bottom: 5px;
+      color: #1A1A2E;
+    }
+    .plan-tagline {
+      font-size: 0.88rem;
+      color: #5A5A72;
+      margin-bottom: 18px;
+      min-height: 38px;
+      line-height: 1.45;
+    }
+
+    .plan-price {
+      display: flex;
+      align-items: baseline;
+      gap: 5px;
+      margin-bottom: 3px;
+    }
+    .plan-price .amount {
+      font-size: 2.25rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #1A1A2E;
+    }
+    .plan-price .period {
+      font-size: 0.92rem;
+      color: #5A5A72;
+      font-weight: 500;
+    }
+    .plan-price-sub {
+      font-size: 0.8rem;
+      color: #9CA3AF;
+      margin-bottom: 20px;
+      min-height: 16px;
+    }
+
+    .plan-features {
+      list-style: none;
+      margin: 0 0 24px;
+      padding: 0;
+      flex-grow: 1;
+    }
+    .plan-features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.88rem;
+      color: #374151;
+      padding: 6px 0;
+      line-height: 1.4;
+    }
+    .plan-features li.muted { color: #B0B3BE; }
+    .check {
+      width: 18px; height: 18px; border-radius: 50%;
+      background: #ECFDF5; color: #10B981;
+      display: grid; place-items: center;
+      flex-shrink: 0; margin-top: 1px;
+      font-size: 0.68rem; font-weight: 800;
+    }
+    .plan-features li.muted .check {
+      background: #F3F4F6; color: #C1C4CC;
+    }
+
+    .plan-cta {
+      width: 100%;
+      justify-content: center;
+      padding: 12px 18px;
+      font-size: 0.94rem;
+      border-radius: 10px;
+    }
+    .plan-cta.loading {
+      opacity: 0.75;
+      cursor: progress;
+      pointer-events: none;
+    }
+    .plan-cta .spinner {
+      width: 15px; height: 15px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    .plan-cta.loading .spinner { display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .plan-current-tag {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 12px 18px;
+      border-radius: 10px;
+      background: #ECFDF5;
+      color: #065F46;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    /* Feedback banners */
+    .checkout-msg {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+    .msg-banner {
+      display: none;
+      align-items: flex-start;
+      gap: 12px;
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin-top: 10px;
+    }
+    .msg-banner.show { display: flex; }
+    .msg-banner.success {
+      background: #ECFDF5;
+      color: #065F46;
+      border: 1.5px solid #A7F3D0;
+    }
+    .msg-banner.error {
+      background: #FEF2F2;
+      color: #991B1B;
+      border: 1.5px solid #FECACA;
+    }
+    .msg-banner strong { font-weight: 700; }
+
+    /* Trust row */
+    .trust-row {
+      max-width: 1120px;
+      margin: 4px auto 0;
+      padding: 24px 32px 4px;
+      display: flex;
+      justify-content: center;
+      gap: 28px;
+      flex-wrap: wrap;
+    }
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.84rem;
+      color: #5A5A72;
+      font-weight: 500;
+    }
+    .trust-item svg { flex-shrink: 0; color: #10B981; }
+
+    /* Manage card */
+    .manage-wrap {
+      max-width: 1120px;
+      margin: 36px auto 0;
+      padding: 0 32px;
+    }
+    .manage-card {
+      background: white;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 14px;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      box-shadow: 0 8px 30px -10px rgba(0,0,0,0.06);
+    }
+    .manage-card h3 {
+      font-size: 0.98rem;
+      font-weight: 700;
+      margin-bottom: 3px;
+      color: #1A1A2E;
+    }
+    .manage-card p {
+      font-size: 0.84rem;
+      color: #5A5A72;
+    }
+
+    /* FAQ */
+    .faq-wrap {
+      max-width: 760px;
+      margin: 64px auto 0;
+      padding: 0 32px 80px;
+    }
+    .faq-wrap h2 {
+      text-align: center;
+      font-size: 1.55rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+      color: #1A1A2E;
+    }
+    .faq-wrap .faq-sub {
+      text-align: center;
+      color: #5A5A72;
+      font-size: 0.94rem;
+      margin-bottom: 28px;
+    }
+    .faq-item {
+      background: white;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+    .faq-q {
+      width: 100%;
+      background: none;
+      border: none;
+      text-align: left;
+      padding: 16px 20px;
+      font-size: 0.94rem;
+      font-weight: 600;
+      color: #1A1A2E;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-family: inherit;
+    }
+    .faq-q .plus {
+      width: 22px; height: 22px; flex-shrink: 0;
+      border-radius: 50%;
+      background: #EEF2FF;
+      color: #3B5BDB;
+      display: grid;
+      place-items: center;
+      font-size: 1rem;
+      font-weight: 700;
+      transition: transform 0.2s;
+    }
+    .faq-item.open .plus { transform: rotate(45deg); }
+    .faq-a {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.25s ease, padding 0.25s ease;
+      padding: 0 20px;
+      font-size: 0.88rem;
+      color: #5A5A72;
+      line-height: 1.6;
+    }
+    .faq-item.open .faq-a {
+      max-height: 220px;
+      padding: 0 20px 18px;
+    }
+
+    /* Footer */
+    .site-footer {
+      border-top: 1.5px solid #E5E7EB;
+      background: #FFFFFF;
+      padding: 24px 32px;
+      text-align: center;
+      color: #9CA3AF;
+      font-size: 0.84rem;
+    }
+    .site-footer a {
+      color: #3B5BDB;
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .site-footer a:hover { text-decoration: underline; }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .pricing-grid {
+        grid-template-columns: 1fr;
+        max-width: 420px;
+        margin: 0 auto;
+      }
+      .plan-card.popular:hover { transform: translateY(-3px); }
+      .nav-links { display: none; }
+    }
+    @media (max-width: 600px) {
+      .nav { padding: 14px 20px; }
+      .sub-hero { padding: 40px 20px 12px; }
+      .pricing-wrap { padding: 16px 20px 8px; }
+      .trust-row { gap: 16px; padding: 20px 20px 4px; }
+      .faq-wrap { padding: 0 20px 60px; }
+      .manage-wrap { padding: 0 20px; }
+      .manage-card { flex-direction: column; align-items: flex-start; }
+      .plan-ribbon-inner { padding: 10px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="logo">
+        <div class="logo-icon"></div>
+        GapMap
+      </a>
+      
+      <div class="nav-actions">
+        <a href="signup.html" class="btn btn-primary" data-nav="signup">Get Started</a>
+        <a href="dashboard.html" class="btn btn-outline" data-nav="dashboard" style="display:none;">Dashboard</a>
+        <a href="concept.html" class="btn btn-outline" data-nav="learn" style="display:none;">Learn</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Sticky current-plan ribbon -->
+  <div class="plan-ribbon" id="planRibbon">
+    <div class="plan-ribbon-inner">
+      <span class="dot"></span>
+      <span id="planRibbonText">You're on the Learner plan.</span>
+      <a href="#manage" id="planRibbonLink">Manage subscription</a>
+    </div>
+  </div>
+
+  <section class="sub-hero">
+    <span class="eyebrow">Subscription</span>
+    <h1>Start free for <span class="accent">30 days</span>.</h1>
+    <p>Every new account gets a full 30-day free trial — unlimited diagnostics and personalised learning paths. When the trial ends, choose a simple plan to keep going.</p>
+  </section>
+
+  <div class="billing-toggle">
+    <span id="labelMonthly" class="label-active">Monthly</span>
+    <button class="switch" id="billingSwitch" type="button" aria-label="Toggle annual billing"></button>
+    <span id="labelAnnual">Annual</span>
+    <span class="save-pill">Save R60</span>
+  </div>
+
+  <div class="pricing-wrap">
+    <div class="pricing-grid" id="pricingGrid">
+
+      <!-- FREE TRIAL -->
+      <div class="plan-card" data-plan="free">
+        <div class="plan-name">Free Trial</div>
+        <div class="plan-tagline">Full access for 30 days. No card required to start.</div>
+        <div class="plan-price">
+          <span class="amount">R0</span>
+          <span class="period">/ 30 days</span>
+        </div>
+        <div class="plan-price-sub">Then choose a plan to continue</div>
+        <ul class="plan-features">
+          <li><span class="check">✓</span> Unlimited diagnostics, every subject</li>
+          <li><span class="check">✓</span> Full personalised learning paths</li>
+          <li><span class="check">✓</span> Progress tracking &amp; gap history</li>
+          <li><span class="check">✓</span> Knowledge gap map</li>
+          <li class="muted"><span class="check">✕</span> Access after 30 days (choose a plan)</li>
+          <li class="muted"><span class="check">✕</span> Priority support</li>
+        </ul>
+        <a href="signup.html" class="btn btn-outline plan-cta" id="freeCta">Start 30-day free trial</a>
+      </div>
+
+      <!-- LEARNER MONTHLY / ANNUAL (toggled) -->
+      <div class="plan-card popular" data-plan="learner">
+        <div class="plan-badge" id="popularBadge">Most Popular</div>
+        <div class="plan-name">Learner</div>
+        <div class="plan-tagline">Keep full access after your free trial ends.</div>
+        <div class="plan-price">
+          <span class="amount" id="learnerAmount">R40</span>
+          <span class="period" id="learnerPeriod">/ month</span>
+        </div>
+        <div class="plan-price-sub" id="learnerSub">Billed monthly · cancel anytime</div>
+        <ul class="plan-features">
+          <li><span class="check">✓</span> Unlimited diagnostics, every subject</li>
+          <li><span class="check">✓</span> Full personalised learning paths</li>
+          <li><span class="check">✓</span> Progress tracking &amp; gap history</li>
+          <li><span class="check">✓</span> Priority support</li>
+          <li class="muted" id="earlyAccessRow"><span class="check">✕</span> Early access to new subjects</li>
+        </ul>
+        <button class="btn btn-primary plan-cta" id="learnerCta" type="button">
+          <span class="btn-label">Subscribe</span>
+          <span class="spinner"></span>
+        </button>
+      </div>
+
+      <!-- ANNUAL -->
+      <div class="plan-card" data-plan="annual">
+        <div class="plan-badge save">Save R60</div>
+        <div class="plan-name">Learner Annual</div>
+        <div class="plan-tagline">Everything in Learner, paid once a year — R60 off.</div>
+        <div class="plan-price">
+          <span class="amount">R480</span>
+          <span class="period">/ year</span>
+        </div>
+        <div class="plan-price-sub">≈ R40 / month · save R60 vs monthly</div>
+        <ul class="plan-features">
+          <li><span class="check">✓</span> Unlimited diagnostics, every subject</li>
+          <li><span class="check">✓</span> Full personalised learning paths</li>
+          <li><span class="check">✓</span> Progress tracking &amp; gap history</li>
+          <li><span class="check">✓</span> Priority support</li>
+          <li><span class="check">✓</span> Early access to new subjects</li>
+        </ul>
+        <button class="btn btn-primary plan-cta" id="annualCta" type="button">
+          <span class="btn-label">Subscribe annually</span>
+          <span class="spinner"></span>
+        </button>
+      </div>
+
+    </div>
+
+    <div class="checkout-msg">
+      <div class="msg-banner success" id="successBanner">
+        
+        <span><strong>Payment received.</strong> <span id="successText">Welcome to Learner — your full learning path is now unlocked.</span></span>
+      </div>
+      <div class="msg-banner error" id="errorBanner">
+        
+        <span><strong>Checkout didn't complete.</strong> <span id="errorText">Your card wasn't charged. You can try again anytime.</span></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="trust-row">
+    <div class="trust-item">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1l5.5 2.2v4c0 3.6-2.35 6.9-5.5 7.8-3.15-.9-5.5-4.2-5.5-7.8v-4L8 1z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M5.7 8l1.6 1.6 3-3.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Secure payment powered by Paystack
+    </div>
+    <div class="trust-item">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8l3.5 3.5L13 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Cancel anytime, no lock-in
+    </div>
+    <div class="trust-item">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1l5.5 2.2v4c0 3.6-2.35 6.9-5.5 7.8-3.15-.9-5.5-4.2-5.5-7.8v-4L8 1z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+      CAPS-aligned content
+    </div>
+    <div class="trust-item">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8l3.5 3.5L13 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Prices in ZAR, no hidden fees
+    </div>
+  </div>
+
+  <div class="manage-wrap" id="manage">
+    <div class="manage-card" id="manageCard" style="display:none;">
+      <div>
+        <h3>Manage your subscription</h3>
+        <p id="manageSub">You're on the Learner plan. Update your card, change plan, or cancel.</p>
+      </div>
+      <button class="btn btn-outline" id="manageBtn" type="button">Manage Subscription</button>
+    </div>
+  </div>
+
+  
+
+   
+  </section>
+
+  <footer class="site-footer">
+    &copy; <span id="year"></span> GapMap. Prices shown in South African Rand (ZAR).
+    <a href="howitworks.html">How it works</a> · <a href="index.html">Home</a>
+  </footer>
+
+  <script type="module">
+    /* ============================================================
+       Config — replace with your real Paystack keys / plan codes
+       when going live. Public keys are safe to ship client-side.
+       ============================================================ */
+    const PAYSTACK_PUBLIC_KEY = 'pk_test_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'; // TODO: replace
+    const PLANS = {
+      monthly: { code: 'PLN_gapmap_learner_monthly', amountKobo: 4000,  label: 'Learner (Monthly)' },
+      annual:  { code: 'PLN_gapmap_learner_annual',  amountKobo: 48000, label: 'Learner Annual' }
+    };
+    const SUB_STORAGE_KEY = 'gapmap_subscription'; // demo-only local record
+    const REDIRECT_PLAN_KEY = 'gapmap_pending_plan';
+
+    /* Helpers */
+    function money(kobo) { return 'R' + (kobo / 100).toFixed(0); }
+
+    function readSubscription() {
+      try {
+        const raw = localStorage.getItem(SUB_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch (e) { return null; }
+    }
+
+    function writeSubscription(sub) {
+      try { localStorage.setItem(SUB_STORAGE_KEY, JSON.stringify(sub)); } catch (e) {}
+    }
+
+    function clearSubscription() {
+      try { localStorage.removeItem(SUB_STORAGE_KEY); } catch (e) {}
+    }
+
+    function showBanner(el, textEl, text) {
+      document.getElementById('successBanner').classList.remove('show');
+      document.getElementById('errorBanner').classList.remove('show');
+      if (textEl && text) document.getElementById(textEl).textContent = text;
+      el.classList.add('show');
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    /* Billing cycle toggle */
+    let cycle = 'monthly';
+    const billingSwitch = document.getElementById('billingSwitch');
+    const learnerAmount = document.getElementById('learnerAmount');
+    const learnerPeriod = document.getElementById('learnerPeriod');
+    const learnerSub = document.getElementById('learnerSub');
+    const learnerCta = document.getElementById('learnerCta');
+    const labelMonthly = document.getElementById('labelMonthly');
+    const labelAnnual = document.getElementById('labelAnnual');
+    const earlyAccessRow = document.getElementById('earlyAccessRow');
+
+    function renderCycle() {
+      if (cycle === 'monthly') {
+        learnerAmount.textContent = money(PLANS.monthly.amountKobo);
+        learnerPeriod.textContent = '/ month';
+        learnerSub.textContent = 'Billed monthly · cancel anytime';
+        learnerCta.dataset.planKey = 'monthly';
+        labelMonthly.classList.add('label-active');
+        labelAnnual.classList.remove('label-active');
+        billingSwitch.classList.remove('annual');
+        if (earlyAccessRow) {
+          earlyAccessRow.classList.add('muted');
+          earlyAccessRow.innerHTML = '<span class="check">✕</span> Early access to new subjects';
+        }
+      } else {
+        learnerAmount.textContent = money(PLANS.annual.amountKobo);
+        learnerPeriod.textContent = '/ year';
+        learnerSub.textContent = '≈ R40 / month · save R60 vs monthly';
+        learnerCta.dataset.planKey = 'annual';
+        labelAnnual.classList.add('label-active');
+        labelMonthly.classList.remove('label-active');
+        billingSwitch.classList.add('annual');
+        if (earlyAccessRow) {
+          earlyAccessRow.classList.remove('muted');
+          earlyAccessRow.innerHTML = '<span class="check">✓</span> Early access to new subjects';
+        }
+      }
+    }
+    billingSwitch.addEventListener('click', function () {
+      cycle = cycle === 'monthly' ? 'annual' : 'monthly';
+      renderCycle();
+    });
+    renderCycle();
+
+    /* Reflect current plan state */
+    function applySubscriptionState() {
+      const sub = readSubscription();
+      const ribbon = document.getElementById('planRibbon');
+      const ribbonText = document.getElementById('planRibbonText');
+      const manageCard = document.getElementById('manageCard');
+      const manageSub = document.getElementById('manageSub');
+
+      document.querySelectorAll('.plan-card').forEach(function (card) {
+        card.classList.remove('current');
+        const cta = card.querySelector('.plan-cta');
+        if (cta && cta.tagName === 'BUTTON') cta.style.display = '';
+        const tag = card.querySelector('.plan-current-tag');
+        if (tag) tag.remove();
+      });
+
+      if (!sub || !sub.active) {
+        ribbon.classList.remove('show');
+        manageCard.style.display = 'none';
+        return;
+      }
+
+      const planLabel = sub.planKey === 'annual' ? 'Learner Annual' : 'Learner';
+      ribbon.classList.add('show');
+      ribbonText.textContent = "You're on the " + planLabel + " plan.";
+
+      manageCard.style.display = 'flex';
+      manageSub.textContent = "You're on the " + planLabel + " plan. Update your card, change plan, or cancel.";
+
+      const targetSelector = sub.planKey === 'annual'
+        ? '.plan-card[data-plan="annual"]'
+        : '.plan-card[data-plan="learner"]';
+      const targetCard = document.querySelector(targetSelector);
+      if (targetCard) {
+        targetCard.classList.add('current');
+        const cta = targetCard.querySelector('.plan-cta');
+        if (cta) {
+          cta.style.display = 'none';
+          const tag = document.createElement('div');
+          tag.className = 'plan-current-tag';
+          tag.innerHTML = '<span>✓</span> Current plan';
+          cta.insertAdjacentElement('afterend', tag);
+        }
+      }
+    }
+
+    /* Auth helper (uses GapMapAuth from auth-guard.js) */
+    function getLoggedInUser() {
+      return window.GapMapAuth ? GapMapAuth.getUser() : null;
+    }
+
+    /* Paystack checkout */
+    function openCheckout(button, planKey) {
+      const plan = PLANS[planKey];
+      if (!plan) return;
+
+      const user = getLoggedInUser();
+
+      if (!user) {
+        try { sessionStorage.setItem(REDIRECT_PLAN_KEY, planKey); } catch (e) {}
+        try {
+          if (GapMapAuth.safeSessionSet) {
+            GapMapAuth.safeSessionSet('gapmap_auth_message', 'Log in to subscribe to the Learner plan.');
+          }
+        } catch (e) {}
+        window.location.href = 'login.html';
+        return;
+      }
+
+      if (typeof PaystackPop === 'undefined') {
+        showBanner(
+          document.getElementById('errorBanner'),
+          'errorText',
+          'Paystack could not load. Check your connection and try again.'
+        );
+        return;
+      }
+
+      setLoading(button, true);
+
+      const paystack = new PaystackPop();
+      paystack.newTransaction({
+        key: PAYSTACK_PUBLIC_KEY,
+        email: user.email || 'learner@example.com',
+        amount: plan.amountKobo,
+        currency: 'ZAR',
+        ref: 'gapmap_' + planKey + '_' + Date.now(),
+        plan: plan.code,
+        metadata: {
+          custom_fields: [
+            { display_name: 'GapMap Plan', variable_name: 'gapmap_plan', value: plan.label }
+          ]
+        },
+        onSuccess: function (transaction) {
+          setLoading(button, false);
+          // Demo only — in production confirm via Paystack webhook before granting access.
+          writeSubscription({
+            active: true,
+            planKey: planKey,
+            reference: transaction.reference,
+            startedAt: Date.now()
+          });
+          applySubscriptionState();
+          showBanner(
+            document.getElementById('successBanner'),
+            'successText',
+            'Welcome to ' + plan.label + ' — your full learning path is now unlocked.'
+          );
+        },
+        onCancel: function () {
+          setLoading(button, false);
+          showBanner(
+            document.getElementById('errorBanner'),
+            'errorText',
+            'Checkout was closed before payment completed. No charge was made.'
+          );
+        },
+        onError: function () {
+          setLoading(button, false);
+          showBanner(
+            document.getElementById('errorBanner'),
+            'errorText',
+            "We couldn't reach Paystack. Please try again in a moment."
+          );
+        }
+      });
+    }
+
+    function setLoading(button, isLoading) {
+      if (!button) return;
+      button.classList.toggle('loading', isLoading);
+      const label = button.querySelector('.btn-label');
+      if (label) {
+        label.textContent = isLoading
+          ? 'Opening secure checkout…'
+          : (button.id === 'annualCta' ? 'Subscribe annually' : 'Subscribe');
+      }
+      button.disabled = isLoading;
+    }
+
+    document.getElementById('learnerCta').addEventListener('click', function () {
+      openCheckout(this, this.dataset.planKey || 'monthly');
+    });
+    document.getElementById('annualCta').addEventListener('click', function () {
+      openCheckout(this, 'annual');
+    });
+
+    /* Manage Subscription (demo cancel) */
+    document.getElementById('manageBtn').addEventListener('click', function () {
+      const sub = readSubscription();
+      if (!sub) return;
+      const goCancel = window.confirm(
+        'Manage Subscription is a demo action.\n\nOK = simulate cancelling your plan\nCancel = keep your current plan'
+      );
+      if (goCancel) {
+        clearSubscription();
+        applySubscriptionState();
+        showBanner(
+          document.getElementById('successBanner'),
+          'successText',
+          "Your subscription has been cancelled. You'll keep access until the end of the current billing period."
+        );
+      }
+      // Production: redirect to Paystack customer portal or a dedicated manage page.
+    });
+
+    /* Init */
+    (function init() {
+      document.getElementById('year').textContent = new Date().getFullYear();
+
+      const sessionUser = window.GapMapAuth ? GapMapAuth.getUser() : null;
+      if (sessionUser) {
+        GapMapAuth.updateNav({ keepMarketingLinks: true });
+      }
+
+      applySubscriptionState();
+
+      // Resume checkout after login redirect
+      let pendingPlan = null;
+      try { pendingPlan = sessionStorage.getItem(REDIRECT_PLAN_KEY); } catch (e) {}
+      if (pendingPlan && sessionUser) {
+        try { sessionStorage.removeItem(REDIRECT_PLAN_KEY); } catch (e) {}
+        const btn = pendingPlan === 'annual'
+          ? document.getElementById('annualCta')
+          : document.getElementById('learnerCta');
+        if (pendingPlan !== 'annual') {
+          cycle = 'monthly';
+          renderCycle();
+        } else {
+          cycle = 'annual';
+          renderCycle();
+        }
+        setTimeout(function () { openCheckout(btn, pendingPlan); }, 400);
+      }
+    })();
+
+    /* FAQ accordion */
+    document.querySelectorAll('.faq-item .faq-q').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        const item = btn.closest('.faq-item');
+        const wasOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item.open').forEach(function (el) {
+          el.classList.remove('open');
+        });
+        if (!wasOpen) item.classList.add('open');
+      });
+    });
+  </script>
+</body>
+</html>
