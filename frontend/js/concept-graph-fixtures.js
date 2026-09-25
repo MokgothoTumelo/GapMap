@@ -1,5 +1,5 @@
 // The Concept Graph generation fixture — the same Grade 12 Mathematics graph
-// the demo ships as inspectable YAML (core/demo-data/graphs/
+// the demo ships as inspectable YAML (data/subjects/
 // graph-g12-mathematics.yaml), as data for the local deterministic generator.
 // The demo *serves* the YAML; this JS copy only backs local generation.
 // tests/concept-graph-generator.spec.js asserts the two never drift.

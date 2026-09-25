@@ -1,12 +1,15 @@
 # Learner store and agent integration — design
 
 Status: **implemented baseline**. This is the plan of record for the seams
-the [remaining live-integration checklist](companion.md) depends on: who the
-Learner is (identity), where per-Learner artefacts live (the store), and how
-Assessments are created and retrieved (generation). The mock browser seams
-are implemented; the project-A Firestore adapter and live agent config remain
-deferred. Decisions that firm up should be folded into
-[ADR-0004](adr/0004-firebase-ai-logic.md) or a successor ADR.
+the [live-integration checklist](companion.md) depends on: who the Learner is
+(identity), where per-Learner artefacts live (the store), and how Assessments
+are created and retrieved (generation). The mock browser store, the project-A
+Firestore persistence (`frontend/js/firebase-data-store.js`), the local +
+model generation seam, and the live agent config are in place. The Open
+points below record what is still unresolved — including the checked-in
+security rules versus the derived-summary payload. Decisions that firm up
+should be folded into [ADR-0004](adr/0004-firebase-ai-logic.md) or a
+successor ADR.
 
 Terminology follows [../CONTEXT.md](../CONTEXT.md): Learner, Learner Profile,
 Assessment (Diagnostic / Practice), Attempt, Gap Map, Learning Path.
@@ -16,8 +19,8 @@ Assessment (Diagnostic / Practice), Attempt, Gap Map, Learning Path.
 Firebase identity appears in two places that must not be conflated.
 
 **Layer 1 — Learner context (prompt-borne).** The app's Firebase project
-(project A, owned by the database team; their wiring is
-`docs/firebase-config.js`) provides `getCurrentUser()`. That uid **is** the
+(project A, `gapmap-6cb1d`; the wiring is `frontend/js/firebase-app.js`)
+provides `getCurrentUser()`. That uid **is** the
 `learnerId`: it keys every read and write in the store, and the Learner's
 context (Gap Map, Learning Path, transcript) is injected into the prompt
 client-side before the call — exactly what ADR-0004 prescribes ("Per-Learner
@@ -65,17 +68,20 @@ precedence when a Firebase account is available.
 
 ## Deployment shape
 
-One page, two Firebase apps, one data-store seam between them:
+One page, two Firebase apps, one Learner store with two persistence
+targets:
 
 ```text
 browser (one page)
- ├─ app Firebase (project A — database team, default app)
+ ├─ app Firebase (project A — gapmap-6cb1d, named app 'gapmap-data')
  │    ├─ Auth: getCurrentUser() → uid → learnerId
  │    └─ Firestore: per-Learner artefacts and Profile data
- ├─ learnerStore (this design)
- │    ├─ mock: localStorage/in-memory, seeded from core/demo-data/ (offline/tests)
- │    └─ Firebase persistence seam: frontend/js/firebase-data-store.js
- └─ agent Firebase (project B — ours, named app, AI Logic only)
+ ├─ Learner store (two implementations, no adapter between them)
+ │    ├─ mock: frontend/js/learner-store.js — localStorage/in-memory; empty
+ │    │    at start; the pages fill it from the generator or core/demo-data/
+ │    └─ Firestore: frontend/js/firebase-data-store.js — flat save*/get*
+ │         functions the pages call alongside the mock (dual write)
+ └─ agent Firebase (project B — gapmap-63650, named app, AI Logic only)
       └─ getAI(getApp('gapmap-agent'), { backend: new GoogleAIBackend() })
            prompt = system + Learner context + message → streamed reply
 ```
@@ -83,7 +89,7 @@ browser (one page)
 Two apps in one page is the documented pattern
 ([configure multiple projects](https://firebase.google.com/docs/projects/multiprojects)):
 the agent app is `initializeApp(agentConfig, 'gapmap-agent')`, initialised
-alongside project A's default app. Project B's App Check wiring is currently
+alongside project A's app (`gapmap-data`). Project B's App Check wiring is currently
 commented for shared development; when restored, it must use project B's own
 reCAPTCHA Enterprise or debug provider. Project A's App Check tokens are
 meaningless to it.
@@ -94,11 +100,15 @@ Firebase project, and this two-project shape does not contradict it.
 
 ## The store seam
 
-One interface, two implementations, keyed by `learnerId` everywhere — never a
-global session id (the retired Node agent's sin).
+Everything is keyed by `learnerId` everywhere — never a global session id
+(the retired Node agent's sin). There is no adapter between the two
+implementations: the mock store implements the interface below, and the pages
+call the Firestore functions (`frontend/js/firebase-data-store.js`) directly
+alongside it. The mock is the contract the offline demo and tests exercise;
+Firestore is the durable copy.
 
 ```js
-// proposed home: frontend/js/learner-store.js (ES module, static-server safe)
+// frontend/js/learner-store.js (ES module, static-server safe)
 export const learnerStore = {
   // Assessments — frozen once written
   async putAssessment(learnerId, assessment) {}, // validate → freeze → write
@@ -118,13 +128,16 @@ export const learnerStore = {
 
 Design rules:
 
-- **The mock is the test/demo contract.** `mockLearnerStore` (localStorage, keys
-  `gapmap.<learnerId>.…`) remains the implementation the offline demo and tests
-  touch — no test may touch a real database. Production additionally persists
-  through `frontend/js/firebase-data-store.js`. The mock seeds from
-  `core/demo-data/` via the existing loader path (fetch + vendored js-yaml +
-  validation, as in `frontend/js/assessment-loader.js`), so the mock exercises
-  the same validation the real store will.
+- **The mock is the test/demo contract.** `learnerStore`
+  (`frontend/js/learner-store.js`; localStorage keys
+  `gapmap.learner.<encoded learnerId>`) remains the implementation the offline
+  demo and tests touch — no test may touch a real database. It starts empty;
+  Assessments enter it through its own validation on `putAssessment`, from
+  either `frontend/js/assessment-generator.js` (in-code fixtures) or the
+  authored `core/demo-data/assessments/` YAML loaded through
+  `frontend/js/assessment-loader.js` (fetch + vendored js-yaml + validation),
+  so the mock exercises the same validation the real store will. Production
+  additionally persists through `frontend/js/firebase-data-store.js`.
 - **Validation at the boundary.** `putAssessment` enforces persistence
   invariants (required identity/artefact fields, immutable ids, and the
   Concept-tag bridge through `core/validate.js`) before writing. Structural
@@ -136,18 +149,23 @@ Design rules:
 - **Immutability rules from `core/`.** Assessments are never mutated after
   `putAssessment`; attempts are append-only; regenerating an Assessment makes
   a new one rather than clobbering in-progress Responses.
-- **Production Firestore persistence reads project A** through Firebase Auth's
-  current uid and the database team's security rules. The document shape remains
-  the contract so a future store swap (including Postgres, per AGENTS.md) is a
-  serialization change rather than a model change.
+- **Production Firestore persistence** writes under project A's Firebase Auth
+  uid, shaped by the checked-in security rules (`firestore.rules`). The
+  document shape remains the contract so a future store swap (including
+  Postgres, per AGENTS.md) is a serialization change rather than a model
+  change.
 
 ## Derived state is persisted as a convenience cache
 
 The Gap Map and Learning Path remain **derived** by the core domain logic.
 Firestore also stores the latest per-Subject Diagnostic summary under
 `learners/{uid}/subjects/{subjectId}` as a read-optimized cache for the Dashboard
-and sign-in hydration. The canonical historical source remains the append-only
-Assessment/Attempt artefacts; a summary can be rebuilt from them if necessary.
+and sign-in hydration. Practice history
+(`learners/{uid}/practiceHistory/{subjectId}__{conceptId}`) is the same kind
+of cache: it stores the Item signatures already presented so repeat protection
+survives a cleared browser. The canonical historical source remains the
+append-only Assessment/Attempt artefacts; either cache can be rebuilt from
+them.
 
 ## Generation is a separate seam from storage (decided)
 
@@ -155,15 +173,16 @@ The original ask — create Assessments for a Learner and retrieve them — is
 two functions, not one, and generation never writes the store:
 
 ```js
-// proposed home: frontend/js/assessment-generator.js (ES module)
+// frontend/js/assessment-generator.js (ES module)
 export async function generateAssessment(request) {
   // request: { type, subject, concepts?, targetConcept?,
   //            language, explanationLevel, itemCount }
-  // mock mode (default, no key): deterministic — a core/demo-data fixture
-  //   matching the request's type; no network, no key.
-  // real mode: firebase/ai model pool per ADR-0004's browser orchestration
-  //   (frontend/js/agent-runtime-config.js; currently gemini-3.5-flash-lite
-  //   alone), output validated against core/schema/.
+  // mock mode (default, no key): createMockAssessmentGenerator — an in-code
+  //   fixture (frontend/js/assessment-fixtures.js); no network, no key.
+  // real mode: createModelAssessmentGenerator — firebase/ai model pool per
+  //   ADR-0004's browser orchestration (frontend/js/agent-runtime-config.js;
+  //   currently gemini-3.5-flash-lite alone), output validated against
+  //   core/schema/ (+ core/validate.js semantics).
 }
 ```
 
@@ -173,9 +192,15 @@ Items as an unsupported Concept. The model-backed generator handles broader
 requests. The create flow is: `generateAssessment` → validate → `learnerStore
 .putAssessment` (freeze) → retrieve with `getAssessment` /
 `listAssessments`. The public `assessment-service.js` composes that flow as
-`createAssessmentForLearner` and `retrieveAssessmentsForLearner` without
-coupling generation to storage. Retrieval is store-only. Mock generation must
-stay deterministic and offline — the offline demo and every test depend on it.
+`createAssessmentForLearner`, `retrieveAssessmentsForLearner`, and
+`retrieveAssessmentForLearner` without coupling generation to storage.
+Retrieval is store-only. The Companion's `generateAssessment` tool calls that
+service with the model-backed generator when a live model is available and
+the local one otherwise. The demo Diagnostic itself does not call the
+generator: it loads an authored `core/demo-data/assessments/` artefact, samples
+fresh Items per Concept, and freezes that as the Assessment. Mock generation
+must stay deterministic and offline — the offline demo and every test depend
+on it.
 
 ## Offline and test rules
 
@@ -200,6 +225,12 @@ stay deterministic and offline — the offline demo and every test depend on it.
 4. **Companion chat wiring** (system prompt, context injection) is already
    specified in `core/README.md` *Integration points* and `companion.md`;
    this doc defers to those.
+5. **Derived-summary write vs the checked-in rules.** `saveDiagnosticSummary`
+   writes `learners/{uid}/subjects/{subjectId}` without the `uid`/`email`
+   fields `firestore.rules` requires on create/update, so under those rules
+   the write is denied: the Diagnostic swallows it in its `allSettled` batch
+   and sign-in hydration then finds no summary. The payload or the rule needs
+   a decision; the append-only Assessment/Attempt writes are unaffected.
 
 ## See also
 

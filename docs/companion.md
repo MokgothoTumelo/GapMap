@@ -1,10 +1,9 @@
 # GapMap Learning Companion
 
-The Learning Companion: the only part of GapMap that must run off the
-learner's machine, because it holds the provider key. Its decided shape
+The Learning Companion runs in the browser; its decided shape
 ([ADR-0004](adr/0004-firebase-ai-logic.md), closed 2026-08-20) is **Firebase AI
 Logic** — orchestration in the browser via the Web SDK, with a managed proxy
-holding the credential. The Node agent service (`agent/`, `server/` agent
+holding the provider credential. The Node agent service (`agent/`, `server/` agent
 mounting, `pi-agent-core`/`pi-ai`, SSE) has been purged. The browser-side
 Companion client and explicit live-error path are now implemented; the live
 Firebase AI Logic model is loaded by default through the root `agent-config.js`
@@ -44,7 +43,10 @@ bootstrap, and the key-free demo/test path opts out per session with
 - The agent panel (`frontend/agentPanel/`) now uses the request-scoped
   `frontend/js/agent-client.js` seam. It no longer calls `/api/agent/*` or
   opens an `EventSource`; it uses request-scoped Firebase AI Logic and
-  persists successful turns through the mock `learnerStore`. The live agent
+  persists successful turns through the mock `learnerStore` and appends them
+  to Firestore (`saveCompanionMessage` →
+  `learners/{uid}/companionMessages`); a failed cloud write never blocks the
+  reply. The live agent
   is **on by default** — the panel loads `agent-config.js` on every page
   unless the session opted out with `?agent=off` (sticky in sessionStorage,
   so the key-free demo flow stays key-free across navigation). Missing live
@@ -66,12 +68,15 @@ bootstrap, and the key-free demo/test path opts out per session with
 - The Companion has a **tool-calling interface** (see
   [ADR-0005](adr/0005-companion-tool-calling.md), in progress): the model
   discovers Learner context on demand instead of having it all injected into
-  every prompt. The execution loop lives in `agent-client.js`; the discovery
-  tools `getGapMap`, `getLearningPath`, `getConcept`, `getItem`,
-  `getAttemptHistory`, and `getPlatformHelp` are wired end-to-end against the
-  mock `learnerStore` (`generateAssessment` is planned). The Gemini 3
-  thought-signature requirement is handled by echoing the raw `functionCall`
-  parts back verbatim.
+  every prompt. The execution loop lives in `agent-client.js`; the tools
+  `getGapMap`, `getLearningPath`, `getConcept`, `getItem`, `getAttemptHistory`,
+  `getPlatformHelp`, `getSubjectConcepts`, `getMistakeDiagnosis`,
+  `navigateTo`, and `generateAssessment` are wired end-to-end against the mock
+  `learnerStore` and the Subject store. `generateAssessment` uses the
+  model-backed generator when a live model is available and the local
+  deterministic generator otherwise. The Gemini 3 thought-signature
+  requirement is handled by echoing the raw `functionCall` parts back
+  verbatim.
 - **The Learning Path tools are root-cause aware**
   ([ADR-0006](adr/0006-concept-graph-learning-path.md)): the panel injects a
   `getConceptGraph` provider (the Subject's graph via the subject store,
@@ -93,19 +98,27 @@ bootstrap, and the key-free demo/test path opts out per session with
    pool to `agent-client.js`.~~ **Done:** the panel loads the bootstrap by
    default and the client retries transient capacity failures, tries the next
    stable model, and surfaces the provider error when live inference fails.
-2. Replace the mock `learnerStore` with the database team's project-A
-   Firestore adapter once its collection and security-rule shape is agreed.
-   The client already injects the store's Gap Map and Learning Path context.
-3. Move the mock transcript from localStorage to the project-A Firestore
-   transcript subtree; retain the Learner-keyed interface and drop no
-   per-Learner identity into the agent project.
+2. Replace the mock `learnerStore` as the Companion's context source with
+   project-A Firestore reads. **Partly done:** the pages persist the same
+   artefacts to Firestore (`frontend/js/firebase-data-store.js`) alongside the
+   mock store, but the tool executor still reads the mock context. The
+   derived-summary rule/payload mismatch is recorded in
+   [`learner-store.md`](learner-store.md) Open points.
+3. ~~Move the mock transcript from localStorage to the project-A Firestore
+   transcript subtree~~ **Done for writes:** successful turns are appended to
+   `learners/{uid}/companionMessages` as well as the mock transcript. Replay
+   still reads the mock copy, so dropping the local transcript remains the
+   open half. No per-Learner identity is dropped into the agent project.
 4. Keep App Check unenforced for the current shared development setup.
    Before production enforcement, restore the commented App Check wiring and
    limited-use-token replay protection; authenticated-users mode remains
    optional for the stateless inference project.
-5. Assessment generation already has deterministic local and model adapters;
-   connect the model adapter to the live Firebase model and add the shared
-   Mistake Diagnosis path when that contract is ready.
+5. ~~Assessment generation already has deterministic local and model adapters;
+   connect the model adapter to the live Firebase model~~ **Done for the
+   Companion tool:** `generateAssessment` uses
+   `createModelAssessmentGenerator` when a live model is available, and the
+   stored-seed path behind `getMistakeDiagnosis` is wired. Model-generated
+   Mistake Diagnoses remain open when that contract is ready.
 
 ## What it consumes and produces
 
@@ -113,9 +126,11 @@ The integration points (what is passed to the model, what the model produces,
 and how that is answered) are solved and documented in
 [`../core/README.md`](../core/README.md) under *Integration points*. Companion
 chat is wired to the browser client and consumes an injected Firebase AI
-Logic model; the mock store supplies the current Learner context. Assessment
-generation has local and model adapters. Firestore persistence and the full
-Mistake Diagnosis path remain planned.
+Logic model; the mock store supplies the current Learner context and
+successful turns are mirrored to Firestore. Assessment generation has local
+and model adapters, both reachable through the Companion's
+`generateAssessment` tool. The stored-seed Mistake Diagnosis path is served
+by `getMistakeDiagnosis`; model-generated diagnoses remain planned.
 
 ## See also
 

@@ -130,7 +130,7 @@ function responseText(result) {
 
 // Companion tools: the model discovers Learner context on demand instead of
 // having it all injected into every prompt. `generateAssessment` is documented
-// in docs/adr/0005-companion-tool-calling.md and will land separately.
+// in docs/adr/0005-companion-tool-calling.md and is wired below.
 export const COMPANION_TOOLS = [
   {
     functionDeclarations: [
