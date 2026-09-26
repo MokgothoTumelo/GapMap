@@ -32,11 +32,11 @@
   //
   // NOTE: this is a client-side clock. It is trivially reset by clearing
   // browser storage or edited via devtools, and it is not shared across
-  // devices. That's an accepted trade-off for now — if trial enforcement
-  // ever needs to be tamper-proof or cross-device, the source of truth
-  // should move server-side (e.g. a Paystack subscription/authorization
-  // record looked up by uid), which requires backend + database work
-  // that is explicitly out of scope here.
+  // devices. That's an accepted interim trade-off — the source of truth
+  // moves to Polar (customer.state_changed webhook → learners/{uid}/billing,
+  // see docs/polar-billing-handoff.md) once the Firebase teammate lands it.
+  // Trial-start is only written after a real Polar checkout return, never
+  // on CTA click.
   // ------------------------------------------------------------------
   var BILLING_KEY_PREFIX = 'gapmap_billing:';
   var TRIAL_LENGTH_DAYS = 30;

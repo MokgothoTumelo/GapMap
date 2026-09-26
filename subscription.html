@@ -9,13 +9,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Subscription &amp; Pricing – GapMap</title>
-  <meta name="description" content="Start with a 30-day free trial on GapMap. Then choose a simple plan — R40/month or R480/year (save R60) — for unlimited diagnostics and personalised learning paths.">
+  <meta name="description" content="Start with a 30-day free trial on GapMap. Then choose a simple plan — R40/month or R420/year (save R60) — for unlimited diagnostics and personalised learning paths.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
-  <!-- Paystack Inline JS (v2) -->
-  <script src="https://js.paystack.co/v2/inline.js"></script>
+  <!-- Polar hosted checkout — no inline payment SDK. The Learner completes
+       checkout on Polar (card collected there, trial starts there) and
+       returns via success_url. See the POLAR_CHECKOUT_LINKS config below
+       and docs/polar-billing-handoff.md for the catalog record. -->
 
   <style>
     /* Page-specific styles only. Reuses GapMap tokens from style.css
@@ -559,7 +561,7 @@
           <span class="btn-label">Add card &amp; start free trial</span>
           <span class="spinner"></span>
         </button>
-        <p style="text-align:center;font-size:.76rem;color:#9CA3AF;margin-top:8px;">R1 card verification now (not a trial charge) · first real charge only after day 30</p>
+        <p style="text-align:center;font-size:.76rem;color:#9CA3AF;margin-top:8px;">Card required upfront · first real charge only after day 30 · cancel anytime</p>
       </div>
 
       <!-- LEARNER MONTHLY / ANNUAL (toggled) -->
@@ -591,10 +593,10 @@
         <div class="plan-name">Learner Annual</div>
         <div class="plan-tagline">Everything in Learner, paid once a year — R60 off.</div>
         <div class="plan-price">
-          <span class="amount">R480</span>
+          <span class="amount">R420</span>
           <span class="period">/ year</span>
         </div>
-        <div class="plan-price-sub">≈ R40 / month · save R60 vs monthly</div>
+        <div class="plan-price-sub">≈ R35 / month · save R60 vs 12 × monthly</div>
         <ul class="plan-features">
           <li><span class="check">✓</span> Unlimited diagnostics, every subject</li>
           <li><span class="check">✓</span> Full personalised learning paths</li>
@@ -625,7 +627,7 @@
   <div class="trust-row">
     <div class="trust-item">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1l5.5 2.2v4c0 3.6-2.35 6.9-5.5 7.8-3.15-.9-5.5-4.2-5.5-7.8v-4L8 1z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M5.7 8l1.6 1.6 3-3.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Secure payment powered by Paystack
+      Secure payment powered by Polar
     </div>
     <div class="trust-item">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8l3.5 3.5L13 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -663,28 +665,23 @@
 
   <script type="module">
     /* ============================================================
-       Config — replace with your real Paystack keys / plan codes
-       when going live. Public keys are safe to ship client-side.
+       Polar billing (gapmap-poc sandbox org) — hosted checkout links.
+       These URLs are public by design; no secret ships to the browser.
+       The 30-day trial (card upfront, no charge until day 30) lives on
+       the Polar products, so there is no verification charge and no
+       inline payment popup. Full catalog record + Firebase handoff:
+       docs/polar-billing-handoff.md
        ============================================================ */
-    const PAYSTACK_PUBLIC_KEY = 'pk_test_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'; // TODO: replace
-    const PLANS = {
-      monthly: { code: 'PLN_gapmap_learner_monthly', amountKobo: 4000,  label: 'Learner (Monthly)' },
-      annual:  { code: 'PLN_gapmap_learner_annual',  amountKobo: 48000, label: 'Learner Annual' }
+    const POLAR_CHECKOUT_LINKS = {
+      // Learner Monthly — R40/mo ZAR (product 485dbfae…, price d344fe4e…)
+      monthly: 'https://sandbox-api.polar.sh/v1/checkout-links/polar_cl_eMBpOAlB2njqCe0rCSTttRxr2KXV77FQ3fZBn1VWtq0/redirect',
+      // Learner Annual — R420/yr ZAR, saves R60 vs 12 × monthly
+      // (product 315eac09…, price 66013de2…)
+      annual: 'https://sandbox-api.polar.sh/v1/checkout-links/polar_cl_hnmIP9Jro9Ei1bF15jS0O03yHGtfx14S2RnZt38jLhq/redirect'
     };
-    // Card-verification charge used to capture billing details before the
-    // trial starts. NOT a trial fee — Paystack has no true R0 "save card"
-    // flow without a backend-issued Authorization/subscription call, so
-    // this demo uses the common R1 verification-charge pattern instead.
-    // A real production build should replace this with a backend call that
-    // creates a Paystack customer + card Authorization (or a subscription
-    // with a trial period) so the card is verified without moving money,
-    // and so day-30 billing is enforced server-side rather than by the
-    // client-side clock below.
-    const TRIAL_VERIFY_AMOUNT_KOBO = 100; // R1
     const REDIRECT_PLAN_KEY = 'gapmap_pending_plan';
 
     /* Helpers */
-    function money(kobo) { return 'R' + (kobo / 100).toFixed(0); }
 
     // Billing/trial state now lives in GapMapAuth (frontend/js/auth-guard.js),
     // scoped per Learner (uid), instead of the old global, unscoped
@@ -802,11 +799,15 @@
       }
     }
 
-    /* Paystack checkout */
+    /* Polar checkout — hosted links on the gapmap-poc sandbox org. The
+       30-day trial is on the products, so checkout collects the card and
+       starts the trial on Polar's side. Polar's success_url returns the
+       Learner to dashboard.html, which starts the local trial clock only
+       on a Polar-issued checkout_id — never on CTA click. (Interim: the
+       Firebase webhook in docs/polar-billing-handoff.md replaces the
+       local record once the Firebase teammate lands it.) */
     function openCheckout(button, planKey) {
-      const plan = PLANS[planKey];
-      if (!plan) return;
-
+      if (!POLAR_CHECKOUT_LINKS[planKey]) planKey = 'monthly';
       const user = getLoggedInUser();
 
       if (!user) {
@@ -820,63 +821,10 @@
         return;
       }
 
-      if (typeof PaystackPop === 'undefined') {
-        showBanner(
-          document.getElementById('errorBanner'),
-          'errorText',
-          'Paystack could not load. Check your connection and try again.'
-        );
-        return;
-      }
-
+      // Plan attribution rides on success_url (?plan= per link).
+      // See dashboard.html handlePolarReturn().
       setLoading(button, true);
-
-      const paystack = new PaystackPop();
-      paystack.newTransaction({
-        key: PAYSTACK_PUBLIC_KEY,
-        email: user.email || 'learner@example.com',
-        amount: plan.amountKobo,
-        currency: 'ZAR',
-        ref: 'gapmap_' + planKey + '_' + Date.now(),
-        plan: plan.code,
-        metadata: {
-          custom_fields: [
-            { display_name: 'GapMap Plan', variable_name: 'gapmap_plan', value: plan.label }
-          ]
-        },
-        onSuccess: function (transaction) {
-          setLoading(button, false);
-          // Demo only — in production confirm via Paystack webhook before granting access.
-          GapMapAuth.activateSubscription(user, {
-            planKey: planKey,
-            reference: transaction.reference,
-          });
-          applySubscriptionState();
-          applyGateMessaging();
-          showBanner(
-            document.getElementById('successBanner'),
-            'successText',
-            'Welcome to ' + plan.label + ' — your full learning path is now unlocked. Taking you onward…'
-          );
-          setTimeout(function () { window.location.href = GapMapAuth.nextOnboardingStep(); }, 900);
-        },
-        onCancel: function () {
-          setLoading(button, false);
-          showBanner(
-            document.getElementById('errorBanner'),
-            'errorText',
-            'Checkout was closed before payment completed. No charge was made.'
-          );
-        },
-        onError: function () {
-          setLoading(button, false);
-          showBanner(
-            document.getElementById('errorBanner'),
-            'errorText',
-            "We couldn't reach Paystack. Please try again in a moment."
-          );
-        }
-      });
+      window.location.href = POLAR_CHECKOUT_LINKS[planKey];
     }
 
     function setLoading(button, isLoading, busyLabel, idleLabel) {
@@ -891,65 +839,14 @@
       button.disabled = isLoading;
     }
 
-    /* Billing gate: capture card details (a small R1 verification charge —
-       see the TRIAL_VERIFY_AMOUNT_KOBO comment above), then start the
-       30-day trial clock and move the Learner on to Setup. */
+    /* Free trial rides the Monthly product's trial: "start trial" and
+       "subscribe monthly" are one Polar checkout. The clock starts on the
+       Dashboard return (see dashboard.html), not here. */
     function startTrialCheckout(button) {
       const user = getLoggedInUser();
       if (!user) { window.location.href = 'signup.html'; return; }
-
-      if (typeof PaystackPop === 'undefined') {
-        showBanner(
-          document.getElementById('errorBanner'),
-          'errorText',
-          'Paystack could not load. Check your connection and try again.'
-        );
-        return;
-      }
-
-      setLoading(button, true, 'Verifying card…', 'Add card & start free trial');
-
-      const paystack = new PaystackPop();
-      paystack.newTransaction({
-        key: PAYSTACK_PUBLIC_KEY,
-        email: user.email || 'learner@example.com',
-        amount: TRIAL_VERIFY_AMOUNT_KOBO,
-        currency: 'ZAR',
-        ref: 'gapmap_trial_verify_' + Date.now(),
-        metadata: {
-          custom_fields: [
-            { display_name: 'GapMap', variable_name: 'gapmap_action', value: 'trial-card-verification' }
-          ]
-        },
-        onSuccess: function (transaction) {
-          setLoading(button, false, null, 'Add card & start free trial');
-          GapMapAuth.startTrial(user, { verificationReference: transaction.reference });
-          applySubscriptionState();
-          applyGateMessaging();
-          showBanner(
-            document.getElementById('successBanner'),
-            'successText',
-            'Card added — your 30-day free trial has started. Taking you onward…'
-          );
-          setTimeout(function () { window.location.href = GapMapAuth.nextOnboardingStep(); }, 900);
-        },
-        onCancel: function () {
-          setLoading(button, false, null, 'Add card & start free trial');
-          showBanner(
-            document.getElementById('errorBanner'),
-            'errorText',
-            'Checkout was closed before your card was verified. Your trial has not started.'
-          );
-        },
-        onError: function () {
-          setLoading(button, false, null, 'Add card & start free trial');
-          showBanner(
-            document.getElementById('errorBanner'),
-            'errorText',
-            "We couldn't reach Paystack. Please try again in a moment."
-          );
-        }
-      });
+      setLoading(button, true, 'Opening secure checkout…', 'Add card & start free trial');
+      window.location.href = POLAR_CHECKOUT_LINKS.monthly;
     }
 
     document.getElementById('freeCta').addEventListener('click', function () {
@@ -986,7 +883,8 @@
           "Your subscription has been cancelled. You'll keep access until the end of the current billing period."
         );
       }
-      // Production: redirect to Paystack customer portal or a dedicated manage page.
+      // Handoff: point at the Polar Customer Portal once the Firebase teammate
+      // wires customer sessions (see docs/polar-billing-handoff.md).
     });
 
     /* Init */
@@ -1009,13 +907,6 @@
         const btn = pendingPlan === 'annual'
           ? document.getElementById('annualCta')
           : document.getElementById('learnerCta');
-        if (pendingPlan !== 'annual') {
-          cycle = 'monthly';
-          renderCycle();
-        } else {
-          cycle = 'annual';
-          renderCycle();
-        }
         setTimeout(function () { openCheckout(btn, pendingPlan); }, 400);
       }
     })();
