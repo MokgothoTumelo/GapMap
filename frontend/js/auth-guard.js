@@ -177,14 +177,15 @@
     select.setAttribute('aria-label', options.ariaLabel || 'Switch');
 
     // Optional placeholder (e.g. "Languages") shown as the closed-state label.
-    // It is disabled so it cannot be re-selected after a real choice.
+    // Disabled so it cannot be re-selected. Do NOT use hidden — browsers
+    // often skip a selected+hidden option and show the first real option
+    // (e.g. "English") instead of the placeholder text.
     if (options.placeholder) {
       var placeholderOpt = document.createElement('option');
       placeholderOpt.value = '';
       placeholderOpt.textContent = options.placeholder;
       placeholderOpt.disabled = true;
       placeholderOpt.selected = true;
-      placeholderOpt.hidden = true;
       select.appendChild(placeholderOpt);
     }
 
@@ -204,6 +205,10 @@
       if (!next) return;
       if (typeof options.isActive === 'function' && options.isActive(next)) return;
       if (typeof options.onSelect === 'function') options.onSelect(next);
+      // Keep showing the placeholder label after a choice (until reload).
+      if (options.placeholder) {
+        select.selectedIndex = 0;
+      }
     });
 
     return true;
