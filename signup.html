@@ -42,7 +42,7 @@
     </div>
     <div class="otp-actions"><button class="btn btn-outline" id="resendBtn" type="button">Resend code</button><button class="btn btn-primary" id="verifyBtn" type="button">Verify</button></div>
     <p class="note">The code expires after 10 minutes. The code is only available in your email.</p>
-    <div id="successMsg" class="success">Account verified. Taking you to Billing…</div>
+    <div id="successMsg" class="success">Account verified. Taking you to setup…</div>
   </div>
 
   <script type="module">
@@ -156,9 +156,8 @@
         GapMapAuth.safeSessionSet('gapmap_user', JSON.stringify(sessionProfile(pending.firebaseUser, profile)));
         clearOtpState();
         document.getElementById('successMsg').classList.add('show');
-        // Billing is a mandatory gate right after OTP verify, before Setup.
-        // GapMapAuth.nextOnboardingStep() reads the session just written
-        // above, so this always resolves to 'subscription.html' here.
+        // After OTP verify: Setup (if incomplete) then Diagnostic.
+        // GapMapAuth.nextOnboardingStep() reads the session just written.
         setTimeout(() => { window.location.href = GapMapAuth.nextOnboardingStep(); }, 500);
       } catch (error) {
         show(otpError, error.message || 'The code could not be verified.');

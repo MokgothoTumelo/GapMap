@@ -130,9 +130,8 @@
             console.warn('[Firebase] Diagnostic hydration skipped.', error);
           }
         }
-        // GapMapAuth.nextOnboardingStep() enforces the Billing gate first:
-        // an unbilled or trial-expired Learner is sent to subscription.html
-        // even if Setup was completed long ago.
+        // After login: Setup if incomplete, otherwise Dashboard (or Diagnostic
+        // when ?next=diagnostic is present).
         const nextStep = GapMapAuth.nextOnboardingStep();
         window.location.href = (nextStep === 'dashboard.html' && goDiagnostic)
           ? 'diagnostic.html'

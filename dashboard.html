@@ -55,14 +55,6 @@
       border-radius: 50%; display: grid; place-items: center; font-weight: 600; font-size: 0.9rem;
     }
     .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px 80px; }
-    .polar-notice {
-      max-width: 1100px; margin: 18px auto 0; padding: 0 24px;
-    }
-    .polar-notice-inner {
-      background: #ECFDF5; color: #065F46; border: 1.5px solid #A7F3D0;
-      border-radius: 12px; padding: 14px 16px; font-size: 0.9rem; line-height: 1.5;
-    }
-    .polar-notice-inner strong { font-weight: 700; }
 
     .page-header { margin-bottom: 28px; }
     .page-header h1 { font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 6px; }
@@ -256,8 +248,6 @@
     </div>
   </nav>
 
-  <div class="polar-notice" id="polarNotice" style="display:none;"></div>
-
   <div class="container" id="app"></div>
 
   <script type="module">
@@ -267,37 +257,6 @@
   import { createMockLearnerStore, getCurrentLearnerId } from './frontend/js/learner-store.js';
 
   (async function () {
-    // Polar checkout return: success_url lands here with ?checkout_id= (a
-    // Polar-issued id = proof of a real checkout) and ?plan=. This runs
-    // BEFORE requireAuth(): a returning Learner has no billing record yet,
-    // so the gate would bounce them back to subscription.html first.
-    // (Interim: the Firebase webhook in docs/polar-billing-handoff.md
-    // replaces the local record once the Firebase teammate lands it.)
-    (function handlePolarReturn() {
-      let params = null;
-      try { params = new URLSearchParams(window.location.search); } catch (e) { return; }
-      const checkoutId = params.get('checkout_id');
-      if (!checkoutId) return;
-      const sessionUser = GapMapAuth.getUser();
-      if (!sessionUser) {
-        window.location.replace('login.html');
-        return;
-      }
-      const plan = params.get('plan') === 'annual' ? 'annual' : 'monthly';
-      GapMapAuth.startTrial(sessionUser, { polarCheckoutId: checkoutId, planKey: plan });
-      try {
-        const url = new URL(window.location.href);
-        url.searchParams.delete('checkout_id');
-        url.searchParams.delete('plan');
-        window.history.replaceState({}, '', url.toString());
-      } catch (e) {}
-      const mount = document.getElementById('polarNotice');
-      if (mount) {
-        mount.style.display = '';
-        mount.innerHTML = '<div class="polar-notice-inner"><strong>Card added — your 30-day free trial has started.</strong> You won\'t be charged until day 30.</div>';
-      }
-    })();
-
     // Guest Lock: guests are redirected to Login (or to Setup, if setup
     // isn't complete yet) before any of the code below runs — the `return`
     // stops dashboard data from ever initializing or rendering for them.
