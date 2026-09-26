@@ -175,11 +175,26 @@
     container.className = (container.className || '') + ' gm-switcher';
     var select = document.createElement('select');
     select.setAttribute('aria-label', options.ariaLabel || 'Switch');
+
+    // Optional placeholder (e.g. "Languages") shown as the closed-state label.
+    // It is disabled so it cannot be re-selected after a real choice.
+    if (options.placeholder) {
+      var placeholderOpt = document.createElement('option');
+      placeholderOpt.value = '';
+      placeholderOpt.textContent = options.placeholder;
+      placeholderOpt.disabled = true;
+      placeholderOpt.selected = true;
+      placeholderOpt.hidden = true;
+      select.appendChild(placeholderOpt);
+    }
+
     (options.values || []).forEach(function (value) {
       var opt = document.createElement('option');
       opt.value = value;
       opt.textContent = value;
-      if (value === options.active) opt.selected = true;
+      // Only pre-select the active value when there is no placeholder.
+      // With a placeholder, the closed label stays as the placeholder text.
+      if (!options.placeholder && value === options.active) opt.selected = true;
       select.appendChild(opt);
     });
     container.appendChild(select);
@@ -748,6 +763,7 @@
         container: options.container,
         values: this.LANGUAGES.slice(),
         active: this.getActiveLanguage(),
+        placeholder: 'Languages',
         ariaLabel: 'Switch language',
         isActive: function (value) { return value === self.getActiveLanguage(); },
         onSelect: function (next) {
