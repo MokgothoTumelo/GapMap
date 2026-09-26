@@ -51,6 +51,10 @@
     body.quiz-locked #subjectSwitcherMount,
     body.quiz-locked #languageSwitcherMount{pointer-events:none;opacity:.45}
     body.quiz-locked .nav .avatar{pointer-events:none;opacity:.45}
+    /* Hide Learning Companion while Diagnostic is in progress */
+    body.quiz-locked .gm-agent-launcher,
+    body.quiz-locked .gm-agent-panel,
+    body.quiz-locked .gm-agent-scrim{display:none !important;visibility:hidden !important;pointer-events:none !important}
     .exit-block-banner{display:none;background:#FEF3C7;color:#92400E;border-bottom:1.5px solid #FCD34D;text-align:center;padding:8px 16px;font-size:.85rem;font-weight:600}
     body.quiz-locked .exit-block-banner{display:block}
     .question-card{background:#fff;border:1.5px solid #E5E7EB;border-radius:16px;padding:32px 28px;box-shadow:0 4px 24px -8px rgba(0,0,0,.06);margin-bottom:24px}
@@ -115,7 +119,7 @@
         <div class="load-error" id="loadError"></div>
         <div class="intro-meta">
           <div class="meta-pill"><strong id="introQuestions">20</strong><span>Questions</span></div>
-          <div class="meta-pill"><strong id="introTime">15 min</strong><span>Timed session</span></div>
+          <div class="meta-pill"><strong id="introTime">20 min</strong><span>Timed session</span></div>
           <div class="meta-pill"><strong id="introSubject">Maths</strong><span id="introGradeLabel">Subject</span></div>
         </div>
         <p class="intro-note">You’ll see a mix of multiple-choice and short written answers (numbers and simple equations). Answer honestly — this is not a test, it’s how GapMap learns how to help you.</p>
@@ -301,10 +305,11 @@
       }
 
       let assessment = null, rawQuestions = [], questions = [], current = 0, answers = [], startedAt = null;
-      // Timed session: 45s per question, min 10 min, max 20 min (matches the intro estimate).
-      const SECONDS_PER_QUESTION = 45;
-      const TIMER_MIN_SEC = 10 * 60;
-      const TIMER_MAX_SEC = 20 * 60;
+      // Timed session sized for a mixed MC + written Diagnostic:
+      // ~60s per question, clamped 15–25 min (≈20 questions → 20 min).
+      const SECONDS_PER_QUESTION = 60;
+      const TIMER_MIN_SEC = 15 * 60;
+      const TIMER_MAX_SEC = 25 * 60;
       let quizActive = false;
       let timerRemainingSec = 0;
       let timerIntervalId = null;
@@ -652,9 +657,20 @@
         return Math.min(TIMER_MAX_SEC, Math.max(TIMER_MIN_SEC, n * SECONDS_PER_QUESTION));
       }
 
+      function closeAgentPanelIfOpen() {
+        try {
+          document.querySelector('.gm-agent-panel')?.classList.remove('is-visible');
+          document.querySelector('.gm-agent-scrim')?.classList.remove('is-visible');
+          document.body.classList.remove('gm-panel-open');
+          const container = document.querySelector('.container');
+          if (container) container.style.marginRight = '';
+        } catch (e) { /* agent panel may not be loaded yet */ }
+      }
+
       function lockQuizExit() {
         quizActive = true;
         document.body.classList.add('quiz-locked');
+        closeAgentPanelIfOpen();
         // Discourage tab close / refresh
         window.addEventListener('beforeunload', onBeforeUnload);
         // Discourage browser Back during the session
