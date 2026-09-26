@@ -824,31 +824,74 @@
     getVideosForConcept: function (conceptName, subject) {
       var name = (conceptName || '').toLowerCase();
       var subj = this.normalizeSubject(subject || this.getActiveSubject() || '');
+      // G10–12: Kevinmathscience (Maths) + Mlungisi Nkosi (Physical Sciences)
+      // Multiple entries per concept; filter by subject then keyword match.
       var all = [
-        // Mathematics (Kevin)
+        // ── Mathematics (Kevinmathscience) ──
+        { concepts: ['linear equation'], youtubeId: 'DG1oefpn0ec', title: 'Mathematics P1 – November Exam Full Walkthrough (Grade 10)', channel: 'Kevinmathscience', subject: 'Mathematics' },
+        { concepts: ['expanding bracket', 'expand bracket', 'distributive'], youtubeId: 'alUkVWVEP10', title: 'Algebra foundations – expanding and factor patterns', channel: 'Kevinmathscience', subject: 'Mathematics' },
+        { concepts: ['factoris', 'factorization', 'factorisation'], youtubeId: 'alUkVWVEP10', title: 'Algebra foundations – factor patterns', channel: 'Kevinmathscience', subject: 'Mathematics' },
+        { concepts: ['exponent', 'exponential equation'], youtubeId: 'meY342gwjLM', title: 'Exam Question: Exponents – Grade 10', channel: 'Kevinmathscience', subject: 'Mathematics' },
+        { concepts: ['exponent', 'exponential equation'], youtubeId: '6Am2_HXuoqU', title: 'Exponential Equations – Grade 10', channel: 'Kevinmathscience', subject: 'Mathematics' },
+        { concepts: ['exponent', 'surd'], youtubeId: 'oclgayvKgD8', title: 'Exponents – More Than One Term', channel: 'Kevinmathscience', subject: 'Mathematics' },
+        { concepts: ['algebra', 'simplif'], youtubeId: 'alUkVWVEP10', title: 'Algebra foundations', channel: 'Kevinmathscience', subject: 'Mathematics' },
+        { concepts: ['algebra'], youtubeId: 'DG1oefpn0ec', title: 'Mathematics P1 – November Exam Full Walkthrough (Grade 10)', channel: 'Kevinmathscience', subject: 'Mathematics' },
+        { concepts: ['number system', 'numbers', 'ratio'], youtubeId: 'DG1oefpn0ec', title: 'Mathematics P1 – November Exam Full Walkthrough (Grade 10)', channel: 'Kevinmathscience', subject: 'Mathematics' },
+        { concepts: ['function'], youtubeId: 'h5gaH8pcMTU', title: 'Trig Functions – Determine the Equation', channel: 'Kevinmathscience', subject: 'Mathematics' },
+        { concepts: ['function'], youtubeId: 'DG1oefpn0ec', title: 'Mathematics P1 – November Exam Full Walkthrough (Grade 10)', channel: 'Kevinmathscience', subject: 'Mathematics' },
+        { concepts: ['geometry', 'angle relationship'], youtubeId: 'Y76Q_QNs1NY', title: 'Euclidean Geometry – Grade 11 Exam', channel: 'Kevinmathscience', subject: 'Mathematics' },
+        { concepts: ['measurement', 'perimeter', 'area', 'volume'], youtubeId: 'DG1oefpn0ec', title: 'Mathematics P1 – November Exam Full Walkthrough (Grade 10)', channel: 'Kevinmathscience', subject: 'Mathematics' },
+        { concepts: ['euclidean'], youtubeId: 'Y76Q_QNs1NY', title: 'Euclidean Geometry – Grade 11 Exam', channel: 'Kevinmathscience', subject: 'Mathematics' },
+        { concepts: ['quadratic'], youtubeId: 'alUkVWVEP10', title: 'Algebra foundations – factor patterns (for solving by factors)', channel: 'Kevinmathscience', subject: 'Mathematics' },
+        { concepts: ['quadratic'], youtubeId: '3t3fL1DQgg4', title: 'Calculus Exam Question Grade 12 (algebra skills)', channel: 'Kevinmathscience', subject: 'Mathematics' },
+        { concepts: ['trigonometry', 'trig ', 'general solution'], youtubeId: 'UAaf14YizQw', title: 'General Solution – Trigonometry Grade 12', channel: 'Kevinmathscience', subject: 'Mathematics' },
+        { concepts: ['trigonometry', 'trig function', 'trig graph'], youtubeId: 'h5gaH8pcMTU', title: 'Trig Functions – Determine the Equation', channel: 'Kevinmathscience', subject: 'Mathematics' },
+        { concepts: ['reduction', 'reduction formula'], youtubeId: 'XXwMYNorbaI', title: 'Reduction Formulae – Grade 11', channel: 'Kevinmathscience', subject: 'Mathematics' },
+        { concepts: ['trig graph'], youtubeId: 'rQxDbz7r6fQ', title: 'Trig Graphs – Grade 11 Exam Style', channel: 'Kevinmathscience', subject: 'Mathematics' },
         { concepts: ['limit', 'limits'], youtubeId: '4VUWIiudCk0', title: 'Limits – Calculus Grade 12', channel: 'Kevinmathscience', subject: 'Mathematics' },
-        { concepts: ['first principle', 'first principles', 'derivative from first'], youtubeId: 'alUkVWVEP10', title: 'First Principles – Calculus', channel: 'Kevinmathscience', subject: 'Mathematics' },
-        { concepts: ['tangent'], youtubeId: '45abKQwiCt8', title: 'Equation of the Tangent', channel: 'Kevinmathscience', subject: 'Mathematics' },
-        { concepts: ['reduction', 'reduction formula'], youtubeId: 'XXwMYNorbaI', title: 'Reduction Formulae – Trig', channel: 'Kevinmathscience', subject: 'Mathematics' },
-        { concepts: ['general solution'], youtubeId: 'UAaf14YizQw', title: 'General Solution – Trig', channel: 'Kevinmathscience', subject: 'Mathematics' },
-        { concepts: ['trig graph', 'trig function', 'trigonometry'], youtubeId: 'h5gaH8pcMTU', title: 'Trig Functions – Equation', channel: 'Kevinmathscience', subject: 'Mathematics' },
-        { concepts: ['calculus', 'differentiate', 'differentiation'], youtubeId: '3t3fL1DQgg4', title: 'Calculus Exam Question', channel: 'Kevinmathscience', subject: 'Mathematics' },
-        { concepts: ['factoris', 'factorization', 'factorisation'], youtubeId: 'alUkVWVEP10', title: 'Algebra foundations (related)', channel: 'Kevinmathscience', subject: 'Mathematics' },
-        // Physical Sciences (Mlungisi)
-        { concepts: ['work', 'energy', 'power'], youtubeId: 'BjhxVy1iCjQ', title: 'Work, Energy & Power – Part 1', channel: 'Mlungisi Nkosi', subject: 'Physical Sciences' },
-        { concepts: ['conservation of energy', 'mechanical energy'], youtubeId: 'UHRuQ0U3kJI', title: 'Conservation of Mechanical Energy', channel: 'Mlungisi Nkosi', subject: 'Physical Sciences' },
-        { concepts: ['momentum', 'impulse'], youtubeId: 'QAURZq43508', title: 'Momentum – Conservation', channel: 'Mlungisi Nkosi', subject: 'Physical Sciences' },
-        { concepts: ['projectile', 'vertical projectile'], youtubeId: 'H-LunHFDJPs', title: 'Vertical Projectile Motion', channel: 'Mlungisi Nkosi', subject: 'Physical Sciences' },
-        { concepts: ['newton', "newton's law", 'newtons law'], youtubeId: '1dhibgYUE00', title: "Newton's Laws – Exam Q", channel: 'Mlungisi Nkosi', subject: 'Physical Sciences' },
-        { concepts: ['organic', 'organic chemistry'], youtubeId: 'qKkf6HLjpMw', title: 'Organic Chemistry Exam Q', channel: 'Mlungisi Nkosi', subject: 'Physical Sciences' },
-        { concepts: ['equilibrium', 'kc', 'chemical equilibrium'], youtubeId: 'yGyGi5xTyvY', title: 'Chemical Equilibrium – Kc', channel: 'Mlungisi Nkosi', subject: 'Physical Sciences' }
+        { concepts: ['first principle', 'first principles'], youtubeId: 'alUkVWVEP10', title: 'First Principles – Calculus Grade 12', channel: 'Kevinmathscience', subject: 'Mathematics' },
+        { concepts: ['first principle', 'fraction'], youtubeId: '2FJLXAYNwr8', title: 'First Principles with Fractions – Calculus', channel: 'Kevinmathscience', subject: 'Mathematics' },
+        { concepts: ['tangent'], youtubeId: '45abKQwiCt8', title: 'Equation of the Tangent – Calculus Grade 12', channel: 'Kevinmathscience', subject: 'Mathematics' },
+        { concepts: ['calculus', 'differentiate', 'differentiation'], youtubeId: '3t3fL1DQgg4', title: 'Calculus Exam Question Grade 12', channel: 'Kevinmathscience', subject: 'Mathematics' },
+
+        // ── Physical Sciences (Mlungisi Nkosi) ──
+        { concepts: ['matter'], youtubeId: '68Mw4MEX_z0', title: 'Electrostatics – Conservation of Charge', channel: 'Mlungisi Nkosi Maths & Science', subject: 'Physical Sciences' },
+        { concepts: ['matter', 'material'], youtubeId: '2O5WGvuLUAA', title: 'Electrostatics – Types of Charges', channel: 'Mlungisi Nkosi Maths & Science', subject: 'Physical Sciences' },
+        { concepts: ['force', 'forces & motion', 'forces and motion'], youtubeId: '1dhibgYUE00', title: "Newton's Laws – Exam Questions", channel: 'Mlungisi Nkosi Maths & Science', subject: 'Physical Sciences' },
+        { concepts: ['vector', 'scalar'], youtubeId: 'QS6MozY4bTA', title: 'Vectors and Scalars – Grade 10', channel: 'Mlungisi Nkosi Maths & Science', subject: 'Physical Sciences' },
+        { concepts: ['mechanic', 'kinematics'], youtubeId: 'JyMzvIJ2mUM', title: 'Laws of Kinematics – Grade 10 & 11', channel: 'Mlungisi Nkosi Maths & Science', subject: 'Physical Sciences' },
+        { concepts: ['vector', 'resultant'], youtubeId: 'MgiRw2sNn0g', title: '2D Vectors – Part 1 (Resultant Force)', channel: 'Mlungisi Nkosi Maths & Science', subject: 'Physical Sciences' },
+        { concepts: ['vector', 'component'], youtubeId: 'HfwAfQOg7xg', title: '2D Vectors – Using Components', channel: 'Mlungisi Nkosi Maths & Science', subject: 'Physical Sciences' },
+        { concepts: ['work', 'energy', 'power'], youtubeId: 'BjhxVy1iCjQ', title: 'Work, Energy & Power – Part 1 (Work Done)', channel: 'Mlungisi Nkosi Maths & Science', subject: 'Physical Sciences' },
+        { concepts: ['conservation of energy', 'mechanical energy', 'energy'], youtubeId: 'UHRuQ0U3kJI', title: 'Work, Energy & Power – Part 2 (Conservation)', channel: 'Mlungisi Nkosi Maths & Science', subject: 'Physical Sciences' },
+        { concepts: ['wave', 'sound'], youtubeId: 'JyMzvIJ2mUM', title: 'Laws of Kinematics – Grade 10 & 11 (wave links)', channel: 'Mlungisi Nkosi Maths & Science', subject: 'Physical Sciences' },
+        { concepts: ['electric', 'circuit', 'ohm'], youtubeId: 'U3S7fscHFeI', title: 'Electric Circuits – Introduction', channel: 'Mlungisi Nkosi Maths & Science', subject: 'Physical Sciences' },
+        { concepts: ['electrostatic', 'charge'], youtubeId: '68Mw4MEX_z0', title: 'Electrostatics – Conservation of Charge', channel: 'Mlungisi Nkosi Maths & Science', subject: 'Physical Sciences' },
+        { concepts: ['electrostatic', 'charge'], youtubeId: '2O5WGvuLUAA', title: 'Electrostatics – Types of Charges', channel: 'Mlungisi Nkosi Maths & Science', subject: 'Physical Sciences' },
+        { concepts: ['chemical change', 'stoichiometr', 'reaction'], youtubeId: 'yGyGi5xTyvY', title: 'Chemical Equilibrium – Kc Calculations', channel: 'Mlungisi Nkosi Maths & Science', subject: 'Physical Sciences' },
+        { concepts: ['momentum', 'impulse'], youtubeId: 'QAURZq43508', title: 'Momentum – Conservation of Linear Momentum', channel: 'Mlungisi Nkosi Maths & Science', subject: 'Physical Sciences' },
+        { concepts: ['newton', "newton's law", 'newtons law'], youtubeId: '1dhibgYUE00', title: "Newton's Laws – Exam Questions", channel: 'Mlungisi Nkosi Maths & Science', subject: 'Physical Sciences' },
+        { concepts: ['projectile', 'vertical projectile'], youtubeId: 'H-LunHFDJPs', title: 'Vertical Projectile Motion – Grade 12', channel: 'Mlungisi Nkosi Maths & Science', subject: 'Physical Sciences' },
+        { concepts: ['projectile'], youtubeId: 'zwLiNgt9aPc', title: 'Vertical Projectile Motion – Graphs', channel: 'Mlungisi Nkosi Maths & Science', subject: 'Physical Sciences' },
+        { concepts: ['organic'], youtubeId: 'qKkf6HLjpMw', title: 'Organic Chemistry – Exam Style Questions', channel: 'Mlungisi Nkosi Maths & Science', subject: 'Physical Sciences' },
+        { concepts: ['equilibrium', 'kc', 'chemical equilibrium'], youtubeId: 'yGyGi5xTyvY', title: 'Chemical Equilibrium – Kc Calculations', channel: 'Mlungisi Nkosi Maths & Science', subject: 'Physical Sciences' }
       ];
 
       var matches = all.filter(function (v) {
         if (subj && v.subject !== subj) return false;
         return v.concepts.some(function (kw) { return name.indexOf(kw) !== -1; });
       });
-      return matches.slice(0, 3); // max 3 recommendations
+      // Deduplicate by youtubeId, keep order
+      var seen = {};
+      var unique = [];
+      matches.forEach(function (v) {
+        if (!seen[v.youtubeId]) {
+          seen[v.youtubeId] = true;
+          unique.push(v);
+        }
+      });
+      return unique.slice(0, 5);
     }
+
   };
 })();

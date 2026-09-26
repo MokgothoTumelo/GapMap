@@ -83,6 +83,30 @@
 
     .video-embed{position:relative;width:100%;padding-top:56.25%;border-radius:12px;overflow:hidden;background:#0F172A}
     .video-embed iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+    .study-section{margin-top:18px}
+    .study-section h3{font-size:1rem;font-weight:700;margin-bottom:10px;color:#1A1A2E}
+    .study-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+    .study-tab{padding:8px 14px;border-radius:999px;border:1.5px solid #E5E7EB;background:#fff;font-size:.85rem;font-weight:600;color:#5A5A72;cursor:pointer;transition:all .15s}
+    .study-tab:hover{border-color:#C5C9D4;color:#1A1A2E}
+    .study-tab.active{background:#EEF2FF;border-color:#3B5BDB;color:#3B5BDB}
+    .study-panel{display:none}
+    .study-panel.active{display:block}
+    .video-list{display:flex;flex-direction:column;gap:16px}
+    .video-item{border:1.5px solid #E5E7EB;border-radius:12px;overflow:hidden;background:#fff}
+    .video-item-meta{padding:12px 14px;font-size:.9rem;color:#5A5A72}
+    .video-item-meta strong{display:block;color:#1A1A2E;font-size:.95rem;margin-bottom:2px}
+    .audio-list{display:flex;flex-direction:column;gap:12px}
+    .audio-item{display:flex;flex-direction:column;gap:8px;padding:14px;border:1.5px solid #E5E7EB;border-radius:12px;background:#fff}
+    .audio-item strong{font-size:.95rem;color:#1A1A2E}
+    .audio-item p{font-size:.85rem;color:#5A5A72;margin:0}
+    .audio-item audio{width:100%;margin-top:4px}
+    .audio-note{font-size:.82rem;color:#5A5A72;background:#F8FAFC;border:1px solid #E5E7EB;border-radius:10px;padding:12px 14px;line-height:1.5;margin-bottom:12px}
+    .notes-block{background:#F8FAFC;border:1.5px solid #E5E7EB;border-radius:12px;padding:16px 18px;font-size:.92rem;line-height:1.65;color:#1A1A2E}
+    .notes-block h4{font-size:.95rem;margin:0 0 8px;color:#3B5BDB}
+    .notes-block ul{margin:8px 0 0 18px;padding:0}
+    .notes-block li{margin-bottom:6px}
+    .notes-select{margin-bottom:12px}
+    .notes-select select{width:100%;padding:10px 12px;border:1.5px solid #E5E7EB;border-radius:10px;font:inherit;background:#fff;color:#1A1A2E}
     .quantum-practice-card{background:linear-gradient(135deg,#F5F3FF,#EEF2FF);border:1.5px solid #DDD6FE}
     .quantum-practice-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
     .quantum-chip{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:#1E1B4B;color:#fff;font-weight:800;font-size:.82rem;box-shadow:0 0 0 6px rgba(124,58,237,.07)}
@@ -123,7 +147,6 @@
       <a href="library.html" class="back-link">Library</a>
       <div class="avatar" id="avatar">U</div>
     </div>
-    </div>
   </nav>
 
   <div class="container">
@@ -135,13 +158,35 @@
         <p id="conceptSubtitle">Short explanation and examples before you practise.</p>
         <div id="pathWhy" style="display:none; margin-top:10px;"></div>
 
-      <div class="card" id="videosCard" style="display:none;">
-        <h2>Concept video</h2>
-        <p id="videoMeta" style="color:#5A5A72;font-size:0.95rem;margin-bottom:14px;"></p>
-        <div class="video-embed">
-          <iframe id="conceptVideo" title="Concept video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-        </div>
       </div>
+
+      <div class="card" id="studyMaterialsCard" style="display:none;">
+        <h2>Study materials</h2>
+        <p style="color:#5A5A72;font-size:0.95rem;margin-bottom:14px;">Videos linked to this Concept, audio for listening-only study, and transcripts as notes.</p>
+        <div class="study-tabs" role="tablist">
+          <button type="button" class="study-tab active" data-panel="videosPanel" role="tab" aria-selected="true">Videos</button>
+          <button type="button" class="study-tab" data-panel="audioPanel" role="tab" aria-selected="false">Audio</button>
+          <button type="button" class="study-tab" data-panel="notesPanel" role="tab" aria-selected="false">Transcript notes</button>
+        </div>
+        <div id="videosPanel" class="study-panel active" role="tabpanel">
+          <div class="video-list" id="videoList"></div>
+          <p id="noVideosMsg" style="display:none;color:#5A5A72;font-size:.9rem;">No concept-specific videos mapped yet. Use the Library for more resources.</p>
+        </div>
+        <div id="audioPanel" class="study-panel" role="tabpanel">
+          <div class="audio-note">
+            Audio versions let you study without watching. Where a direct audio file is not hosted, open the linked YouTube video and use your device’s screen-off / audio-only mode (or Picture-in-Picture) while following the transcript notes.
+          </div>
+          <div class="audio-list" id="audioList"></div>
+        </div>
+        <div id="notesPanel" class="study-panel" role="tabpanel">
+          <div class="notes-select">
+            <label for="notesVideoSelect" style="font-size:.85rem;font-weight:600;color:#5A5A72;display:block;margin-bottom:6px;">Transcript for</label>
+            <select id="notesVideoSelect"></select>
+          </div>
+          <div class="notes-block" id="notesBody">
+            <p style="color:#5A5A72;margin:0;">Select a video above to view its transcript notes.</p>
+          </div>
+        </div>
       </div>
 
       <div class="card" id="explainCard">
@@ -690,37 +735,874 @@
       };
     }
 
-    // Only show a video when the existing Library recommendation is an exact
-    // Concept match. Broad keyword matches (for example Energy → Work, Energy
-    // & Power) are intentionally rejected so a related video is never presented
-    // as if it teaches the Concept itself.
-    const STRICT_CONCEPT_VIDEOS = {
-      'mathematics|11|euclidean geometry': {
-        youtubeId: 'Y76Q_QNs1NY',
-        title: 'Euclidean Geometry – Grade 11 Exam',
-        channel: 'Kevinmathscience',
+    // Per-Concept study materials (Grades 10–12).
+    // Mathematics → Kevinmathscience; Physical Sciences → Mlungisi Nkosi.
+    // Keys are normalised concept names (lowercase). Fuzzy match is applied at resolve time.
+    const CONCEPT_STUDY_MATERIALS = {
+      // ── Mathematics (Kevinmathscience) ──────────────────────────────────
+      'linear equations': {
+        videos: [
+          {
+            youtubeId: 'DG1oefpn0ec',
+            title: 'Mathematics P1 – November Exam Full Walkthrough (Grade 10)',
+            channel: 'Kevinmathscience',
+            transcript: `
+              <h4>Key notes – Linear equations</h4>
+              <ul>
+                <li>Isolate the variable using inverse operations on both sides.</li>
+                <li>Combine like terms before dividing or multiplying.</li>
+                <li>Check your solution by substitution.</li>
+              </ul>
+            `
+          }
+        ]
       },
+      'expanding brackets': {
+        videos: [
+          {
+            youtubeId: 'alUkVWVEP10',
+            title: 'Algebra foundations – expanding and factor patterns',
+            channel: 'Kevinmathscience',
+            transcript: `
+              <h4>Key notes – Expanding brackets</h4>
+              <ul>
+                <li>Distributive law: a(b + c) = ab + ac.</li>
+                <li>Binomial products: (a + b)(c + d) = ac + ad + bc + bd.</li>
+                <li>Expand carefully, then collect like terms.</li>
+              </ul>
+            `
+          }
+        ]
+      },
+      factorisation: {
+        videos: [
+          {
+            youtubeId: 'alUkVWVEP10',
+            title: 'Algebra foundations – factor patterns',
+            channel: 'Kevinmathscience',
+            transcript: `
+              <h4>Key notes – Factorisation</h4>
+              <ul>
+                <li>Always take out a common factor first.</li>
+                <li>Difference of squares: a² − b² = (a − b)(a + b).</li>
+                <li>Trinomials: find two numbers that multiply to the constant and add to the middle coefficient.</li>
+                <li>Check by expanding your answer.</li>
+              </ul>
+            `
+          }
+        ]
+      },
+      exponents: {
+        videos: [
+          {
+            youtubeId: 'meY342gwjLM',
+            title: 'Exam Question: Exponents – Grade 10',
+            channel: 'Kevinmathscience',
+            transcript: `
+              <h4>Key notes – Exponents</h4>
+              <ul>
+                <li>aᵐ × aⁿ = aᵐ⁺ⁿ; aᵐ ÷ aⁿ = aᵐ⁻ⁿ; (aᵐ)ⁿ = aᵐⁿ.</li>
+                <li>a⁰ = 1 (a ≠ 0); a⁻ⁿ = 1/aⁿ.</li>
+                <li>Simplify bases and apply laws step by step.</li>
+              </ul>
+            `
+          },
+          {
+            youtubeId: '6Am2_HXuoqU',
+            title: 'Exponential Equations – Grade 10',
+            channel: 'Kevinmathscience',
+            transcript: `
+              <h4>Key notes – Exponential equations</h4>
+              <ul>
+                <li>Write both sides with the same base when possible.</li>
+                <li>If aˣ = aʸ then x = y (a > 0, a ≠ 1).</li>
+              </ul>
+            `
+          },
+          {
+            youtubeId: 'oclgayvKgD8',
+            title: 'Exponents – More Than One Term',
+            channel: 'Kevinmathscience',
+            transcript: `
+              <h4>Key notes – Multi-term exponents</h4>
+              <ul>
+                <li>Factor common powers where helpful.</li>
+                <li>Do not distribute exponents over addition incorrectly.</li>
+              </ul>
+            `
+          }
+        ]
+      },
+      'exponents & surds': {
+        videos: [
+          {
+            youtubeId: 'meY342gwjLM',
+            title: 'Exam Question: Exponents – Grade 10',
+            channel: 'Kevinmathscience',
+            transcript: `
+              <h4>Key notes – Exponents & surds</h4>
+              <ul>
+                <li>Simplify surds by factoring perfect squares: √(a²b) = a√b.</li>
+                <li>Rationalise denominators when required.</li>
+                <li>Combine exponent laws with surd rules carefully.</li>
+              </ul>
+            `
+          },
+          {
+            youtubeId: 'oclgayvKgD8',
+            title: 'Exponents – More Than One Term',
+            channel: 'Kevinmathscience',
+            transcript: `
+              <h4>Key notes – Surds and exponents together</h4>
+              <ul>
+                <li>Write roots as fractional exponents when useful: √a = a^(1/2).</li>
+              </ul>
+            `
+          }
+        ]
+      },
+      algebra: {
+        videos: [
+          {
+            youtubeId: 'alUkVWVEP10',
+            title: 'Algebra foundations',
+            channel: 'Kevinmathscience',
+            transcript: `
+              <h4>Key notes – Algebra</h4>
+              <ul>
+                <li>Simplify expressions by expanding and collecting like terms.</li>
+                <li>Solve linear equations by keeping both sides balanced.</li>
+                <li>Factorisation and expansion are inverse processes.</li>
+              </ul>
+            `
+          },
+          {
+            youtubeId: 'DG1oefpn0ec',
+            title: 'Mathematics P1 – November Exam Full Walkthrough (Grade 10)',
+            channel: 'Kevinmathscience',
+            transcript: `
+              <h4>Key notes – Algebra in exams</h4>
+              <ul>
+                <li>Show every step; markers award method marks.</li>
+                <li>Check sign errors when expanding or rearranging.</li>
+              </ul>
+            `
+          }
+        ]
+      },
+      numbers: {
+        videos: [
+          {
+            youtubeId: 'DG1oefpn0ec',
+            title: 'Mathematics P1 – November Exam Full Walkthrough (Grade 10)',
+            channel: 'Kevinmathscience',
+            transcript: `
+              <h4>Key notes – Number systems</h4>
+              <ul>
+                <li>Know the sets: natural, integers, rational, real.</li>
+                <li>Work confidently with fractions, ratios and percentages.</li>
+              </ul>
+            `
+          }
+        ]
+      },
+      functions: {
+        videos: [
+          {
+            youtubeId: 'h5gaH8pcMTU',
+            title: 'Trig Functions – Determine the Equation (related function skills)',
+            channel: 'Kevinmathscience',
+            transcript: `
+              <h4>Key notes – Functions</h4>
+              <ul>
+                <li>Function notation: f(x) means the output when the input is x.</li>
+                <li>Read domain and range from graphs and equations.</li>
+                <li>Straight-line functions: y = mx + c; gradient and intercept matter.</li>
+              </ul>
+            `
+          },
+          {
+            youtubeId: 'DG1oefpn0ec',
+            title: 'Mathematics P1 – November Exam Full Walkthrough (Grade 10)',
+            channel: 'Kevinmathscience',
+            transcript: `
+              <h4>Key notes – Function graphs</h4>
+              <ul>
+                <li>Sketch by finding intercepts and key points.</li>
+                <li>Transformations shift, stretch or reflect the base graph.</li>
+              </ul>
+            `
+          }
+        ]
+      },
+      geometry: {
+        videos: [
+          {
+            youtubeId: 'Y76Q_QNs1NY',
+            title: 'Euclidean Geometry – Grade 11 Exam',
+            channel: 'Kevinmathscience',
+            transcript: `
+              <h4>Key notes – Geometry</h4>
+              <ul>
+                <li>Angle relationships: vertically opposite, corresponding, alternate, co-interior.</li>
+                <li>Triangle angle sum = 180°. Exterior angle equals opposite interior sum.</li>
+                <li>Always state the reason for each angle statement.</li>
+              </ul>
+            `
+          }
+        ]
+      },
+      measurement: {
+        videos: [
+          {
+            youtubeId: 'DG1oefpn0ec',
+            title: 'Mathematics P1 – November Exam Full Walkthrough (Grade 10)',
+            channel: 'Kevinmathscience',
+            transcript: `
+              <h4>Key notes – Measurement</h4>
+              <ul>
+                <li>Perimeter, area and volume formulae for common shapes.</li>
+                <li>Convert units carefully (mm ↔ cm ↔ m).</li>
+              </ul>
+            `
+          }
+        ]
+      },
+      'euclidean geometry': {
+        videos: [
+          {
+            youtubeId: 'Y76Q_QNs1NY',
+            title: 'Euclidean Geometry – Grade 11 Exam',
+            channel: 'Kevinmathscience',
+            transcript: `
+              <h4>Key notes – Euclidean Geometry</h4>
+              <ul>
+                <li>Sketch the figure; mark equal angles and equal sides.</li>
+                <li>Circle theorems and parallel-line results appear often.</li>
+                <li>Write a reason next to every statement in a proof.</li>
+              </ul>
+            `
+          }
+        ]
+      },
+      'quadratic equations': {
+        videos: [
+          {
+            youtubeId: 'alUkVWVEP10',
+            title: 'Algebra foundations – factor patterns (for solving by factors)',
+            channel: 'Kevinmathscience',
+            transcript: `
+              <h4>Key notes – Quadratic equations</h4>
+              <ul>
+                <li>Standard form: ax² + bx + c = 0.</li>
+                <li>Solve by factoring, completing the square, or the quadratic formula.</li>
+                <li>Discriminant Δ = b² − 4ac tells the nature of the roots.</li>
+              </ul>
+            `
+          },
+          {
+            youtubeId: '3t3fL1DQgg4',
+            title: 'Calculus Exam Question Grade 12 (algebra skills used)',
+            channel: 'Kevinmathscience',
+            transcript: `
+              <h4>Key notes – Exam technique</h4>
+              <ul>
+                <li>Rearrange into standard form before choosing a method.</li>
+                <li>State exact roots unless decimal answers are requested.</li>
+              </ul>
+            `
+          }
+        ]
+      },
+      trigonometry: {
+        videos: [
+          {
+            youtubeId: 'UAaf14YizQw',
+            title: 'General Solution – Trigonometry Grade 12',
+            channel: 'Kevinmathscience',
+            transcript: `
+              <h4>Key notes – General solution</h4>
+              <ul>
+                <li>Find the reference angle; apply quadrant signs for the ratio.</li>
+                <li>Write the general solution using the correct period.</li>
+              </ul>
+            `
+          },
+          {
+            youtubeId: 'h5gaH8pcMTU',
+            title: 'Trig Functions – Determine the Equation',
+            channel: 'Kevinmathscience',
+            transcript: `
+              <h4>Key notes – Trig graphs to equations</h4>
+              <ul>
+                <li>Amplitude, period, phase and vertical shift determine the equation.</li>
+              </ul>
+            `
+          },
+          {
+            youtubeId: 'XXwMYNorbaI',
+            title: 'Reduction Formulae – Grade 11',
+            channel: 'Kevinmathscience',
+            transcript: `
+              <h4>Key notes – Reduction formulae</h4>
+              <ul>
+                <li>Reduce angles outside 0°–90° to an acute reference angle with the correct sign.</li>
+              </ul>
+            `
+          },
+          {
+            youtubeId: 'rQxDbz7r6fQ',
+            title: 'Trig Graphs – Grade 11 Exam Style',
+            channel: 'Kevinmathscience',
+            transcript: `
+              <h4>Key notes – Trig graphs</h4>
+              <ul>
+                <li>Sketch key points over one or two periods; label intercepts and turning points.</li>
+              </ul>
+            `
+          }
+        ]
+      },
+      calculus: {
+        videos: [
+          {
+            youtubeId: '4VUWIiudCk0',
+            title: 'Limits – Calculus Grade 12',
+            channel: 'Kevinmathscience',
+            transcript: `
+              <h4>Key notes – Limits</h4>
+              <ul>
+                <li>A limit is the value a function approaches as x approaches a number.</li>
+                <li>If direct substitution gives 0/0, factor or simplify first.</li>
+              </ul>
+            `
+          },
+          {
+            youtubeId: 'alUkVWVEP10',
+            title: 'First Principles – Calculus Grade 12',
+            channel: 'Kevinmathscience',
+            transcript: `
+              <h4>Key notes – First principles</h4>
+              <ul>
+                <li>f'(x) = lim(h→0) [f(x+h) − f(x)] / h.</li>
+                <li>Expand, simplify, then let h → 0.</li>
+              </ul>
+            `
+          },
+          {
+            youtubeId: '2FJLXAYNwr8',
+            title: 'First Principles with Fractions – Calculus',
+            channel: 'Kevinmathscience',
+            transcript: `
+              <h4>Key notes – First principles with fractions</h4>
+              <ul>
+                <li>Combine fractions over a common denominator before taking the limit.</li>
+              </ul>
+            `
+          },
+          {
+            youtubeId: '45abKQwiCt8',
+            title: 'Equation of the Tangent – Calculus Grade 12',
+            channel: 'Kevinmathscience',
+            transcript: `
+              <h4>Key notes – Tangent to a curve</h4>
+              <ul>
+                <li>Gradient of the tangent = f'(x) at the given point.</li>
+                <li>Use the point-gradient form of a straight line.</li>
+              </ul>
+            `
+          },
+          {
+            youtubeId: '3t3fL1DQgg4',
+            title: 'Calculus Exam Question Grade 12',
+            channel: 'Kevinmathscience',
+            transcript: `
+              <h4>Key notes – Calculus exam technique</h4>
+              <ul>
+                <li>Show the limit or differentiation step clearly for method marks.</li>
+              </ul>
+            `
+          }
+        ]
+      },
+
+      // ── Physical Sciences (Mlungisi Nkosi) ───────────────────────────────
+      matter: {
+        videos: [
+          {
+            youtubeId: '68Mw4MEX_z0',
+            title: 'Electrostatics – Conservation of Charge (matter & particles context)',
+            channel: 'Mlungisi Nkosi Maths & Science',
+            transcript: `
+              <h4>Key notes – Matter</h4>
+              <ul>
+                <li>Matter is made of particles; states differ by arrangement and energy.</li>
+                <li>Classification: elements, compounds, mixtures.</li>
+              </ul>
+            `
+          }
+        ]
+      },
+      'matter & materials': {
+        videos: [
+          {
+            youtubeId: '2O5WGvuLUAA',
+            title: 'Electrostatics – Types of Charges',
+            channel: 'Mlungisi Nkosi Maths & Science',
+            transcript: `
+              <h4>Key notes – Matter & materials</h4>
+              <ul>
+                <li>Properties of materials depend on particle structure and bonding.</li>
+                <li>Mixtures can be separated by physical methods.</li>
+              </ul>
+            `
+          }
+        ]
+      },
+      'forces & motion': {
+        videos: [
+          {
+            youtubeId: '1dhibgYUE00',
+            title: "Newton’s Laws – Exam Questions",
+            channel: 'Mlungisi Nkosi Maths & Science',
+            transcript: `
+              <h4>Key notes – Forces & motion</h4>
+              <ul>
+                <li>Draw free-body diagrams showing all forces on the object.</li>
+                <li>Net force determines acceleration (Newton 2).</li>
+              </ul>
+            `
+          },
+          {
+            youtubeId: 'QS6MozY4bTA',
+            title: 'Vectors and Scalars – Grade 10',
+            channel: 'Mlungisi Nkosi Maths & Science',
+            transcript: `
+              <h4>Key notes – Vectors in forces</h4>
+              <ul>
+                <li>Force is a vector: magnitude and direction both matter.</li>
+              </ul>
+            `
+          }
+        ]
+      },
+      mechanics: {
+        videos: [
+          {
+            youtubeId: 'JyMzvIJ2mUM',
+            title: 'Laws of Kinematics – Grade 10 & 11',
+            channel: 'Mlungisi Nkosi Maths & Science',
+            transcript: `
+              <h4>Key notes – Mechanics / kinematics</h4>
+              <ul>
+                <li>Equations of motion for constant acceleration.</li>
+                <li>Define a positive direction; keep signs consistent.</li>
+              </ul>
+            `
+          },
+          {
+            youtubeId: 'MgiRw2sNn0g',
+            title: '2D Vectors – Part 1 (Resultant Force)',
+            channel: 'Mlungisi Nkosi Maths & Science',
+            transcript: `
+              <h4>Key notes – Resultant forces</h4>
+              <ul>
+                <li>Resolve vectors into components; add components separately.</li>
+              </ul>
+            `
+          },
+          {
+            youtubeId: 'HfwAfQOg7xg',
+            title: '2D Vectors – Using Components',
+            channel: 'Mlungisi Nkosi Maths & Science',
+            transcript: `
+              <h4>Key notes – Component method</h4>
+              <ul>
+                <li>Rx = ΣFx, Ry = ΣFy; magnitude R = √(Rx² + Ry²).</li>
+              </ul>
+            `
+          }
+        ]
+      },
+      energy: {
+        videos: [
+          {
+            youtubeId: 'BjhxVy1iCjQ',
+            title: 'Work, Energy & Power – Part 1 (Work Done)',
+            channel: 'Mlungisi Nkosi Maths & Science',
+            transcript: `
+              <h4>Key notes – Work done</h4>
+              <ul>
+                <li>W = F Δx cos θ.</li>
+                <li>Work is positive when force and displacement are in the same direction.</li>
+              </ul>
+            `
+          },
+          {
+            youtubeId: 'UHRuQ0U3kJI',
+            title: 'Work, Energy & Power – Part 2 (Conservation)',
+            channel: 'Mlungisi Nkosi Maths & Science',
+            transcript: `
+              <h4>Key notes – Conservation of energy</h4>
+              <ul>
+                <li>Mechanical energy is conserved when non-conservative work is zero.</li>
+                <li>Ek = ½mv²; Ep = mgh (near Earth).</li>
+              </ul>
+            `
+          }
+        ]
+      },
+      'work energy power': {
+        videos: [
+          {
+            youtubeId: 'BjhxVy1iCjQ',
+            title: 'Work, Energy & Power – Part 1 (Work Done)',
+            channel: 'Mlungisi Nkosi Maths & Science',
+            transcript: `
+              <h4>Key notes – Work, energy & power</h4>
+              <ul>
+                <li>Power P = W/t = Fv (when force and velocity are parallel).</li>
+              </ul>
+            `
+          },
+          {
+            youtubeId: 'UHRuQ0U3kJI',
+            title: 'Work, Energy & Power – Part 2 (Conservation)',
+            channel: 'Mlungisi Nkosi Maths & Science',
+            transcript: `
+              <h4>Key notes – Energy conservation</h4>
+              <ul>
+                <li>Track energy forms carefully in multi-step problems.</li>
+              </ul>
+            `
+          }
+        ]
+      },
+      'waves & sound': {
+        videos: [
+          {
+            youtubeId: 'JyMzvIJ2mUM',
+            title: 'Laws of Kinematics – Grade 10 & 11 (wave motion links)',
+            channel: 'Mlungisi Nkosi Maths & Science',
+            transcript: `
+              <h4>Key notes – Waves & sound</h4>
+              <ul>
+                <li>v = fλ; frequency and period are inverses.</li>
+                <li>Distinguish transverse and longitudinal waves.</li>
+              </ul>
+            `
+          }
+        ]
+      },
+      waves: {
+        videos: [
+          {
+            youtubeId: 'JyMzvIJ2mUM',
+            title: 'Laws of Kinematics – Grade 10 & 11 (wave motion links)',
+            channel: 'Mlungisi Nkosi Maths & Science',
+            transcript: `
+              <h4>Key notes – Waves</h4>
+              <ul>
+                <li>Amplitude, wavelength, frequency, speed relationships.</li>
+                <li>Superposition and interference ideas appear in later grades.</li>
+              </ul>
+            `
+          }
+        ]
+      },
+      electricity: {
+        videos: [
+          {
+            youtubeId: 'U3S7fscHFeI',
+            title: 'Electric Circuits – Introduction',
+            channel: 'Mlungisi Nkosi Maths & Science',
+            transcript: `
+              <h4>Key notes – Electricity / circuits</h4>
+              <ul>
+                <li>Ohm’s law: V = IR.</li>
+                <li>Series: current same, voltages add; parallel: voltage same, currents add.</li>
+                <li>Power P = VI = I²R = V²/R.</li>
+              </ul>
+            `
+          },
+          {
+            youtubeId: '68Mw4MEX_z0',
+            title: 'Electrostatics – Conservation of Charge',
+            channel: 'Mlungisi Nkosi Maths & Science',
+            transcript: `
+              <h4>Key notes – Charge</h4>
+              <ul>
+                <li>Charge is conserved; like charges repel, unlike attract.</li>
+              </ul>
+            `
+          },
+          {
+            youtubeId: '2O5WGvuLUAA',
+            title: 'Electrostatics – Types of Charges',
+            channel: 'Mlungisi Nkosi Maths & Science',
+            transcript: `
+              <h4>Key notes – Types of charge</h4>
+              <ul>
+                <li>Conductors allow charge flow; insulators do not.</li>
+              </ul>
+            `
+          }
+        ]
+      },
+      'chemical change': {
+        videos: [
+          {
+            youtubeId: 'yGyGi5xTyvY',
+            title: 'Chemical Equilibrium – Kc Calculations',
+            channel: 'Mlungisi Nkosi Maths & Science',
+            transcript: `
+              <h4>Key notes – Chemical change</h4>
+              <ul>
+                <li>Balance equations; use mole ratios for stoichiometry.</li>
+                <li>Identify reaction types and energy changes.</li>
+              </ul>
+            `
+          },
+          {
+            youtubeId: 'qKkf6HLjpMw',
+            title: 'Organic Chemistry – Exam Style Questions',
+            channel: 'Mlungisi Nkosi Maths & Science',
+            transcript: `
+              <h4>Key notes – Organic links</h4>
+              <ul>
+                <li>Functional groups drive typical reaction pathways.</li>
+              </ul>
+            `
+          }
+        ]
+      },
+      momentum: {
+        videos: [
+          {
+            youtubeId: 'QAURZq43508',
+            title: 'Momentum – Conservation of Linear Momentum',
+            channel: 'Mlungisi Nkosi Maths & Science',
+            transcript: `
+              <h4>Key notes – Momentum</h4>
+              <ul>
+                <li>p = mv; in a closed system total momentum is conserved.</li>
+                <li>Choose a positive direction and keep vector signs consistent.</li>
+              </ul>
+            `
+          }
+        ]
+      },
+      "newton's laws": {
+        videos: [
+          {
+            youtubeId: '1dhibgYUE00',
+            title: "Newton’s Laws – Exam Questions",
+            channel: 'Mlungisi Nkosi Maths & Science',
+            transcript: `
+              <h4>Key notes – Newton’s laws</h4>
+              <ul>
+                <li>1st: inertia; 2nd: F_net = ma; 3rd: action–reaction pairs.</li>
+                <li>Always draw a free-body diagram before writing equations.</li>
+              </ul>
+            `
+          }
+        ]
+      },
+      'projectile motion': {
+        videos: [
+          {
+            youtubeId: 'H-LunHFDJPs',
+            title: 'Vertical Projectile Motion – Grade 12',
+            channel: 'Mlungisi Nkosi Maths & Science',
+            transcript: `
+              <h4>Key notes – Vertical projectile motion</h4>
+              <ul>
+                <li>Take upward positive; a = −g.</li>
+                <li>At the top, velocity is zero.</li>
+              </ul>
+            `
+          },
+          {
+            youtubeId: 'zwLiNgt9aPc',
+            title: 'Vertical Projectile Motion – Graphs',
+            channel: 'Mlungisi Nkosi Maths & Science',
+            transcript: `
+              <h4>Key notes – Projectile graphs</h4>
+              <ul>
+                <li>Position–time is parabolic; velocity–time is linear with slope −g.</li>
+              </ul>
+            `
+          }
+        ]
+      },
+      'organic chemistry': {
+        videos: [
+          {
+            youtubeId: 'qKkf6HLjpMw',
+            title: 'Organic Chemistry – Exam Style Questions',
+            channel: 'Mlungisi Nkosi Maths & Science',
+            transcript: `
+              <h4>Key notes – Organic chemistry</h4>
+              <ul>
+                <li>Name compounds with IUPAC rules; identify functional groups.</li>
+                <li>Know addition, substitution, elimination and combustion patterns.</li>
+              </ul>
+            `
+          }
+        ]
+      },
+      'chemical equilibrium': {
+        videos: [
+          {
+            youtubeId: 'yGyGi5xTyvY',
+            title: 'Chemical Equilibrium – Kc Calculations',
+            channel: 'Mlungisi Nkosi Maths & Science',
+            transcript: `
+              <h4>Key notes – Chemical equilibrium</h4>
+              <ul>
+                <li>Kc from the balanced equation using equilibrium concentrations.</li>
+                <li>Omit pure solids and liquids from the Kc expression.</li>
+                <li>Use ICE tables for calculation questions.</li>
+              </ul>
+            `
+          }
+        ]
+      }
     };
 
-    function renderConceptVideo(concept) {
-      const card = document.getElementById('videosCard');
-      const frame = document.getElementById('conceptVideo');
-      const meta = document.getElementById('videoMeta');
-      if (!card || !frame || !meta) return;
-      card.style.display = 'none';
-      frame.removeAttribute('src');
-      meta.textContent = '';
-      if (!concept || typeof GapMapAuth.getVideosForConcept !== 'function') return;
+    function normaliseConceptKey(name) {
+      return String(name || '')
+        .toLowerCase()
+        .trim()
+        .replace(/['’]/g, "'")
+        .replace(/[^a-z0-9]+/g, ' ')
+        .trim();
+    }
 
-      const learnerGrade = String((typeof GapMapAuth.getUser === 'function' && GapMapAuth.getUser()?.grade) || '').trim();
-      const key = String((concept.subject || '') + '|' + learnerGrade + '|' + (concept.name || '')).toLowerCase().trim();
-      const video = STRICT_CONCEPT_VIDEOS[key];
-      if (!video || !video.youtubeId) return;
+    function resolveStudyMaterials(concept) {
+      if (!concept || !concept.name) return null;
+      const nameKey = normaliseConceptKey(concept.name);
+      // Direct key match (factorisation, algebra, …)
+      if (CONCEPT_STUDY_MATERIALS[nameKey]) return CONCEPT_STUDY_MATERIALS[nameKey];
+      // Fuzzy: any key contained in the concept name or vice-versa
+      for (const key of Object.keys(CONCEPT_STUDY_MATERIALS)) {
+        if (nameKey.includes(key) || key.includes(nameKey)) {
+          return CONCEPT_STUDY_MATERIALS[key];
+        }
+      }
+      // Fallback to GapMapAuth keyword map (single best match → wrap as list)
+      if (typeof GapMapAuth.getVideosForConcept === 'function') {
+        const hits = GapMapAuth.getVideosForConcept(concept.name, concept.subject) || [];
+        if (hits.length) {
+          return {
+            videos: hits.map((v) => ({
+              youtubeId: v.youtubeId,
+              title: v.title,
+              channel: v.channel || 'YouTube',
+              transcript: `<h4>${v.title}</h4><p>Follow the video and the explanation on this page. Full transcript notes will be added for this Concept soon.</p>`
+            }))
+          };
+        }
+      }
+      return null;
+    }
 
-      frame.src = 'https://www.youtube.com/embed/' + encodeURIComponent(video.youtubeId) + '?rel=0';
-      frame.title = video.title;
-      meta.textContent = (video.channel || 'YouTube') + ' · ' + video.title;
+    function renderConceptStudyMaterials(concept) {
+      const card = document.getElementById('studyMaterialsCard');
+      const videoList = document.getElementById('videoList');
+      const audioList = document.getElementById('audioList');
+      const notesSelect = document.getElementById('notesVideoSelect');
+      const notesBody = document.getElementById('notesBody');
+      const noVideosMsg = document.getElementById('noVideosMsg');
+      if (!card || !videoList || !audioList || !notesSelect || !notesBody) return;
+
+      const materials = resolveStudyMaterials(concept);
+      const videos = (materials && Array.isArray(materials.videos)) ? materials.videos.filter((v) => v && v.youtubeId) : [];
+
+      videoList.innerHTML = '';
+      audioList.innerHTML = '';
+      notesSelect.innerHTML = '';
+      notesBody.innerHTML = '<p style="color:#5A5A72;margin:0;">Select a video above to view its transcript notes.</p>';
+
+      if (!videos.length) {
+        card.style.display = 'none';
+        if (noVideosMsg) noVideosMsg.style.display = '';
+        return;
+      }
+
       card.style.display = '';
+      if (noVideosMsg) noVideosMsg.style.display = 'none';
+
+      videos.forEach((video, index) => {
+        // Video embed card
+        const item = document.createElement('div');
+        item.className = 'video-item';
+        item.innerHTML =
+          '<div class="video-embed">' +
+            '<iframe src="https://www.youtube.com/embed/' + encodeURIComponent(video.youtubeId) + '?rel=0" ' +
+            'title="' + (video.title || 'Concept video').replace(/"/g, '&quot;') + '" loading="lazy" ' +
+            'allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>' +
+          '</div>' +
+          '<div class="video-item-meta">' +
+            '<strong>' + (video.title || 'Concept video') + '</strong>' +
+            (video.channel || 'YouTube') +
+          '</div>';
+        videoList.appendChild(item);
+
+        // Audio row
+        const audioItem = document.createElement('div');
+        audioItem.className = 'audio-item';
+        const hasAudioFile = video.audioUrl && String(video.audioUrl).trim();
+        audioItem.innerHTML =
+          '<strong>' + (video.title || 'Concept video') + '</strong>' +
+          '<p>' + (video.channel || 'YouTube') + (hasAudioFile ? ' · dedicated audio file' : ' · listen via YouTube audio / screen-off') + '</p>' +
+          (hasAudioFile
+            ? '<audio controls preload="none" src="' + String(video.audioUrl).replace(/"/g, '&quot;') + '"></audio>'
+            : '<a class="btn btn-secondary" style="align-self:flex-start;margin-top:4px;" href="https://www.youtube.com/watch?v=' +
+              encodeURIComponent(video.youtubeId) + '" target="_blank" rel="noopener">Open video for audio-only listening →</a>');
+        audioList.appendChild(audioItem);
+
+        // Notes dropdown option
+        const opt = document.createElement('option');
+        opt.value = String(index);
+        opt.textContent = video.title || ('Video ' + (index + 1));
+        notesSelect.appendChild(opt);
+      });
+
+      function showNotes(index) {
+        const video = videos[index];
+        if (!video) {
+          notesBody.innerHTML = '<p style="color:#5A5A72;margin:0;">No transcript available.</p>';
+          return;
+        }
+        notesBody.innerHTML = video.transcript ||
+          ('<h4>' + (video.title || 'Video') + '</h4><p>Transcript notes for this video will be added soon. Use the explanation and worked examples on this page meanwhile.</p>');
+      }
+
+      notesSelect.onchange = function () {
+        showNotes(parseInt(notesSelect.value, 10) || 0);
+      };
+      showNotes(0);
+
+      // Tab switching
+      card.querySelectorAll('.study-tab').forEach((tab) => {
+        tab.onclick = function () {
+          card.querySelectorAll('.study-tab').forEach((t) => {
+            t.classList.remove('active');
+            t.setAttribute('aria-selected', 'false');
+          });
+          card.querySelectorAll('.study-panel').forEach((p) => p.classList.remove('active'));
+          tab.classList.add('active');
+          tab.setAttribute('aria-selected', 'true');
+          const panel = document.getElementById(tab.getAttribute('data-panel'));
+          if (panel) panel.classList.add('active');
+        };
+      });
+    }
+
+    // Keep old name as alias so any remaining callers still work
+    function renderConceptVideo(concept) {
+      renderConceptStudyMaterials(concept);
     }
 
     const PRACTICE_LANGUAGES = [
