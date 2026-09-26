@@ -508,7 +508,6 @@
       
       <div class="nav-actions">
         <a href="signup.html" class="btn btn-primary" data-nav="signup">Get Started</a>
-        <a href="dashboard.html" class="btn btn-outline" data-nav="dashboard" style="display:none;">Dashboard</a>
         <a href="concept.html" class="btn btn-outline" data-nav="learn" style="display:none;">Learn</a>
       </div>
     </div>
@@ -523,18 +522,18 @@
     </div>
   </div>
 
+  <div class="checkout-msg" style="padding-top:16px;">
+    <div class="msg-banner error" id="lockedBanner" style="max-width:900px;margin:0 auto;">
+      <span><strong>Your free trial has ended.</strong> <span id="lockedBannerText">Subscribe below to unlock full access again — your progress and Gap Map are still here.</span></span>
+    </div>
+  </div>
+
   <section class="sub-hero">
-    <span class="eyebrow">Subscription</span>
-    <h1>Start free for <span class="accent">30 days</span>.</h1>
-    <p>Every new account gets a full 30-day free trial — unlimited diagnostics and personalised learning paths. When the trial ends, choose a simple plan to keep going.</p>
+    <span class="eyebrow" id="heroEyebrow">Subscription</span>
+    <h1 id="heroTitle">Start free for <span class="accent">30 days</span>.</h1>
+    <p id="heroSub">Every new account gets a full 30-day free trial — unlimited diagnostics and personalised learning paths. A card is required to start your trial; you won't be charged until day 30.</p>
   </section>
 
-  <div class="billing-toggle">
-    <span id="labelMonthly" class="label-active">Monthly</span>
-    <button class="switch" id="billingSwitch" type="button" aria-label="Toggle annual billing"></button>
-    <span id="labelAnnual">Annual</span>
-    <span class="save-pill">Save R60</span>
-  </div>
 
   <div class="pricing-wrap">
     <div class="pricing-grid" id="pricingGrid">
@@ -542,12 +541,12 @@
       <!-- FREE TRIAL -->
       <div class="plan-card" data-plan="free">
         <div class="plan-name">Free Trial</div>
-        <div class="plan-tagline">Full access for 30 days. No card required to start.</div>
+        <div class="plan-tagline">Full access for 30 days. A card is required to start — you won't be charged until day 30.</div>
         <div class="plan-price">
           <span class="amount">R0</span>
           <span class="period">/ 30 days</span>
         </div>
-        <div class="plan-price-sub">Then choose a plan to continue</div>
+        <div class="plan-price-sub" id="freeTrialSub">Card required · then choose a plan to continue</div>
         <ul class="plan-features">
           <li><span class="check">✓</span> Unlimited diagnostics, every subject</li>
           <li><span class="check">✓</span> Full personalised learning paths</li>
@@ -556,7 +555,11 @@
           <li class="muted"><span class="check">✕</span> Access after 30 days (choose a plan)</li>
           <li class="muted"><span class="check">✕</span> Priority support</li>
         </ul>
-        <a href="signup.html" class="btn btn-outline plan-cta" id="freeCta">Start 30-day free trial</a>
+        <button class="btn btn-outline plan-cta" id="freeCta" type="button">
+          <span class="btn-label">Add card &amp; start free trial</span>
+          <span class="spinner"></span>
+        </button>
+        <p style="text-align:center;font-size:.76rem;color:#9CA3AF;margin-top:8px;">R1 card verification now (not a trial charge) · first real charge only after day 30</p>
       </div>
 
       <!-- LEARNER MONTHLY / ANNUAL (toggled) -->
@@ -668,25 +671,28 @@
       monthly: { code: 'PLN_gapmap_learner_monthly', amountKobo: 4000,  label: 'Learner (Monthly)' },
       annual:  { code: 'PLN_gapmap_learner_annual',  amountKobo: 48000, label: 'Learner Annual' }
     };
-    const SUB_STORAGE_KEY = 'gapmap_subscription'; // demo-only local record
+    // Card-verification charge used to capture billing details before the
+    // trial starts. NOT a trial fee — Paystack has no true R0 "save card"
+    // flow without a backend-issued Authorization/subscription call, so
+    // this demo uses the common R1 verification-charge pattern instead.
+    // A real production build should replace this with a backend call that
+    // creates a Paystack customer + card Authorization (or a subscription
+    // with a trial period) so the card is verified without moving money,
+    // and so day-30 billing is enforced server-side rather than by the
+    // client-side clock below.
+    const TRIAL_VERIFY_AMOUNT_KOBO = 100; // R1
     const REDIRECT_PLAN_KEY = 'gapmap_pending_plan';
 
     /* Helpers */
     function money(kobo) { return 'R' + (kobo / 100).toFixed(0); }
 
-    function readSubscription() {
-      try {
-        const raw = localStorage.getItem(SUB_STORAGE_KEY);
-        return raw ? JSON.parse(raw) : null;
-      } catch (e) { return null; }
-    }
-
-    function writeSubscription(sub) {
-      try { localStorage.setItem(SUB_STORAGE_KEY, JSON.stringify(sub)); } catch (e) {}
-    }
-
-    function clearSubscription() {
-      try { localStorage.removeItem(SUB_STORAGE_KEY); } catch (e) {}
+    // Billing/trial state now lives in GapMapAuth (frontend/js/auth-guard.js),
+    // scoped per Learner (uid), instead of the old global, unscoped
+    // 'gapmap_subscription' localStorage key.
+    function readBillingStatus() {
+      const user = getLoggedInUser();
+      if (!user || !window.GapMapAuth || !GapMapAuth.getBillingStatus) return null;
+      return GapMapAuth.getBillingStatus(user);
     }
 
     function showBanner(el, textEl, text) {
@@ -697,53 +703,28 @@
       el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
-    /* Billing cycle toggle */
-    let cycle = 'monthly';
-    const billingSwitch = document.getElementById('billingSwitch');
-    const learnerAmount = document.getElementById('learnerAmount');
-    const learnerPeriod = document.getElementById('learnerPeriod');
-    const learnerSub = document.getElementById('learnerSub');
-    const learnerCta = document.getElementById('learnerCta');
-    const labelMonthly = document.getElementById('labelMonthly');
-    const labelAnnual = document.getElementById('labelAnnual');
-    const earlyAccessRow = document.getElementById('earlyAccessRow');
 
-    function renderCycle() {
-      if (cycle === 'monthly') {
-        learnerAmount.textContent = money(PLANS.monthly.amountKobo);
-        learnerPeriod.textContent = '/ month';
-        learnerSub.textContent = 'Billed monthly · cancel anytime';
-        learnerCta.dataset.planKey = 'monthly';
-        labelMonthly.classList.add('label-active');
-        labelAnnual.classList.remove('label-active');
-        billingSwitch.classList.remove('annual');
-        if (earlyAccessRow) {
-          earlyAccessRow.classList.add('muted');
-          earlyAccessRow.innerHTML = '<span class="check">✕</span> Early access to new subjects';
-        }
-      } else {
-        learnerAmount.textContent = money(PLANS.annual.amountKobo);
-        learnerPeriod.textContent = '/ year';
-        learnerSub.textContent = '≈ R40 / month · save R60 vs monthly';
-        learnerCta.dataset.planKey = 'annual';
-        labelAnnual.classList.add('label-active');
-        labelMonthly.classList.remove('label-active');
-        billingSwitch.classList.add('annual');
-        if (earlyAccessRow) {
-          earlyAccessRow.classList.remove('muted');
-          earlyAccessRow.innerHTML = '<span class="check">✓</span> Early access to new subjects';
-        }
+    /* Auth helper (uses GapMapAuth from auth-guard.js) */
+    function getLoggedInUser() {
+      return window.GapMapAuth ? GapMapAuth.getUser() : null;
+    }
+
+    function markCardCurrent(selector, label) {
+      const card = document.querySelector(selector);
+      if (!card) return;
+      card.classList.add('current');
+      const cta = card.querySelector('.plan-cta');
+      if (cta) {
+        cta.style.display = 'none';
+        const tag = document.createElement('div');
+        tag.className = 'plan-current-tag';
+        tag.innerHTML = '<span>✓</span> ' + label;
+        cta.insertAdjacentElement('afterend', tag);
       }
     }
-    billingSwitch.addEventListener('click', function () {
-      cycle = cycle === 'monthly' ? 'annual' : 'monthly';
-      renderCycle();
-    });
-    renderCycle();
 
-    /* Reflect current plan state */
+    /* Reflect current plan / trial state */
     function applySubscriptionState() {
-      const sub = readSubscription();
       const ribbon = document.getElementById('planRibbon');
       const ribbonText = document.getElementById('planRibbonText');
       const manageCard = document.getElementById('manageCard');
@@ -757,39 +738,68 @@
         if (tag) tag.remove();
       });
 
-      if (!sub || !sub.active) {
+      const billing = readBillingStatus();
+
+      if (!billing || (!billing.subscriptionActive && !billing.trialActive)) {
         ribbon.classList.remove('show');
         manageCard.style.display = 'none';
         return;
       }
 
-      const planLabel = sub.planKey === 'annual' ? 'Learner Annual' : 'Learner';
+      if (billing.subscriptionActive) {
+        const planLabel = billing.planKey === 'annual' ? 'Learner Annual' : 'Learner';
+        ribbon.classList.add('show');
+        ribbonText.textContent = "You're on the " + planLabel + " plan.";
+
+        manageCard.style.display = 'flex';
+        manageSub.textContent = "You're on the " + planLabel + " plan. Update your card, change plan, or cancel.";
+
+        const targetSelector = billing.planKey === 'annual'
+          ? '.plan-card[data-plan="annual"]'
+          : '.plan-card[data-plan="learner"]';
+        markCardCurrent(targetSelector, 'Current plan');
+        return;
+      }
+
+      // Trial active, no paid subscription yet.
+      const dayLabel = billing.daysRemaining === 1 ? 'day' : 'days';
       ribbon.classList.add('show');
-      ribbonText.textContent = "You're on the " + planLabel + " plan.";
+      ribbonText.textContent = "Free trial — " + billing.daysRemaining + " " + dayLabel + " left.";
 
       manageCard.style.display = 'flex';
-      manageSub.textContent = "You're on the " + planLabel + " plan. Update your card, change plan, or cancel.";
+      manageSub.textContent = 'Your free trial ends in ' + billing.daysRemaining + ' ' + dayLabel +
+        '. Choose a plan below any time to keep access afterwards.';
+      manageCard.querySelector('#manageBtn').textContent = 'View billing details';
 
-      const targetSelector = sub.planKey === 'annual'
-        ? '.plan-card[data-plan="annual"]'
-        : '.plan-card[data-plan="learner"]';
-      const targetCard = document.querySelector(targetSelector);
-      if (targetCard) {
-        targetCard.classList.add('current');
-        const cta = targetCard.querySelector('.plan-cta');
-        if (cta) {
-          cta.style.display = 'none';
-          const tag = document.createElement('div');
-          tag.className = 'plan-current-tag';
-          tag.innerHTML = '<span>✓</span> Current plan';
-          cta.insertAdjacentElement('afterend', tag);
-        }
-      }
+      markCardCurrent('.plan-card[data-plan="free"]', 'Trial active');
     }
 
-    /* Auth helper (uses GapMapAuth from auth-guard.js) */
-    function getLoggedInUser() {
-      return window.GapMapAuth ? GapMapAuth.getUser() : null;
+    /* Adjust hero copy + the locked banner for logged-in Learners */
+    function applyGateMessaging() {
+      const user = getLoggedInUser();
+      const lockedBanner = document.getElementById('lockedBanner');
+      if (!user) { lockedBanner.classList.remove('show'); return; }
+
+      const billing = readBillingStatus();
+      if (!billing) return;
+
+      const heroEyebrow = document.getElementById('heroEyebrow');
+      const heroTitle = document.getElementById('heroTitle');
+      const heroSub = document.getElementById('heroSub');
+
+      if (billing.trialExpired && !billing.subscriptionActive) {
+        lockedBanner.classList.add('show');
+        heroEyebrow.textContent = 'Trial ended';
+        heroTitle.innerHTML = 'Your free trial has <span class="accent">ended</span>.';
+        heroSub.textContent = "Subscribe to unlock full access again. Your progress and Gap Map are still saved.";
+      } else if (!billing.hasAccess) {
+        lockedBanner.classList.remove('show');
+        heroEyebrow.textContent = 'Step 2 of 3 · Billing';
+        heroTitle.innerHTML = 'Add your card to start your <span class="accent">free trial</span>.';
+        heroSub.textContent = "You won't be charged until your 30-day trial ends, and you can cancel anytime before then.";
+      } else {
+        lockedBanner.classList.remove('show');
+      }
     }
 
     /* Paystack checkout */
@@ -837,18 +847,18 @@
         onSuccess: function (transaction) {
           setLoading(button, false);
           // Demo only — in production confirm via Paystack webhook before granting access.
-          writeSubscription({
-            active: true,
+          GapMapAuth.activateSubscription(user, {
             planKey: planKey,
             reference: transaction.reference,
-            startedAt: Date.now()
           });
           applySubscriptionState();
+          applyGateMessaging();
           showBanner(
             document.getElementById('successBanner'),
             'successText',
-            'Welcome to ' + plan.label + ' — your full learning path is now unlocked.'
+            'Welcome to ' + plan.label + ' — your full learning path is now unlocked. Taking you onward…'
           );
+          setTimeout(function () { window.location.href = GapMapAuth.nextOnboardingStep(); }, 900);
         },
         onCancel: function () {
           setLoading(button, false);
@@ -869,18 +879,82 @@
       });
     }
 
-    function setLoading(button, isLoading) {
+    function setLoading(button, isLoading, busyLabel, idleLabel) {
       if (!button) return;
       button.classList.toggle('loading', isLoading);
       const label = button.querySelector('.btn-label');
       if (label) {
         label.textContent = isLoading
-          ? 'Opening secure checkout…'
-          : (button.id === 'annualCta' ? 'Subscribe annually' : 'Subscribe');
+          ? (busyLabel || 'Opening secure checkout…')
+          : (idleLabel || (button.id === 'annualCta' ? 'Subscribe annually' : 'Subscribe'));
       }
       button.disabled = isLoading;
     }
 
+    /* Billing gate: capture card details (a small R1 verification charge —
+       see the TRIAL_VERIFY_AMOUNT_KOBO comment above), then start the
+       30-day trial clock and move the Learner on to Setup. */
+    function startTrialCheckout(button) {
+      const user = getLoggedInUser();
+      if (!user) { window.location.href = 'signup.html'; return; }
+
+      if (typeof PaystackPop === 'undefined') {
+        showBanner(
+          document.getElementById('errorBanner'),
+          'errorText',
+          'Paystack could not load. Check your connection and try again.'
+        );
+        return;
+      }
+
+      setLoading(button, true, 'Verifying card…', 'Add card & start free trial');
+
+      const paystack = new PaystackPop();
+      paystack.newTransaction({
+        key: PAYSTACK_PUBLIC_KEY,
+        email: user.email || 'learner@example.com',
+        amount: TRIAL_VERIFY_AMOUNT_KOBO,
+        currency: 'ZAR',
+        ref: 'gapmap_trial_verify_' + Date.now(),
+        metadata: {
+          custom_fields: [
+            { display_name: 'GapMap', variable_name: 'gapmap_action', value: 'trial-card-verification' }
+          ]
+        },
+        onSuccess: function (transaction) {
+          setLoading(button, false, null, 'Add card & start free trial');
+          GapMapAuth.startTrial(user, { verificationReference: transaction.reference });
+          applySubscriptionState();
+          applyGateMessaging();
+          showBanner(
+            document.getElementById('successBanner'),
+            'successText',
+            'Card added — your 30-day free trial has started. Taking you onward…'
+          );
+          setTimeout(function () { window.location.href = GapMapAuth.nextOnboardingStep(); }, 900);
+        },
+        onCancel: function () {
+          setLoading(button, false, null, 'Add card & start free trial');
+          showBanner(
+            document.getElementById('errorBanner'),
+            'errorText',
+            'Checkout was closed before your card was verified. Your trial has not started.'
+          );
+        },
+        onError: function () {
+          setLoading(button, false, null, 'Add card & start free trial');
+          showBanner(
+            document.getElementById('errorBanner'),
+            'errorText',
+            "We couldn't reach Paystack. Please try again in a moment."
+          );
+        }
+      });
+    }
+
+    document.getElementById('freeCta').addEventListener('click', function () {
+      startTrialCheckout(this);
+    });
     document.getElementById('learnerCta').addEventListener('click', function () {
       openCheckout(this, this.dataset.planKey || 'monthly');
     });
@@ -890,14 +964,22 @@
 
     /* Manage Subscription (demo cancel) */
     document.getElementById('manageBtn').addEventListener('click', function () {
-      const sub = readSubscription();
-      if (!sub) return;
+      const user = getLoggedInUser();
+      const billing = readBillingStatus();
+      if (!user || !billing) return;
+
+      if (billing.trialActive && !billing.subscriptionActive) {
+        window.scrollTo({ top: document.getElementById('pricingGrid').offsetTop - 90, behavior: 'smooth' });
+        return;
+      }
+
       const goCancel = window.confirm(
         'Manage Subscription is a demo action.\n\nOK = simulate cancelling your plan\nCancel = keep your current plan'
       );
       if (goCancel) {
-        clearSubscription();
+        GapMapAuth.cancelSubscription(user);
         applySubscriptionState();
+        applyGateMessaging();
         showBanner(
           document.getElementById('successBanner'),
           'successText',
@@ -917,6 +999,7 @@
       }
 
       applySubscriptionState();
+      applyGateMessaging();
 
       // Resume checkout after login redirect
       let pendingPlan = null;

@@ -18,6 +18,152 @@
   var DEFAULT_EXPLANATION_LEVEL = 'Standard';
 
   // ------------------------------------------------------------------
+  // Billing / trial gate
+  //
+  // Signup flow: Signup -> Email OTP verify -> Billing (mandatory gate,
+  // card required) -> Setup -> Dashboard. The Billing step is a hard gate:
+  // requireAuth() below will not let a Learner reach Setup or Dashboard
+  // (or any other protected page) until it has been passed.
+  //
+  // The 30-day trial clock starts the moment billing details are
+  // successfully captured (startTrial), NOT when the Learner merely lands
+  // on the billing page. Tracked client-side in localStorage per the
+  // product decision not to add a server/database dependency for this.
+  //
+  // NOTE: this is a client-side clock. It is trivially reset by clearing
+  // browser storage or edited via devtools, and it is not shared across
+  // devices. That's an accepted trade-off for now — if trial enforcement
+  // ever needs to be tamper-proof or cross-device, the source of truth
+  // should move server-side (e.g. a Paystack subscription/authorization
+  // record looked up by uid), which requires backend + database work
+  // that is explicitly out of scope here.
+  // ------------------------------------------------------------------
+  var BILLING_KEY_PREFIX = 'gapmap_billing:';
+  var TRIAL_LENGTH_DAYS = 30;
+  var MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+  function billingScope(user) {
+    if (!user) return null;
+    if (user.uid || user.id) return user.uid || user.id;
+    if (user.email) return 'email:' + String(user.email).toLowerCase();
+    return null;
+  }
+
+  function billingKey(user) {
+    var scope = billingScope(user);
+    return BILLING_KEY_PREFIX + (scope || 'guest');
+  }
+
+  function readBillingRecord(user) {
+    var scope = billingScope(user);
+    if (!scope) return null;
+    try {
+      var raw = safeGet(billingKey(user));
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function writeBillingRecord(user, record) {
+    var scope = billingScope(user);
+    if (!scope) return null;
+    safeSet(billingKey(user), JSON.stringify(record));
+    return record;
+  }
+
+  /**
+   * The full billing/trial picture for a Learner:
+   * - billingComplete: card/billing details have been captured at least once
+   * - subscriptionActive: a real paid subscription is currently active
+   * - trialActive / trialExpired: where the 30-day trial clock stands
+   * - hasAccess: true if the gate should let the Learner through
+   * - daysRemaining: whole days left in the trial (0 once expired)
+   */
+  function getBillingStatus(userArg) {
+    var user = userArg || getUser();
+    var record = readBillingRecord(user) || {};
+    var billingComplete = !!record.billingComplete;
+    var subscription = record.subscription || null;
+    var subscriptionActive = !!(subscription && subscription.active);
+    var trialStart = record.trialStart || null;
+    var trialLengthDays = record.trialLengthDays || TRIAL_LENGTH_DAYS;
+    var msLimit = trialLengthDays * MS_PER_DAY;
+    var msElapsed = trialStart ? (Date.now() - trialStart) : 0;
+    var trialActive = !!trialStart && msElapsed < msLimit;
+    var trialExpired = !!trialStart && msElapsed >= msLimit;
+    var daysRemaining = trialStart
+      ? Math.max(0, Math.ceil((msLimit - msElapsed) / MS_PER_DAY))
+      : 0;
+
+    return {
+      billingComplete: billingComplete,
+      subscriptionActive: subscriptionActive,
+      planKey: subscription ? subscription.planKey || null : null,
+      trialStart: trialStart,
+      trialLengthDays: trialLengthDays,
+      trialActive: trialActive,
+      trialExpired: trialExpired,
+      daysRemaining: daysRemaining,
+      hasAccess: subscriptionActive || trialActive,
+      record: record,
+    };
+  }
+
+  /**
+   * Call this once billing details have been successfully submitted on the
+   * Billing page. Starts the 30-day trial clock (idempotent — a second call
+   * never pushes the start date forward). Does NOT navigate; the caller
+   * decides where to send the Learner next (see nextOnboardingStep).
+   */
+  function startTrial(userArg, extra) {
+    var user = userArg || getUser();
+    if (!billingScope(user)) return null;
+    var existing = readBillingRecord(user) || {};
+    var record = {};
+    for (var k in existing) record[k] = existing[k];
+    record.billingComplete = true;
+    record.trialStart = existing.trialStart || Date.now();
+    record.trialLengthDays = existing.trialLengthDays || TRIAL_LENGTH_DAYS;
+    if (extra) for (var k2 in extra) record[k2] = extra[k2];
+    writeBillingRecord(user, record);
+    return getBillingStatus(user);
+  }
+
+  /**
+   * Call this once a paid subscription is actually activated — either
+   * skipping the trial entirely (pay now) or converting after the trial.
+   */
+  function activateSubscription(userArg, sub) {
+    var user = userArg || getUser();
+    if (!billingScope(user)) return null;
+    var existing = readBillingRecord(user) || {};
+    var record = {};
+    for (var k in existing) record[k] = existing[k];
+    record.billingComplete = true;
+    var subscription = { active: true, startedAt: Date.now() };
+    if (sub) for (var k2 in sub) subscription[k2] = sub[k2];
+    record.subscription = subscription;
+    writeBillingRecord(user, record);
+    return getBillingStatus(user);
+  }
+
+  function cancelSubscription(userArg) {
+    var user = userArg || getUser();
+    if (!billingScope(user)) return null;
+    var existing = readBillingRecord(user) || {};
+    var record = {};
+    for (var k in existing) record[k] = existing[k];
+    var subscription = existing.subscription ? {} : {};
+    if (existing.subscription) for (var k2 in existing.subscription) subscription[k2] = existing.subscription[k2];
+    subscription.active = false;
+    subscription.cancelledAt = Date.now();
+    record.subscription = subscription;
+    writeBillingRecord(user, record);
+    return getBillingStatus(user);
+  }
+
+  // ------------------------------------------------------------------
   // Safe storage layer – falls back to in-memory when localStorage is
   // blocked (sandboxed iframe without allow-same-origin, some private
   // modes, etc.)
@@ -344,12 +490,27 @@
     options = options || {};
 
     var requireSetupComplete = options.requireSetupComplete !== false;
+    // Mandatory by default: no protected page is reachable without having
+    // passed Billing (either an active trial or an active subscription).
+    var requireBilling = options.requireBilling !== false;
     var user = getUser();
 
     // No logged-in user.
     if (!user) {
       goToLogin(DEFAULT_MESSAGE);
       return null;
+    }
+
+    // Billing gate: sits between Email OTP verify and Setup. A Learner who
+    // has never entered billing details, or whose 30-day trial has expired
+    // with no active subscription, is sent to the Billing page instead.
+    if (requireBilling) {
+      var billing = getBillingStatus(user);
+      if (!billing.hasAccess) {
+        try { reveal(); } catch (e) {}
+        window.location.replace('subscription.html');
+        return null;
+      }
     }
 
     // Protected pages require setup to be completed.
@@ -368,6 +529,23 @@
     // Access is allowed.
     reveal();
     return user;
+  }
+
+  /**
+   * Single source of truth for "where should this Learner go next" across
+   * signup, login, and the Billing page itself:
+   *   not logged in       -> login.html
+   *   billing gate not passed -> subscription.html
+   *   setup not complete  -> setup.html
+   *   otherwise           -> dashboard.html
+   */
+  function nextOnboardingStep(userArg) {
+    var user = userArg || getUser();
+    if (!user) return 'login.html';
+    var billing = getBillingStatus(user);
+    if (!billing.hasAccess) return 'subscription.html';
+    if (!user.setupComplete) return 'setup.html';
+    return 'dashboard.html';
   }
 
   function logout(redirectTo) {
@@ -443,6 +621,13 @@
     clearLegacyPersistentSession: clearLegacyPersistentSession,
     consumeRedirectMessage: consumeRedirectMessage,
     updateNav: updateNav,
+    // Billing / 30-day trial gate (see block above for the full contract)
+    TRIAL_LENGTH_DAYS: TRIAL_LENGTH_DAYS,
+    getBillingStatus: getBillingStatus,
+    startTrial: startTrial,
+    activateSubscription: activateSubscription,
+    cancelSubscription: cancelSubscription,
+    nextOnboardingStep: nextOnboardingStep,
     // Learner preferences: the switchers (nav) read + mutate these
     LANGUAGES: ['English', 'Afrikaans'],
     EXPLANATION_LEVELS: ['Simple', 'Standard', 'Detailed'],
