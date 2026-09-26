@@ -37,11 +37,22 @@
     .btn-primary{background:#3B5BDB;color:#fff}.btn-primary:hover{background:#2F4AC0}.btn-primary:disabled{background:#9CA3AF;cursor:not-allowed}
     .btn-ghost{background:transparent;color:#5A5A72;padding:12px 16px}.btn-ghost:hover{color:#1A1A2E}
     .progress-header{margin-bottom:28px}
-    .progress-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+    .progress-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:12px;flex-wrap:wrap}
     .progress-label{font-size:.9rem;font-weight:600;color:#5A5A72}
     .progress-count{font-size:.9rem;font-weight:600;color:#3B5BDB}
+    .progress-timer{display:inline-flex;align-items:center;gap:6px;font-size:.9rem;font-weight:700;color:#3B5BDB;background:#EEF2FF;border:1.5px solid #C7D2FE;padding:4px 12px;border-radius:20px;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+    .progress-timer.warn{color:#D97706;background:#FFFBEB;border-color:#FCD34D}
+    .progress-timer.critical{color:#DC2626;background:#FEF2F2;border-color:#FECACA;animation:timerPulse 1s ease-in-out infinite}
+    @keyframes timerPulse{0%,100%{opacity:1}50%{opacity:.7}}
     .progress-track{height:8px;background:#E5E7EB;border-radius:4px;overflow:hidden}
     .progress-fill{height:100%;background:#3B5BDB;border-radius:4px;transition:width .35s ease;width:0%}
+    body.quiz-locked .nav a.logo,
+    body.quiz-locked .nav a.back-link,
+    body.quiz-locked #subjectSwitcherMount,
+    body.quiz-locked #languageSwitcherMount{pointer-events:none;opacity:.45}
+    body.quiz-locked .nav .avatar{pointer-events:none;opacity:.45}
+    .exit-block-banner{display:none;background:#FEF3C7;color:#92400E;border-bottom:1.5px solid #FCD34D;text-align:center;padding:8px 16px;font-size:.85rem;font-weight:600}
+    body.quiz-locked .exit-block-banner{display:block}
     .question-card{background:#fff;border:1.5px solid #E5E7EB;border-radius:16px;padding:32px 28px;box-shadow:0 4px 24px -8px rgba(0,0,0,.06);margin-bottom:24px}
     .concept-tag{display:inline-block;background:#EEF2FF;color:#3B5BDB;font-size:.78rem;font-weight:600;padding:4px 12px;border-radius:20px;margin-bottom:14px}
     .question-type-tag{display:inline-block;font-size:.72rem;font-weight:600;padding:3px 10px;border-radius:6px;margin-left:8px;vertical-align:middle}
@@ -84,13 +95,14 @@
   </style>
 </head>
 <body>
+  <div class="exit-block-banner" id="exitBlockBanner">Diagnostic in progress — finish all questions before leaving. Navigation is locked until you complete it.</div>
   <nav class="nav">
-    <a href="index.html" class="logo"><div class="logo-icon"></div>GapMap</a>
+    <a href="index.html" class="logo" id="navLogo"><div class="logo-icon"></div>GapMap</a>
     <div class="nav-context" id="navContext"></div>
     <div class="nav-right">
       <div id="subjectSwitcherMount"></div>
       <div id="languageSwitcherMount"></div><span id="diagnosticLanguageNote" style="display:none;font-size:.7rem;color:#9CA3AF;"></span>
-      <a href="dashboard.html" class="back-link" style="font-size:0.9rem;color:#5A5A72;text-decoration:none;font-weight:500;">Dashboard</a>
+      <a href="dashboard.html" class="back-link" id="navDashboard" style="font-size:0.9rem;color:#5A5A72;text-decoration:none;font-weight:500;">Dashboard</a>
       <div class="avatar" id="avatar">U</div>
     </div>
   </nav>
@@ -103,7 +115,7 @@
         <div class="load-error" id="loadError"></div>
         <div class="intro-meta">
           <div class="meta-pill"><strong id="introQuestions">20</strong><span>Questions</span></div>
-          <div class="meta-pill"><strong>12–15 min</strong><span>Estimated time</span></div>
+          <div class="meta-pill"><strong id="introTime">15 min</strong><span>Timed session</span></div>
           <div class="meta-pill"><strong id="introSubject">Maths</strong><span id="introGradeLabel">Subject</span></div>
         </div>
         <p class="intro-note">You’ll see a mix of multiple-choice and short written answers (numbers and simple equations). Answer honestly — this is not a test, it’s how GapMap learns how to help you.</p>
@@ -114,6 +126,7 @@
       <div class="progress-header">
         <div class="progress-top">
           <span class="progress-label">Question <span id="currentNum">1</span> of <span id="progressTotal">20</span></span>
+          <span class="progress-timer" id="quizTimer" aria-live="polite" title="Time remaining">15:00</span>
           <span class="progress-count" id="progressPercent">5%</span>
         </div>
         <div class="progress-track"><div class="progress-fill" id="progressBar"></div></div>
@@ -288,6 +301,14 @@
       }
 
       let assessment = null, rawQuestions = [], questions = [], current = 0, answers = [], startedAt = null;
+      // Timed session: 45s per question, min 10 min, max 20 min (matches the intro estimate).
+      const SECONDS_PER_QUESTION = 45;
+      const TIMER_MIN_SEC = 10 * 60;
+      const TIMER_MAX_SEC = 20 * 60;
+      let quizActive = false;
+      let timerRemainingSec = 0;
+      let timerIntervalId = null;
+      let timerExpired = false;
       const startBtn = document.getElementById('startBtn');
       const nextBtn = document.getElementById('nextBtn');
       const prevBtn = document.getElementById('prevBtn');
@@ -505,6 +526,11 @@
 
           document.getElementById('introQuestions').textContent = questions.length;
           document.getElementById('progressTotal').textContent = questions.length;
+          const introTimeEl = document.getElementById('introTime');
+          if (introTimeEl) {
+            const secs = Math.min(TIMER_MAX_SEC, Math.max(TIMER_MIN_SEC, questions.length * SECONDS_PER_QUESTION));
+            introTimeEl.textContent = Math.round(secs / 60) + ' min';
+          }
 
           const subjectForCopy = displaySubject || assessment.subject || 'this subject';
           document.getElementById('introPurpose').textContent =
@@ -531,7 +557,12 @@
             answers = new Array(questions.length).fill(null);
             document.getElementById('introQuestions').textContent = questions.length;
             document.getElementById('progressTotal').textContent = questions.length;
-            
+            const introTimeEl2 = document.getElementById('introTime');
+            if (introTimeEl2) {
+              const secs = Math.min(TIMER_MAX_SEC, Math.max(TIMER_MIN_SEC, questions.length * SECONDS_PER_QUESTION));
+              introTimeEl2.textContent = Math.round(secs / 60) + ' min';
+            }
+
             startBtn.disabled = false;
             startBtn.textContent = 'Start Diagnostic';
             return;
@@ -600,10 +631,116 @@
       }
       initDiagnostic();
 
+      function formatTimer(totalSec) {
+        const s = Math.max(0, Math.floor(totalSec));
+        const m = Math.floor(s / 60);
+        const r = s % 60;
+        return String(m).padStart(2, '0') + ':' + String(r).padStart(2, '0');
+      }
+
+      function updateTimerDisplay() {
+        const el = document.getElementById('quizTimer');
+        if (!el) return;
+        el.textContent = formatTimer(timerRemainingSec);
+        el.classList.remove('warn', 'critical');
+        if (timerRemainingSec <= 60) el.classList.add('critical');
+        else if (timerRemainingSec <= 3 * 60) el.classList.add('warn');
+      }
+
+      function computeTimerSeconds() {
+        const n = Math.max(1, questions.length || 20);
+        return Math.min(TIMER_MAX_SEC, Math.max(TIMER_MIN_SEC, n * SECONDS_PER_QUESTION));
+      }
+
+      function lockQuizExit() {
+        quizActive = true;
+        document.body.classList.add('quiz-locked');
+        // Discourage tab close / refresh
+        window.addEventListener('beforeunload', onBeforeUnload);
+        // Discourage browser Back during the session
+        try {
+          history.pushState({ diagnosticLock: true }, '', location.href);
+          window.addEventListener('popstate', onPopState);
+        } catch (e) { /* ignore */ }
+        // Block in-page navigation clicks while locked
+        document.addEventListener('click', onLockedNavClick, true);
+      }
+
+      function unlockQuizExit() {
+        quizActive = false;
+        document.body.classList.remove('quiz-locked');
+        window.removeEventListener('beforeunload', onBeforeUnload);
+        window.removeEventListener('popstate', onPopState);
+        document.removeEventListener('click', onLockedNavClick, true);
+      }
+
+      function onBeforeUnload(event) {
+        if (!quizActive) return;
+        event.preventDefault();
+        event.returnValue = '';
+        return '';
+      }
+
+      function onPopState() {
+        if (!quizActive) return;
+        try { history.pushState({ diagnosticLock: true }, '', location.href); } catch (e) {}
+        alert('Please finish the Diagnostic before leaving. Your progress is timed and cannot be paused.');
+      }
+
+      function onLockedNavClick(event) {
+        if (!quizActive) return;
+        const link = event.target.closest && event.target.closest('a[href]');
+        if (!link) return;
+        // Allow only non-navigation anchors (e.g. #) — block real page exits
+        const href = link.getAttribute('href') || '';
+        if (href.startsWith('#') || href === '' || href === location.pathname + location.search) return;
+        event.preventDefault();
+        event.stopPropagation();
+        alert('Please finish the Diagnostic before leaving. Navigation is locked until you complete it.');
+      }
+
+      function stopTimer() {
+        if (timerIntervalId != null) {
+          clearInterval(timerIntervalId);
+          timerIntervalId = null;
+        }
+      }
+
+      function startTimer() {
+        stopTimer();
+        timerExpired = false;
+        timerRemainingSec = computeTimerSeconds();
+        updateTimerDisplay();
+        const introTime = document.getElementById('introTime');
+        if (introTime) introTime.textContent = Math.round(timerRemainingSec / 60) + ' min';
+        timerIntervalId = setInterval(async () => {
+          if (!quizActive) return;
+          timerRemainingSec -= 1;
+          updateTimerDisplay();
+          if (timerRemainingSec <= 0) {
+            timerExpired = true;
+            stopTimer();
+            // Auto-finish with whatever answers are present
+            const next = document.getElementById('nextBtn');
+            if (next) next.disabled = true;
+            try {
+              const results = calculateResults();
+              results.timedOut = true;
+              try { await saveResults(results); } catch (e) { console.error(e); }
+              showResults(results);
+            } catch (e) {
+              console.error('[Diagnostic] auto-submit on timeout failed:', e);
+            }
+          }
+        }, 1000);
+      }
+
       startBtn.addEventListener('click', () => {
         startedAt = new Date().toISOString();
         introScreen.classList.remove('active');
         quizScreen.classList.add('active');
+        lockQuizExit();
+        startTimer();
         renderQuestion();
       });
 
@@ -873,9 +1010,17 @@
       }
 
       function showResults(results) {
+        stopTimer();
+        unlockQuizExit();
         quizScreen.classList.remove('active');
         resultsScreen.classList.add('active');
         document.getElementById('finalScore').textContent = results.overall + '%';
+        if (results.timedOut) {
+          const lead = document.querySelector('#resultsScreen .results-lead');
+          if (lead) {
+            lead.textContent = 'Time ran out — GapMap scored the answers you submitted. Incomplete questions count as unanswered.';
+          }
+        }
         const breakdown = document.getElementById('miniBreakdown');
         breakdown.innerHTML = '';
         Object.entries(results.concepts).forEach(([name, data]) => {
