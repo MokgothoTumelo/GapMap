@@ -117,6 +117,10 @@
     .audio-item p{font-size:.85rem;color:#5A5A72;margin:0}
     .audio-item audio{width:100%;margin-top:4px}
     .audio-note{font-size:.82rem;color:#5A5A72;background:#F8FAFC;border:1px solid #E5E7EB;border-radius:10px;padding:12px 14px;line-height:1.5;margin-bottom:12px}
+    .content-audio-player{margin-top:0}
+    .content-audio-player .audio-empty{font-size:.9rem;color:#5A5A72;padding:8px 0;margin:0}
+    .content-audio-player audio{width:100%;margin-top:8px}
+    .content-audio-player .audio-status{font-size:.82rem;color:#5A5A72;margin-top:6px}
     .notes-block{background:#F8FAFC;border:1.5px solid #E5E7EB;border-radius:12px;padding:16px 18px;font-size:.92rem;line-height:1.65;color:#1A1A2E}
     .notes-block h4{font-size:.95rem;margin:0 0 8px;color:#3B5BDB}
     .notes-block ul{margin:8px 0 0 18px;padding:0}
@@ -216,6 +220,15 @@
         <div class="btn-row">
           <button class="btn btn-secondary" id="anotherExampleBtn">Show another example</button>
           <button class="btn btn-primary" id="startPracticeBtn">Start practice →</button>
+        </div>
+      </div>
+
+      <div class="card content-audio-player" id="contentAudioPlayerCard">
+        <h2>Audio player</h2>
+        <p style="color:#5A5A72;font-size:0.95rem;margin-bottom:12px;">Listen to concept audio without leaving this page.</p>
+        <div id="contentAudioPlayerBody">
+          <p class="audio-empty" id="contentAudioEmpty">No audio available for this concept yet.</p>
+          <div class="audio-list" id="contentAudioList" style="display:none;"></div>
         </div>
       </div>
 
@@ -1542,6 +1555,111 @@
       return null;
     }
 
+    function attachAudioSource(audioEl, statusEl, video) {
+      if (!audioEl || !statusEl || !video) return;
+      const ytId = video.youtubeId;
+      (async function resolveAndPlay() {
+        if (!ytId) return;
+
+        // 1) Explicit hosted audioUrl wins
+        if (video.audioUrl && String(video.audioUrl).trim()) {
+          audioEl.src = String(video.audioUrl).trim();
+          statusEl.textContent = 'Ready — press play to listen.';
+          statusEl.style.color = '#065F46';
+          return;
+        }
+
+        // 2) Own extractor API (caches on server when yt-dlp is available)
+        const apiUrl = 'api/audio?v=' + encodeURIComponent(ytId);
+        try {
+          const head = await fetch(apiUrl, { method: 'GET' });
+          if (head.ok && (head.headers.get('content-type') || '').startsWith('audio')) {
+            audioEl.src = apiUrl;
+            statusEl.textContent = 'Ready — press play to listen.';
+            statusEl.style.color = '#065F46';
+            return;
+          }
+        } catch (_) { /* fall through */ }
+
+        // 3) Piped instances — public audio stream URL, plays in <audio>, no YouTube page
+        const pipedHosts = [
+          'https://pipedapi.kavin.rocks',
+          'https://pipedapi.adminforge.de',
+          'https://pipedapi.nosebs.ru'
+        ];
+        for (const host of pipedHosts) {
+          try {
+            statusEl.textContent = 'Extracting audio…';
+            statusEl.style.color = '#3B5BDB';
+            const res = await fetch(host + '/streams/' + encodeURIComponent(ytId));
+            if (!res.ok) continue;
+            const data = await res.json();
+            const streams = Array.isArray(data.audioStreams) ? data.audioStreams : [];
+            streams.sort(function (a, b) {
+              const score = function (s) {
+                const mime = String(s.mimeType || s.format || '');
+                if (mime.indexOf('mp4') !== -1 || mime.indexOf('m4a') !== -1) return 2;
+                if (mime.indexOf('webm') !== -1) return 1;
+                return 0;
+              };
+              return score(b) - score(a);
+            });
+            const best = streams.find(function (s) { return s && s.url; });
+            if (best && best.url) {
+              audioEl.src = best.url;
+              statusEl.textContent = 'Ready — press play to listen.';
+              statusEl.style.color = '#065F46';
+              audioEl.addEventListener('error', function () {
+                statusEl.textContent = 'Stream failed. Try again to refresh.';
+                statusEl.style.color = '#991B1B';
+              }, { once: true });
+              return;
+            }
+          } catch (_) { /* try next host */ }
+        }
+
+        statusEl.textContent = 'Audio unavailable right now. Use the Videos tab and follow the transcript notes.';
+        statusEl.style.color = '#991B1B';
+      })();
+    }
+
+    function renderContentAudioPlayer(videos) {
+      const emptyEl = document.getElementById('contentAudioEmpty');
+      const listEl = document.getElementById('contentAudioList');
+      const card = document.getElementById('contentAudioPlayerCard');
+      if (!emptyEl || !listEl || !card) return;
+
+      // Always visible under content, even when empty
+      card.style.display = '';
+      listEl.innerHTML = '';
+
+      if (!videos || !videos.length) {
+        emptyEl.style.display = '';
+        listEl.style.display = 'none';
+        emptyEl.textContent = 'No audio available for this concept yet.';
+        return;
+      }
+
+      emptyEl.style.display = 'none';
+      listEl.style.display = '';
+
+      videos.forEach(function (video) {
+        const audioItem = document.createElement('div');
+        audioItem.className = 'audio-item';
+        const title = video.title || 'Concept video';
+        const channel = video.channel || 'YouTube';
+        audioItem.innerHTML =
+          '<strong>' + title.replace(/</g, '&lt;') + '</strong>' +
+          '<p>' + channel.replace(/</g, '&lt;') + ' · in-page audio</p>' +
+          '<div class="audio-status" style="font-size:.82rem;color:#5A5A72;">Preparing audio…</div>' +
+          '<audio controls preload="none"></audio>';
+        const audioEl = audioItem.querySelector('audio');
+        const statusEl = audioItem.querySelector('.audio-status');
+        listEl.appendChild(audioItem);
+        attachAudioSource(audioEl, statusEl, video);
+      });
+    }
+
     function renderConceptStudyMaterials(concept) {
       const card = document.getElementById('studyMaterialsCard');
       const videoList = document.getElementById('videoList');
@@ -1558,6 +1676,9 @@
       audioList.innerHTML = '';
       notesSelect.innerHTML = '';
       notesBody.innerHTML = '<p style="color:#5A5A72;margin:0;">Select a video above to view its transcript notes.</p>';
+
+      // Always render the content-page audio player (shows empty state when no audio)
+      renderContentAudioPlayer(videos);
 
       if (!videos.length) {
         card.style.display = 'none';
@@ -1589,7 +1710,6 @@
         audioItem.className = 'audio-item';
         const title = video.title || 'Concept video';
         const channel = video.channel || 'YouTube';
-        const ytId = video.youtubeId;
         audioItem.innerHTML =
           '<strong>' + title.replace(/</g, '&lt;') + '</strong>' +
           '<p>' + channel.replace(/</g, '&lt;') + ' · in-page audio</p>' +
@@ -1598,71 +1718,7 @@
         const audioEl = audioItem.querySelector('audio');
         const statusEl = audioItem.querySelector('.audio-status');
         audioList.appendChild(audioItem);
-
-        (async function resolveAndPlay() {
-          if (!audioEl || !statusEl || !ytId) return;
-
-          // 1) Explicit hosted audioUrl wins
-          if (video.audioUrl && String(video.audioUrl).trim()) {
-            audioEl.src = String(video.audioUrl).trim();
-            statusEl.textContent = 'Ready — press play to listen.';
-            statusEl.style.color = '#065F46';
-            return;
-          }
-
-          // 2) Own extractor API (caches on server when yt-dlp is available)
-          const apiUrl = 'api/audio?v=' + encodeURIComponent(ytId);
-          try {
-            const head = await fetch(apiUrl, { method: 'GET' });
-            if (head.ok && (head.headers.get('content-type') || '').startsWith('audio')) {
-              audioEl.src = apiUrl;
-              statusEl.textContent = 'Ready — press play to listen.';
-              statusEl.style.color = '#065F46';
-              return;
-            }
-          } catch (_) { /* fall through */ }
-
-          // 3) Piped instances — public audio stream URL, plays in <audio>, no YouTube page
-          const pipedHosts = [
-            'https://pipedapi.kavin.rocks',
-            'https://pipedapi.adminforge.de',
-            'https://pipedapi.nosebs.ru'
-          ];
-          for (const host of pipedHosts) {
-            try {
-              statusEl.textContent = 'Extracting audio…';
-              statusEl.style.color = '#3B5BDB';
-              const res = await fetch(host + '/streams/' + encodeURIComponent(ytId));
-              if (!res.ok) continue;
-              const data = await res.json();
-              const streams = Array.isArray(data.audioStreams) ? data.audioStreams : [];
-              // Prefer m4a / mp4, then any audio
-              streams.sort(function (a, b) {
-                const score = function (s) {
-                  const mime = String(s.mimeType || s.format || '');
-                  if (mime.indexOf('mp4') !== -1 || mime.indexOf('m4a') !== -1) return 2;
-                  if (mime.indexOf('webm') !== -1) return 1;
-                  return 0;
-                };
-                return score(b) - score(a);
-              });
-              const best = streams.find(function (s) { return s && s.url; });
-              if (best && best.url) {
-                audioEl.src = best.url;
-                statusEl.textContent = 'Ready — press play to listen.';
-                statusEl.style.color = '#065F46';
-                audioEl.addEventListener('error', function onErr() {
-                  statusEl.textContent = 'Stream expired — tap play again to refresh.';
-                  statusEl.style.color = '#991B1B';
-                }, { once: true });
-                return;
-              }
-            } catch (_) { /* try next host */ }
-          }
-
-          statusEl.textContent = 'Audio unavailable right now. Use the Videos tab and follow the transcript notes.';
-          statusEl.style.color = '#991B1B';
-        })();
+        attachAudioSource(audioEl, statusEl, video);
 
         // Notes dropdown option
         const opt = document.createElement('option');
