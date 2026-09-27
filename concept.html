@@ -174,7 +174,7 @@
         </div>
         <div id="audioPanel" class="study-panel" role="tabpanel">
           <div class="audio-note">
-            Audio versions let you study without watching. Where a direct audio file is not hosted, open the linked YouTube video and use your device’s screen-off / audio-only mode (or Picture-in-Picture) while following the transcript notes.
+            Audio is extracted from the concept video and plays here on GapMap — you never leave this page. The first load extracts the stream (a few seconds); then press play.
           </div>
           <div class="audio-list" id="audioList"></div>
         </div>
@@ -1549,18 +1549,85 @@
           '</div>';
         videoList.appendChild(item);
 
-        // Audio row
+        // Audio row — extract stream and play in-page (never navigate to YouTube)
         const audioItem = document.createElement('div');
         audioItem.className = 'audio-item';
-        const hasAudioFile = video.audioUrl && String(video.audioUrl).trim();
+        const title = video.title || 'Concept video';
+        const channel = video.channel || 'YouTube';
+        const ytId = video.youtubeId;
         audioItem.innerHTML =
-          '<strong>' + (video.title || 'Concept video') + '</strong>' +
-          '<p>' + (video.channel || 'YouTube') + (hasAudioFile ? ' · dedicated audio file' : ' · listen via YouTube audio / screen-off') + '</p>' +
-          (hasAudioFile
-            ? '<audio controls preload="none" src="' + String(video.audioUrl).replace(/"/g, '&quot;') + '"></audio>'
-            : '<a class="btn btn-secondary" style="align-self:flex-start;margin-top:4px;" href="https://www.youtube.com/watch?v=' +
-              encodeURIComponent(video.youtubeId) + '" target="_blank" rel="noopener">Open video for audio-only listening →</a>');
+          '<strong>' + title.replace(/</g, '&lt;') + '</strong>' +
+          '<p>' + channel.replace(/</g, '&lt;') + ' · in-page audio</p>' +
+          '<div class="audio-status" style="font-size:.82rem;color:#5A5A72;">Preparing audio…</div>' +
+          '<audio controls preload="none"></audio>';
+        const audioEl = audioItem.querySelector('audio');
+        const statusEl = audioItem.querySelector('.audio-status');
         audioList.appendChild(audioItem);
+
+        (async function resolveAndPlay() {
+          if (!audioEl || !statusEl || !ytId) return;
+
+          // 1) Explicit hosted audioUrl wins
+          if (video.audioUrl && String(video.audioUrl).trim()) {
+            audioEl.src = String(video.audioUrl).trim();
+            statusEl.textContent = 'Ready — press play to listen.';
+            statusEl.style.color = '#065F46';
+            return;
+          }
+
+          // 2) Own extractor API (caches on server when yt-dlp is available)
+          const apiUrl = 'api/audio?v=' + encodeURIComponent(ytId);
+          try {
+            const head = await fetch(apiUrl, { method: 'GET' });
+            if (head.ok && (head.headers.get('content-type') || '').startsWith('audio')) {
+              audioEl.src = apiUrl;
+              statusEl.textContent = 'Ready — press play to listen.';
+              statusEl.style.color = '#065F46';
+              return;
+            }
+          } catch (_) { /* fall through */ }
+
+          // 3) Piped instances — public audio stream URL, plays in <audio>, no YouTube page
+          const pipedHosts = [
+            'https://pipedapi.kavin.rocks',
+            'https://pipedapi.adminforge.de',
+            'https://pipedapi.nosebs.ru'
+          ];
+          for (const host of pipedHosts) {
+            try {
+              statusEl.textContent = 'Extracting audio…';
+              statusEl.style.color = '#3B5BDB';
+              const res = await fetch(host + '/streams/' + encodeURIComponent(ytId));
+              if (!res.ok) continue;
+              const data = await res.json();
+              const streams = Array.isArray(data.audioStreams) ? data.audioStreams : [];
+              // Prefer m4a / mp4, then any audio
+              streams.sort(function (a, b) {
+                const score = function (s) {
+                  const mime = String(s.mimeType || s.format || '');
+                  if (mime.indexOf('mp4') !== -1 || mime.indexOf('m4a') !== -1) return 2;
+                  if (mime.indexOf('webm') !== -1) return 1;
+                  return 0;
+                };
+                return score(b) - score(a);
+              });
+              const best = streams.find(function (s) { return s && s.url; });
+              if (best && best.url) {
+                audioEl.src = best.url;
+                statusEl.textContent = 'Ready — press play to listen.';
+                statusEl.style.color = '#065F46';
+                audioEl.addEventListener('error', function onErr() {
+                  statusEl.textContent = 'Stream expired — tap play again to refresh.';
+                  statusEl.style.color = '#991B1B';
+                }, { once: true });
+                return;
+              }
+            } catch (_) { /* try next host */ }
+          }
+
+          statusEl.textContent = 'Audio unavailable right now. Use the Videos tab and follow the transcript notes.';
+          statusEl.style.color = '#991B1B';
+        })();
 
         // Notes dropdown option
         const opt = document.createElement('option');
