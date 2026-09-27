@@ -80,6 +80,22 @@
     .results-lead{color:#5A5A72;max-width:400px;margin:0 auto 24px;line-height:1.6}
     .results-next{background:#F8FAFC;border:1.5px solid #E5E7EB;border-radius:12px;padding:14px 18px;margin-bottom:24px;text-align:left;font-size:.95rem;color:#5A5A72;line-height:1.55}
     .results-next strong{color:#1A1A2E}
+    .delta-strip{margin:18px auto 22px;max-width:420px;background:linear-gradient(135deg,#EEF2FF,#F8FAFC);border:1.5px solid #C7D2FE;border-radius:14px;padding:16px 18px;text-align:left}
+    .delta-strip-label{font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#3B5BDB;margin-bottom:10px}
+    .delta-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .delta-side{flex:1;min-width:110px}
+    .delta-side .lbl{font-size:.78rem;color:#5A5A72;font-weight:600;margin-bottom:2px}
+    .delta-side .val{font-size:1.45rem;font-weight:800;color:#1A1A2E}
+    .delta-side .status{display:inline-block;margin-top:4px;font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:.04em}
+    .delta-side .status.weak{background:#FEF2F2;color:#991B1B}
+    .delta-side .status.improve{background:#FFF7ED;color:#9A3412}
+    .delta-side .status.strong{background:#ECFDF3;color:#065F46}
+    .delta-arrow{font-size:1.4rem;font-weight:800;color:#3B5BDB;flex-shrink:0}
+    .delta-change{margin-top:12px;font-size:.9rem;font-weight:600;color:#1A1A2E}
+    .delta-change.up{color:#065F46}
+    .delta-change.down{color:#991B1B}
+    .delta-change.same{color:#5A5A72}
+    .delta-note{margin-top:8px;font-size:.8rem;color:#5A5A72;line-height:1.45}
 
     .video-embed{position:relative;width:100%;padding-top:56.25%;border-radius:12px;overflow:hidden;background:#0F172A}
     .video-embed iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
@@ -256,11 +272,30 @@
         <div class="concept-eyebrow">Practice complete</div>
         <h1 id="resultsTitle" style="font-size:1.4rem;font-weight:800;margin:10px 0">Nice work</h1>
         <p class="results-lead" id="resultsLead">Practice is complete. Nothing from this Practice was saved as a Response or Attempt.</p>
+        <div class="delta-strip" id="deltaStrip" style="display:none;" aria-live="polite">
+          <div class="delta-strip-label">Mastery movement · this Concept</div>
+          <div class="delta-row">
+            <div class="delta-side" id="deltaBefore">
+              <div class="lbl">Gap Map (before)</div>
+              <div class="val" id="deltaBeforePct">—</div>
+              <span class="status" id="deltaBeforeStatus"></span>
+            </div>
+            <div class="delta-arrow" aria-hidden="true">→</div>
+            <div class="delta-side" id="deltaAfter">
+              <div class="lbl">This Practice</div>
+              <div class="val" id="deltaAfterPct">—</div>
+              <span class="status" id="deltaAfterStatus"></span>
+            </div>
+          </div>
+          <div class="delta-change" id="deltaChange"></div>
+          <div class="delta-note" id="deltaNote"></div>
+        </div>
         <div class="results-next" id="resultsNext">
           <strong>What’s next:</strong> Review the Concept again or return to your Gap Map when you are ready.
         </div>
         <div class="btn-row" style="justify-content:center">
           <a href="dashboard.html" class="btn btn-primary">Back to GapMap</a>
+          <a href="diagnostic.html" class="btn btn-secondary" id="retakeDiagnosticBtn">Retake Diagnostic</a>
           <button class="btn btn-secondary" id="practiceAgainBtn">Practise again</button>
         </div>
       </div>
@@ -2057,13 +2092,69 @@
         });
     }
 
+
+    function conceptScoreFromDiagnostic(conceptName) {
+      const diagnostic = diagnosticContext();
+      const scores = diagnostic && Array.isArray(diagnostic.scores) ? diagnostic.scores : [];
+      const target = String(conceptName || '').toLowerCase().trim();
+      const hit = scores.find((s) => String(s.concept || '').toLowerCase().trim() === target);
+      if (!hit) return null;
+      const pct = typeof hit.pct === 'number' ? hit.pct : (typeof hit.score === 'number' ? hit.score : null);
+      if (pct === null || Number.isNaN(pct)) return null;
+      const status = hit.status || (pct >= 80 ? 'strong' : pct >= 50 ? 'improve' : 'weak');
+      return { pct: Math.round(pct), status, correct: hit.correct, total: hit.total };
+    }
+
+    function renderMasteryDelta(conceptName, practicePct) {
+      const strip = document.getElementById('deltaStrip');
+      if (!strip) return;
+      const before = conceptScoreFromDiagnostic(conceptName);
+      const afterPct = Math.round(Number(practicePct) || 0);
+      const afterStatus = afterPct >= 80 ? 'strong' : afterPct >= 50 ? 'improve' : 'weak';
+
+      const beforePctEl = document.getElementById('deltaBeforePct');
+      const beforeStatusEl = document.getElementById('deltaBeforeStatus');
+      const afterPctEl = document.getElementById('deltaAfterPct');
+      const afterStatusEl = document.getElementById('deltaAfterStatus');
+      const changeEl = document.getElementById('deltaChange');
+      const noteEl = document.getElementById('deltaNote');
+
+      afterPctEl.textContent = afterPct + '%';
+      afterStatusEl.textContent = afterStatus;
+      afterStatusEl.className = 'status ' + afterStatus;
+
+      if (before) {
+        beforePctEl.textContent = before.pct + '%';
+        beforeStatusEl.textContent = before.status;
+        beforeStatusEl.className = 'status ' + before.status;
+        const diff = afterPct - before.pct;
+        if (diff > 0) {
+          changeEl.textContent = conceptName + '  ' + before.pct + '% → ' + afterPct + '%  (+' + diff + ' points this session)';
+          changeEl.className = 'delta-change up';
+        } else if (diff < 0) {
+          changeEl.textContent = conceptName + '  ' + before.pct + '% → ' + afterPct + '%  (' + diff + ' points this session)';
+          changeEl.className = 'delta-change down';
+        } else {
+          changeEl.textContent = conceptName + '  ' + before.pct + '% → ' + afterPct + '%  (same as Gap Map)';
+          changeEl.className = 'delta-change same';
+        }
+        noteEl.textContent = 'This Practice score is a session signal. Retake the Diagnostic to officially update your Gap Map Mastery for ' + conceptName + '.';
+      } else {
+        beforePctEl.textContent = '—';
+        beforeStatusEl.textContent = 'no Gap Map';
+        beforeStatusEl.className = 'status';
+        changeEl.textContent = conceptName + '  this Practice: ' + afterPct + '%';
+        changeEl.className = 'delta-change same';
+        noteEl.textContent = 'No Diagnostic Gap Map for this Concept yet. Take a Diagnostic to set a baseline, then practise and re-measure.';
+      }
+      strip.style.display = '';
+    }
+
     async function finishPractice() {
       practiceScreen.classList.remove('active');
       resultsScreen.classList.add('active');
       document.getElementById('resultsTitle').textContent = 'Targeted Practice complete';
       document.getElementById('resultsLead').textContent = 'Your Responses and this Practice Attempt have been saved to your Learner record.';
-      document.getElementById('resultsNext').innerHTML =
-        '<strong>What’s next:</strong> Retake the Diagnostic later to re-measure this Concept and update your Gap Map.';
       recordPracticeHistory();
 
       const flags = questions.map((item, index) => {
@@ -2072,6 +2163,20 @@
       });
       const scoringItems = questions.map((item) => ({ ...item, concept: activeConcept.name }));
       const rollup = scoreFromFlags(scoringItems, flags);
+      const conceptName = activeConcept.name;
+      renderMasteryDelta(conceptName, rollup.overall_pct);
+
+      const before = conceptScoreFromDiagnostic(conceptName);
+      const practicePct = Math.round(rollup.overall_pct || 0);
+      let nextHtml = '<strong>What’s next:</strong> ';
+      if (before && practicePct > before.pct) {
+        nextHtml += 'Nice movement on <em>' + conceptName + '</em>. Retake the Diagnostic to lock this into your Gap Map, or practise again to strengthen it further.';
+      } else if (before && practicePct < before.pct) {
+        nextHtml += 'This session was below your Gap Map score for <em>' + conceptName + '</em>. Review the explanation, then practise again — or retake the Diagnostic when ready.';
+      } else {
+        nextHtml += 'Retake the Diagnostic to re-measure <em>' + conceptName + '</em> and update your Gap Map, or practise again with fresh Items.';
+      }
+      document.getElementById('resultsNext').innerHTML = nextHtml;
       const language = document.getElementById('quizLanguage')?.value || 'English';
       const assessmentId = `practice-${toConceptId(activeConcept.name)}-${Date.now().toString(36)}`;
       const practiceAssessment = {
